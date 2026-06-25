@@ -1,0 +1,497 @@
+# `[scf]`
+
+The `[scf]` section controls the reference wavefunction and SCF convergence
+strategy. It is required for HF, DFT, TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT, SOC,
+NACME, and EKT workflows.
+
+## Minimal Examples
+
+Closed-shell singlet:
+
+```ini
+[scf]
+type=rhf
+multiplicity=1
+```
+
+Triplet ROHF reference for MRSF-TDDFT:
+
+```ini
+[scf]
+type=rohf
+multiplicity=3
+```
+
+## Keywords
+
+### `type`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `rhf` |
+| Values | `rhf`, `rohf`, `uhf` |
+| Used by | reference selection |
+
+Selects the SCF reference. Use `rhf` for closed-shell singlets, `rohf` for the
+high-spin reference commonly used by SF/MRSF workflows, and `uhf` for
+unrestricted references including UMRSF-TDDFT.
+
+The input checker rejects `type=rhf` with `multiplicity>1`.
+
+### `multiplicity`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `1` |
+| Used by | spin state and electron occupation |
+
+Sets the spin multiplicity, `2S+1`. SF/MRSF examples usually use a triplet ROHF
+reference with `multiplicity=3`.
+
+### `maxit`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `30` |
+| Used by | SCF iteration loop |
+
+Maximum number of SCF iterations before failure or fallback handling.
+
+### `conv`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `1.0e-6` |
+| Used by | SCF convergence test |
+
+Energy/density convergence threshold for the SCF cycle. Tighten this for
+high-precision properties or difficult state comparisons.
+
+### `maxdiis`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `7` |
+| Used by | DIIS subspace |
+
+Maximum number of vectors kept in the DIIS extrapolation space.
+
+### `diis_type`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `cdiis` |
+| Values | `none`, `cdiis`, `ediis`, `adiis`, `vdiis` |
+| Used by | DIIS convergence accelerator |
+
+Selects the DIIS variant. `cdiis` is the default. `vdiis` can be useful for
+difficult cases with level shifting.
+
+### `diis_reset_mod`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `10` |
+| Used by | DIIS reset logic |
+
+Controls periodic DIIS reset behavior.
+
+### `diis_reset_conv`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.005` |
+| Used by | DIIS reset logic |
+
+Convergence threshold used by the DIIS reset heuristic.
+
+### `cdiis_switch`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.3` |
+| Used by | CDIIS switching heuristic |
+
+Threshold for switching into CDIIS-style extrapolation.
+
+### `vdiis_vshift_switch`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.003` |
+| Used by | VDIIS level-shift behavior |
+
+Threshold for VDIIS/level-shift switching.
+
+### `vshift`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.0` |
+| Used by | virtual-orbital level shift |
+
+Applies a level shift during SCF. Larger values can stabilize convergence but
+may slow final convergence.
+
+### `incremental`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `True` |
+| Used by | incremental Fock build |
+
+Enables incremental Fock builds where supported.
+
+### `mom`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | maximum-overlap method |
+
+Enables MOM occupation tracking for challenging electronic states.
+
+### `mom_switch`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.003` |
+| Used by | MOM activation heuristic |
+
+Threshold controlling when MOM behavior is activated.
+
+### `pfon`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | pseudo-fractional occupation number method |
+
+Enables pFON smoothing for difficult SCF cases.
+
+### `pfon_start_temp`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `2000.0` |
+| Used by | pFON schedule |
+
+Initial pFON electronic temperature.
+
+### `pfon_cooling_rate`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `50.0` |
+| Used by | pFON schedule |
+
+Cooling rate used as pFON occupations are annealed.
+
+### `pfon_nsmear`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `5.0` |
+| Used by | pFON occupation smoothing |
+
+Controls the smearing width/count used by the pFON method.
+
+### `converger_type`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `diis` |
+| Values | `diis`, `soscf`, `trah`, `auto`, `ml` |
+| Used by | SCF convergence manager |
+
+Selects the main SCF convergence strategy. `auto` and `ml` are Python-side
+manager modes that choose a concrete native converger before dispatch.
+
+### `init_converger`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `None` |
+| Values | empty, `none`, `diis`, `soscf`, `trah`, `auto`, `ml` |
+| Used by | initial SCF phase |
+
+Overrides the converger used during an optional initial SCF stage.
+
+### `alternative_scf`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `trah` |
+| Values | `diis`, `soscf`, `trah`, `auto`, `ml` |
+| Used by | fallback SCF attempts |
+
+Fallback converger after repeated SCF difficulty.
+
+### `escalation`
+
+| Field | Value |
+| --- | --- |
+| Type | comma-separated string |
+| Default | empty |
+| Values | `diis`, `soscf`, `trah` stages |
+| Used by | custom fallback ladder |
+
+Overrides the default escalation ladder. Example:
+
+```ini
+[scf]
+escalation=soscf,trah
+```
+
+### `forced_attempt`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `2` |
+| Used by | repeated SCF attempts |
+
+Controls how many attempts the SCF manager can force before declaring failure
+or escalating.
+
+### `init_scf`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `no` |
+| Values | `no`, `rhf`, `uhf`, `rohf`, `rks`, `uks`, `roks` |
+| Used by | initial low-cost SCF stage |
+
+Requests an initial SCF calculation before the main SCF. KS-style initial SCF
+values (`rks`, `uks`, `roks`) require `[input] functional`.
+
+### `init_basis`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `none` |
+| Used by | initial SCF basis selection |
+
+Basis used for the initial SCF stage. `library` can be used with
+`init_library`.
+
+### `init_library`
+
+| Field | Value |
+| --- | --- |
+| Type | multiline string |
+| Default | empty |
+| Used by | tagged basis mapping for `init_basis=library` |
+
+Maps atom tags to basis names for the initial SCF basis.
+
+### `init_it`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `15` |
+| Used by | initial SCF stage |
+
+Maximum number of iterations in the initial SCF stage.
+
+### `init_conv`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.001` |
+| Used by | initial SCF stage |
+
+Convergence threshold for the initial SCF stage.
+
+### `save_molden`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `True` |
+| Used by | Molden output |
+
+Writes Molden orbital files when supported.
+
+### `rstctmo`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | MO ordering |
+
+Restricts molecular-orbital ordering in workflows that need stable state or
+orbital labels.
+
+### `scal_rel`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `0` |
+| Used by | scalar-relativistic option placeholder |
+
+Scalar-relativistic selector. Leave at `0` unless a workflow explicitly
+documents another value.
+
+### `stability`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | SCF stability analysis |
+
+Requests stability analysis where wired.
+
+### `soscf_lvl_shift`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0` |
+| Used by | SOSCF convergence |
+
+Level shift used by the SOSCF converger.
+
+### `verbose`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `1` |
+| Used by | SCF logging |
+
+Controls SCF verbosity.
+
+## TRAH Keywords
+
+TRAH is the trust-region augmented Hessian SCF converger. The package build uses
+the native TRAH implementation by default when TRAH is requested.
+
+### `trh_impl`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `auto` |
+| Used by | TRAH implementation selection |
+
+Selects the TRAH implementation. `auto` uses the available implementation and
+falls back to native behavior when external OpenTRAH is absent.
+
+### `trh_stab`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | TRAH stability mode |
+
+Enables TRAH stability behavior.
+
+### `trh_ls`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | TRAH line search |
+
+Enables line search inside TRAH.
+
+### `trh_sub_solver`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `davidson` |
+| Used by | TRAH micro-iteration solver |
+
+Selects the subsystem solver used by TRAH.
+
+### `trh_nrtv`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `1` |
+| Used by | TRAH random trial vectors |
+
+Number of random trial vectors used in the TRAH subsystem.
+
+### `trh_r0`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.4` |
+| Used by | TRAH trust radius |
+
+Initial TRAH trust radius.
+
+### `trh_jd_start`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `30` |
+| Used by | TRAH Jacobi-Davidson switch |
+
+Iteration threshold for the Jacobi-Davidson path in TRAH.
+
+### `trh_nmic`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `50` |
+| Used by | TRAH micro-iterations |
+
+Maximum number of TRAH micro-iterations.
+
+### `trh_gred`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.001` |
+| Used by | TRAH global reduction |
+
+Global reduction factor for the TRAH microproblem.
+
+### `trh_lred`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.0001` |
+| Used by | TRAH local reduction |
+
+Local reduction factor for the TRAH microproblem.
