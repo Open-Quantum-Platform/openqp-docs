@@ -11,6 +11,8 @@ more control.
 
 - [Installation](installation.md): package install, source build, BLAS/LAPACK,
   OpenMP, MPI, and runtime-file layout.
+- [Build Options](build-options.md): complete CMake options, package-build
+  overrides, BLAS/LAPACK choices, and external dependency cache behavior.
 - [Quickstart](quickstart.md): the shortest path from a molecule to an OpenQP
   output file.
 - [Input Files](input-file.md): section layout, geometry input, run types, and

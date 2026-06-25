@@ -32,6 +32,9 @@ Python entry points:
 - [`input_checker.py`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyoqp/oqp/utils/input_checker.py)
 - [`pyoqp.py`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyoqp/oqp/pyoqp.py)
 - [`molecule.py`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyoqp/oqp/molecule/molecule.py)
+- [`CMakeLists.txt`](https://github.com/Open-Quantum-Platform/openqp/blob/main/CMakeLists.txt)
+- [`pyproject.toml`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyproject.toml)
 
 When OpenQP changes input defaults, allowed values, or workflow support, update
-the matching page under `docs/keywords`, `docs/workflows`, or `docs/api`.
+the matching page under `docs/keywords`, `docs/workflows`, `docs/api`, or
+`docs/build-options.md`.

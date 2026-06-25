@@ -30,6 +30,10 @@ files, and data files together. Normal command-line use does not require
 - Ninja, recommended for source builds
 - OpenMPI or another MPI implementation, only when building with MPI
 
+See the [Build Options](build-options.md) reference for the full CMake option
+table, defaults, BLAS/LAPACK choices, external dependency cache behavior, and
+package-build overrides.
+
 ## Source Build
 
 The default source install is:
@@ -82,6 +86,10 @@ machine.
 | `-DLINALG_LIB_INT64=ON` | `ON` | Use ILP64 BLAS/LAPACK. |
 | `-DENABLE_OPENTRAH=OFF` | `ON` in CMake, `OFF` for Python package builds | Skip the external OpenTrustRegion library and use native TRAH. |
 | `-DOQP_REUSE_EXTERNALS=OFF` | `ON` | Disable reusable bundled-external build caches. |
+
+For the complete list, including `ENABLE_DDX`, `BUILD_SHARED_LIBS`,
+`ENABLE_PYTHON`, sanitizer flags, and external dependency cache paths, see
+[Build Options](build-options.md).
 
 ILP64 BLAS/LAPACK is the normal build mode. LP64
 (`-DLINALG_LIB_INT64=OFF`) is supported only on macOS, mainly for a consistent
