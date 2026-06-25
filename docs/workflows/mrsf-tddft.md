@@ -1,7 +1,9 @@
 # MRSF-TDDFT
 
 MRSF-TDDFT uses `[input] method=tdhf`, `[tdhf] type=mrsf`, and usually a triplet
-ROHF reference.
+ROHF reference. Although it is configured through the TDHF/TDDFT response
+section, MRSF-TDDFT is used for multiconfigurational ground-state surfaces as
+well as excited-state surfaces.
 
 ## Energy
 

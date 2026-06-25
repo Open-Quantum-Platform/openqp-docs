@@ -11,7 +11,7 @@ specific input contract.
 | --- | --- |
 | HF and DFT | RHF, ROHF, and UHF references. |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
-| SF-TDDFT and MRSF-TDDFT | Energy, gradients, NACME, SOC, optimization workflows. |
+| SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
 | UMRSF-TDDFT | Energy-only UHF-reference workflow. |
 | MRSF-EKT | IP/EA analysis with Dyson-like orbital data. |
 

@@ -1,7 +1,8 @@
 # OpenQP Manual
 
 Open Quantum Platform (OpenQP) is a quantum chemistry package centered on
-HF/DFT, TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT, and related excited-state workflows.
+HF/DFT, TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT, and related workflows for
+multiconfigurational ground and excited states.
 The manual is organized around what users usually need first: install OpenQP,
 prepare an input, run a calculation, then look up keywords when a workflow needs
 more control.
