@@ -15,6 +15,8 @@ more control.
   output file.
 - [Input Files](input-file.md): section layout, geometry input, run types, and
   output files.
+- [API Documentation](api/index.md): Python runner usage, result access, input
+  validation, and developer interface notes.
 - [Examples](examples/index.md): runnable inputs stored in the OpenQP code
   repository.
 
@@ -38,6 +40,13 @@ high-drift input sections such as `[input]`, `[scf]`, `[optimize]`, `[oqp]`,
 and
 [`pyoqp/oqp/utils/input_checker.py`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyoqp/oqp/utils/input_checker.py)
 when OpenQP changes.
+
+## API Documentation
+
+The [API chapter](api/index.md) is the recommended starting point for scripting
+OpenQP from Python. It covers `oqp.pyoqp.Runner`, in-memory inputs, result
+extraction through `runner.mol`, and the input-checking API used by front ends
+and automated workflows.
 
 ## Web Tools
 

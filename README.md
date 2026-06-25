@@ -7,6 +7,9 @@ Platform.
 Manual site:
 [https://open-quantum-platform.github.io/openqp-docs/](https://open-quantum-platform.github.io/openqp-docs/)
 
+API guide:
+[https://open-quantum-platform.github.io/openqp-docs/api/](https://open-quantum-platform.github.io/openqp-docs/api/)
+
 ## Preview Locally
 
 ```bash
@@ -22,10 +25,13 @@ mkdocs build --strict
 
 ## Maintenance
 
-Keep keyword pages aligned with the OpenQP input schema and checker:
+Keep keyword and API pages aligned with the OpenQP input schema, checker, and
+Python entry points:
 
 - [`oqpdata.py`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyoqp/oqp/molecule/oqpdata.py)
 - [`input_checker.py`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyoqp/oqp/utils/input_checker.py)
+- [`pyoqp.py`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyoqp/oqp/pyoqp.py)
+- [`molecule.py`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyoqp/oqp/molecule/molecule.py)
 
 When OpenQP changes input defaults, allowed values, or workflow support, update
-the matching page under `docs/keywords` or `docs/workflows`.
+the matching page under `docs/keywords`, `docs/workflows`, or `docs/api`.

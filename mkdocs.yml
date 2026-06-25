@@ -29,6 +29,12 @@ nav:
   - Quickstart: quickstart.md
   - Input Files: input-file.md
   - Capabilities: capabilities.md
+  - API:
+      - Overview: api/index.md
+      - Python Runner: api/python-runner.md
+      - Results and Molecule Data: api/results.md
+      - Input Validation: api/input-validation.md
+      - Developer Interface: api/developer-interface.md
   - Workflows:
       - HF and DFT: workflows/hf-dft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
