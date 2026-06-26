@@ -4,7 +4,7 @@ OpenQP exposes two Python layers.
 
 | Layer | Import | Use |
 | --- | --- | --- |
-| High-level wrapper | `from oqp.openqp import OpenQP` | Compact scripts, notebooks, mixed OpenQP/PySCF workflows, and section-style keyword editing. |
+| High-level wrapper | `from oqp.openqp import OpenQP` | OpenQP-native scripts with molecule, workflow, and section-style keyword setup. |
 | Runner | `from oqp.pyoqp import Runner` | Existing input files, explicit sectioned dictionaries, and front ends that already build OpenQP input data. |
 
 Both layers use the same OpenQP input schema and the same native calculation
@@ -18,52 +18,86 @@ For a user-level guide with complete scripts, see
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP(
-    atom="H 0 0 0; H 0 0 0.74",
+job = OpenQP("h2o_mrsf", silent=1)
+job.molecule(
+    """
+O   0.000000   0.000000  -0.041062
+H  -0.533194   0.533194  -0.614469
+H   0.533194  -0.533194  -0.614469
+""",
     basis="6-31g*",
-    charge=0,
-    project="h2",
-    usempi=False,
 )
-
-job.input(method="hf", runtype="energy")
-job.scf(type="rhf", multiplicity=1)
+job.mrsf(nstate=3)
 
 mol = job.run()
-print(mol.get_scf_energy())
+print(mol.get_results()["td_energies"])
 ```
 
 ### Constructor
 
 ```python
 OpenQP(
-    atom=None,
-    system=None,
-    basis=None,
-    charge=None,
-    spin=None,
-    multiplicity=None,
-    unit="Angstrom",
     project="oqp_project",
     log=None,
     silent=0,
     usempi=True,
-    **kwargs,
+    config=None,
+    **sections,
 )
 ```
 
 | Argument | Meaning |
 | --- | --- |
-| `atom`, `system` | Molecule geometry. Accepts inline strings, semicolon-separated strings, file paths, or lists such as `[("H", 0, 0, 0)]`. |
-| `basis` | OpenQP basis keyword. |
-| `charge` | Molecular charge. |
-| `spin` | PySCF convention `2S`; converted to `multiplicity = spin + 1`. |
-| `multiplicity` | OpenQP spin multiplicity. If supplied, it takes precedence over `spin`. |
-| `unit` | Geometry unit for inline coordinates. `Angstrom` is default; `Bohr` is converted before OpenQP reads the input. |
-| `project`, `log`, `silent`, `usempi` | Passed through to `Runner` when `run()` is called. |
-| `**kwargs` | Convenience aliases, dotted OpenQP keywords, or section dictionaries. |
+| `project` | Project name used in logs and output files. It can be passed positionally, as in `OpenQP("h2o")`. |
+| `log` | Log file path. Defaults to `<project>.log`. |
+| `silent` | `0` prints parsed input and normal messages; `1` suppresses them. |
+| `usempi` | Enables MPI-aware behavior when the runtime supports it. |
+| `config` | Optional sectioned OpenQP input dictionary. |
+| `**sections` | Optional section dictionaries, for example `input={...}` or `scf={...}`. |
 
-### Keyword Updates
+The constructor is intentionally runtime-focused. Molecule and method setup use
+OpenQP-native methods after construction.
+
+### Molecule Setup
+
+```python
+job.molecule(
+    "H 0 0 0; H 0 0 0.74",
+    basis="6-31g*",
+    charge=0,
+)
+```
+
+```python
+job.molecule([
+    ("H", 0.0, 0.0, 0.0),
+    ("H", 0.0, 0.0, 0.74),
+])
+```
+
+| Method | Returns | Use |
+| --- | --- | --- |
+| `molecule(system, basis=None, charge=None, unit="Angstrom", **kwargs)` | `OpenQP` | Writes molecular data into `[input]`, including `system`, `basis`, `charge`, and any extra input-section keyword. |
+
+Inline coordinates are Angstrom by default. Use `unit="Bohr"` for Bohr input
+coordinates.
+
+### Workflow Helpers
+
+```python
+job.mrsf(nstate=3)
+job.hf()
+```
+
+| Method | Returns | Use |
+| --- | --- | --- |
+| `hf(reference="rhf", runtype="energy", multiplicity=None, **scf_keywords)` | `OpenQP` | Sets `[input] method=hf`, `[input] runtype`, and `[scf] type`. |
+| `mrsf(nstate=3, reference="rohf", multiplicity=3, runtype="energy", **tdhf_keywords)` | `OpenQP` | Sets the standard MRSF-TDDFT `[input]`, `[scf]`, and `[tdhf]` blocks. |
+
+These helpers are only shorthand for OpenQP sections. Advanced calculations can
+always override or extend the sections directly.
+
+### Section Updates
 
 ```python
 job.input(method="tdhf", runtype="energy")
@@ -76,18 +110,29 @@ job.set(**{"input.method": "tdhf", "tdhf.type": "mrsf"})
 job.update({"scf": {"type": "rohf", "multiplicity": 3}})
 ```
 
-### Methods
-
 | Method | Returns | Use |
 | --- | --- | --- |
 | `section(name, **kwargs)` | `OpenQP` | Updates one OpenQP input section. |
-| `set(**kwargs)` | `OpenQP` | Updates aliases, dotted keywords, or section dictionaries. |
-| `update(config=None, **kwargs)` | `OpenQP` | Merges a sectioned dictionary plus optional keyword overrides. |
+| `set(**kwargs)` | `OpenQP` | Updates dotted OpenQP keywords or section dictionaries. |
+| `update(config=None, **kwargs)` | `OpenQP` | Merges a sectioned dictionary plus optional section overrides. |
 | `to_input_dict()` | `dict` | Returns the sectioned dictionary that will be passed to `Runner`. |
 | `run(run_type=None)` | `Molecule` | Builds `Runner`, executes the calculation, stores `job.runner` and `job.mol`, and returns the `Molecule`. |
-| `from_pyscf(mol, **kwargs)` | `OpenQP` | Class method that reads `atom`, `basis`, `charge`, `spin`, and `unit` attributes from a PySCF-like object. |
 
 `oqp.openqp.OQP` is an alias for `OpenQP`.
+
+### PySCF Conversion
+
+`OpenQP.from_pyscf(mol, **kwargs)` is an explicit compatibility bridge. It
+reads `atom`, `basis`, `charge`, `spin`, and `unit` attributes from a PySCF-like
+object, translates them into OpenQP sections, and returns an `OpenQP` job.
+
+```python
+job = OpenQP.from_pyscf(pyscf_mol, project="mixed_workflow")
+job.mrsf(nstate=5)
+mol = job.run()
+```
+
+After conversion, use normal OpenQP workflow and section calls.
 
 ## Runner
 
@@ -255,5 +300,5 @@ mol = op.run()
 ```
 
 This wrapper is retained for existing scripts. New scripts should prefer
-`OpenQP` for section-style keyword editing or `Runner` for direct input-file and
+`OpenQP` for OpenQP-native scripting or `Runner` for direct input-file and
 section-dictionary execution.
