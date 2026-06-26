@@ -15,6 +15,8 @@ more control.
   overrides, BLAS/LAPACK choices, and external dependency cache behavior.
 - [Quickstart](quickstart.md): the shortest path from a molecule to an OpenQP
   output file.
+- [Run OpenQP from Python](python-scripting.md): drive complete OpenQP
+  calculations from Python scripts, notebooks, or workflow managers.
 - [Input Files](input-file.md): section layout, geometry input, run types, and
   output files.
 - [API Documentation](api/index.md): Python runner usage, result access, input
@@ -45,10 +47,11 @@ when OpenQP changes.
 
 ## API Documentation
 
-The [API chapter](api/index.md) is the recommended starting point for scripting
-OpenQP from Python. It covers `oqp.pyoqp.Runner`, in-memory inputs, result
-extraction through `runner.mol`, and the input-checking API used by front ends
-and automated workflows.
+The [Run OpenQP from Python](python-scripting.md) chapter shows complete
+script-based calculations. The [API chapter](api/index.md) is the lower-level
+reference for `oqp.pyoqp.Runner`, in-memory inputs, result extraction through
+`runner.mol`, and the input-checking API used by front ends and automated
+workflows.
 
 ## Web Tools
 

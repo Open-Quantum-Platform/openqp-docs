@@ -4,6 +4,9 @@
 loads the same configuration used by input files, runs the selected workflow,
 and keeps the resulting `Molecule` object available as `runner.mol`.
 
+For a user-level guide with complete scripts, see
+[Run OpenQP from Python](../python-scripting.md).
+
 ```python
 from oqp.pyoqp import Runner
 

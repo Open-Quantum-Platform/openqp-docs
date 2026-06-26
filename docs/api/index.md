@@ -21,6 +21,8 @@ directory and the installable distribution is named `OpenQP`.
 
 ## Recommended Starting Points
 
+- Use [Run OpenQP from Python](../python-scripting.md) for complete script-based
+  calculation examples.
 - Use [Python Runner](python-runner.md) to run calculations from scripts,
   notebooks, services, or tests.
 - Use [Results and Molecule Data](results.md) to retrieve energies, gradients,

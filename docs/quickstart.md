@@ -31,6 +31,10 @@ OpenQP writes a log and structured output files in the working directory. For
 examples with reference outputs, start from `examples/HF`, `examples/DFT`, and
 `examples/MRSF-TDDFT`.
 
+The same calculation can be run entirely from a Python script. See
+[Run OpenQP from Python](python-scripting.md) for the `Runner(input_dict=...)`
+and `Runner(input_file=...)` patterns.
+
 ## Next Calculations
 
 Use these examples as nearby templates:

@@ -35,6 +35,7 @@ Python entry points:
 - [`CMakeLists.txt`](https://github.com/Open-Quantum-Platform/openqp/blob/main/CMakeLists.txt)
 - [`pyproject.toml`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyproject.toml)
 
-When OpenQP changes input defaults, allowed values, or workflow support, update
-the matching page under `docs/keywords`, `docs/workflows`, `docs/api`, or
+When OpenQP changes input defaults, allowed values, workflow support, or Python
+runner behavior, update the matching page under `docs/keywords`,
+`docs/workflows`, `docs/api`, `docs/python-scripting.md`, or
 `docs/build-options.md`.
