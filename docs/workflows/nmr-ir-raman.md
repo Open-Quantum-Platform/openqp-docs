@@ -29,7 +29,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("h2o_nmr", silent=1, usempi=False)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory("hf", basis="sto-3g")
-job.properties(scf_prop="nmr", nmr_gauge="cgo")
+job.workflow.nmr(gauge="cgo")
 
 mol = job.run()
 ```
@@ -43,6 +43,11 @@ Runnable input:
 | --- | --- |
 | `cgo` | Common-gauge-origin shielding. |
 | `giao` | Gauge-including atomic orbital shielding where supported. |
+
+`job.workflow.nmr(...)` requires an HF/DFT reference-SCF theory. CGO NMR is
+limited to closed-shell RHF; use `gauge="giao"` for open-shell UHF/ROHF
+references. The helper also blocks range-separated and meta-GGA functionals for
+NMR because those paths are not implemented.
 
 ## IR and Raman
 
@@ -70,9 +75,8 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_freq", silent=1, usempi=False)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.control(runtype="hess")
 job.theory("dft", functional="bhhlyp", basis="6-31g*")
-job.hess(type="analytical", state=0)
+job.workflow.hessian(type="analytical", state=0)
 
 mol = job.run()
 ```

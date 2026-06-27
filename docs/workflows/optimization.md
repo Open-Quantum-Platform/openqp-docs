@@ -44,15 +44,14 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_opt", silent=1, usempi=False)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.control(
-    runtype="optimize",
+job.theory("dft", functional="bhhlyp", basis="6-31g*")
+job.workflow.optimize(
     lib="oqp",
     istate=0,
     maxit=10,
     coordsys="tric",
     trust=0.2,
 )
-job.theory("dft", functional="bhhlyp", basis="6-31g*")
 
 mol = job.run()
 ```
@@ -75,12 +74,11 @@ trust=0.1
 constraints_file=my.constraints
 ```
 
-Python style uses `job.control(...)` for the optimizer selection and routes the
+Python style uses `job.workflow.optimize(...)` for the optimizer selection and routes the
 backend options to geomeTRIC:
 
 ```python
-job.control(
-    runtype="optimize",
+job.workflow.optimize(
     lib="geometric",
     coordsys="tric",
     trust=0.1,
@@ -122,8 +120,8 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("meci_mrsf", silent=1)
 job.molecule("reactant.xyz", charge=0, multiplicity=3)
-job.control(runtype="meci", lib="oqp", istate=1, jstate=2)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
+job.workflow.meci(lib="oqp", istate=1, jstate=2)
 
 mol = job.run()
 ```

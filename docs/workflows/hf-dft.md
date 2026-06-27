@@ -67,9 +67,8 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_dft_grad", silent=1, usempi=False)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.control(runtype="grad")
 job.theory("dft", functional="bhhlyp", basis="6-31g*")
-job.properties(grad=0)
+job.workflow.gradient(grad=0)
 
 mol = job.run()
 gradient = mol.get_grad()
@@ -103,9 +102,8 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_dft_hess", silent=1, usempi=False)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.control(runtype="hess")
 job.theory("dft", functional="bhhlyp", basis="6-31g*")
-job.hess(type="analytical", state=0)
+job.workflow.hessian(type="analytical", state=0)
 
 mol = job.run()
 ```

@@ -39,7 +39,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("mrsf_keywords")
 job.molecule(geometry="water", charge=0, multiplicity=3)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
-job.tdhf.multiplicity = 1
+job.workflow.tdhf.multiplicity = 1
 ```
 
 ## Keywords

@@ -76,41 +76,46 @@ back to PubChem when `source="auto"` or `source="pubchem"` is used.
 For compatibility with earlier scripts, `molecule(...)` can still accept
 `basis=...`; new scripts should put basis in `theory(...)`.
 
-### Control and Theory Helpers
+### Theory, Workflow, and Control
 
 ```python
-job.control(runtype="grad", omp_threads=8)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
+job.workflow.gradient(grad=3)
+job.control(omp_threads=8)
 
-job.control(runtype="optimize", lib="oqp", coordsys="tric", trust=0.2)
 job.theory("dft", functional="pbe0", basis="6-31g*")
+job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 ```
 
 | Method | Returns | Use |
 | --- | --- | --- |
-| `control(runtype=None, omp_threads=None, **kwargs)` | `OpenQP` | Sets run controls such as `[input] runtype` and `[input] omp_threads`. For optimization run types, extra keywords are routed to `[optimize]` and the selected optimizer backend. |
 | `theory(method, functional=None, basis=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Sets the electronic-structure model. Use `method="hf"`, `"dft"`, or `"mrsf-tddft"`; DFT and MRSF accept `functional`, `basis`, and method-specific keywords. |
-| `soc(nstate=3, functional=None, basis=None, soc_2e=1, **tdhf_keywords)` | `OpenQP` | Sets the OpenQP MRSF-TDDFT SOC workflow without requiring users to set separate TDHF multiplicities. |
-| `hf(reference="rhf", multiplicity=None, basis=None, **scf_keywords)` | `OpenQP` | Compact HF helper retained for direct setup. |
-| `dft(functional, reference="rhf", multiplicity=None, basis=None, **scf_keywords)` | `OpenQP` | Compact DFT helper retained for direct setup. |
-| `mrsf(nstate=3, reference="rohf", multiplicity=3, functional=None, basis=None, **tdhf_keywords)` | `OpenQP` | Compact MRSF-TDDFT helper retained for direct setup. |
+| `control(omp_threads=None, **kwargs)` | `OpenQP` | Sets hardware/runtime controls such as `[input] omp_threads`. |
+| `workflow.gradient(grad=None, **kwargs)` | `OpenQP` | Selects `runtype=grad` and stores gradient-state controls in `[properties]`. |
+| `workflow.hessian(**kwargs)` | `OpenQP` | Selects `runtype=hess` and stores Hessian controls in `[hess]`. |
+| `workflow.optimize(**kwargs)` | `OpenQP` | Selects `runtype=optimize` and routes optimizer/backend options to `[optimize]`, `[oqp]`, or `[geometric]`. |
+| `workflow.meci(**kwargs)` | `OpenQP` | Selects `runtype=meci`; the same style is available for `mecp`, `tci`, `mep`, `ts`, `irc`, and `neb`. |
+| `workflow.nacme(**kwargs)` | `OpenQP` | Selects `runtype=nacme` and requires MRSF-TDDFT. |
+| `workflow.ekt(ip=False, ea=False, **kwargs)` | `OpenQP` | Selects `runtype=ekt`, requires MRSF-TDDFT, and requires IP, EA, or both. |
+| `workflow.soc(soc_2e=1, **tdhf_keywords)` | `OpenQP` | Selects `runtype=soc` for an already configured MRSF-TDDFT theory and rejects non-MRSF theories. |
+| `workflow.pcm(**kwargs)` | `OpenQP` | Selects the current energy-only PCM/ddX path and requires HF/DFT reference-SCF, RHF/ROHF, `backend="ddx"`, and `mode="reference_scf"`. |
+| `workflow.nmr(gauge="cgo", **kwargs)` | `OpenQP` | Requests NMR shielding and requires HF/DFT reference-SCF. CGO is RHF-only; use GIAO for open-shell references. |
 
-`control(...)` is the preferred place for execution controls. The older compact
-HF, DFT, and MRSF helpers still accept runtype-compatible setups for existing
-scripts, but new examples keep runtype and OpenMP settings in `control(...)`.
-Likewise, `theory(...)` accepts `runtype=...` for compatibility, but the
-recommended style is `job.control(runtype=...)` followed by `job.theory(...)`.
+Plain energy calculations do not need a workflow call. Use `job.workflow.<name>(...)`
+only when selecting a non-energy workflow or setting workflow-specific controls.
+`job.control(...)` and the older compact `hf`, `dft`, `mrsf`, and `soc` helpers
+remain available for existing scripts.
 
 ### Section Updates
 
 ```python
-job.input(method="tdhf", runtype="energy")
-job.scf(type="rohf", multiplicity=3)
-job.tdhf(type="mrsf", nstate=3)
+job.workflow.input(method="tdhf")
+job.workflow.scf(type="rohf", multiplicity=3)
+job.workflow.tdhf(type="mrsf", nstate=3)
 
-job.control(runtype="optimize", lib="oqp", coordsys="tric", trust=0.2)
+job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 
-job.tdhf.nstate = 5
+job.workflow.tdhf.nstate = 5
 
 job.set(**{"input.method": "tdhf", "tdhf.type": "mrsf"})
 job.update({"scf": {"type": "rohf", "multiplicity": 3}})
@@ -124,7 +129,7 @@ job.update({"scf": {"type": "rohf", "multiplicity": 3}})
 | `to_input_dict()` | `dict` | Returns the sectioned dictionary that will be passed to `Runner`. |
 | `run(run_type=None)` | `Molecule` | Builds `Runner`, executes the calculation, stores `job.runner` and `job.mol`, and returns the `Molecule`. |
 
-For optimization workflows, `job.control(...)` routes ordinary optimization
+For optimization workflows, `job.workflow.optimize(...)` routes ordinary optimization
 keywords to `[optimize]`, while backend options such as `coordsys`, `trust`, and
 `constraints_file` are sent to the selected backend section. The lower-level
 `job.optimize(...)` section helper remains available for existing scripts.

@@ -37,7 +37,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("h2o_pcm", silent=1, usempi=False)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory("hf", basis="6-31g*")
-job.pcm(
+job.workflow.pcm(
     enabled=True,
     backend="ddx",
     mode="reference_scf",
@@ -56,6 +56,9 @@ Runnable input:
 - Supported production mode: `backend=ddx`, `mode=reference_scf`,
   `runtype=energy`.
 - Reference support: RHF and ROHF.
+- Python `job.workflow.pcm(...)` requires an HF/DFT reference-SCF theory. It
+  blocks MRSF-TDDFT, non-ddX backends, non-`reference_scf` modes, and UHF
+  references before runtime.
 - `ispher` is selected automatically from the basis-shell convention; users do
   not normally need to set it for PCM/ddX inputs.
 - MRSF-TDDFT can use the high-spin ROHF reference density as a reference-SCF

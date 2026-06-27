@@ -33,7 +33,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("pcm_keywords", usempi=False)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory("hf", basis="6-31g*")
-job.pcm(
+job.workflow.pcm(
     enabled=True,
     backend="ddx",
     mode="reference_scf",

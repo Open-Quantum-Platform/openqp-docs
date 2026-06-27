@@ -3,9 +3,9 @@
 The `[optimize]` section selects the optimization backend, target states, and
 convergence thresholds for geometry and reaction-path workflows.
 
-In Python scripts, use `job.control(...)` for the optimization runtype, common
+In Python scripts, use `job.workflow.optimize(...)` for the optimization runtype, common
 optimization options, and backend options. For example,
-`job.control(runtype="optimize", lib="oqp", coordsys="tric")` routes
+`job.workflow.optimize(lib="oqp", coordsys="tric")` routes
 `coordsys` to the native optimizer backend while keeping state and convergence
 options in `[optimize]`. The lower-level `job.optimize(...)` section helper
 remains available for existing scripts.

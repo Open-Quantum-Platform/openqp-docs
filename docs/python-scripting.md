@@ -67,20 +67,19 @@ mol = job.run()
 print("DFT energy:", mol.get_scf_energy())
 ```
 
-## OpenQP Section Style
+## OpenQP Workflow Sublevels
 
-For precise control, use section calls. These map directly to OpenQP input
-sections.
+For precise workflow setup, use `job.workflow.<section>(...)`. These map directly to
+OpenQP input sections without adding more top-level job verbs.
 
 ```python
 job = OpenQP("custom_mrsf")
 
 job.molecule("H 0 0 0; H 0 0 0.74", charge=0, multiplicity=3)
-job.control(runtype="energy")
-job.input(method="tdhf", functional="bhhlyp")
-job.input.basis = "6-31g*"
-job.scf(type="rohf", multiplicity=3, conv=1.0e-7)
-job.tdhf(type="mrsf", nstate=5, target=2)
+job.workflow.input(method="tdhf", functional="bhhlyp")
+job.workflow.input.basis = "6-31g*"
+job.workflow.scf(type="rohf", multiplicity=3, conv=1.0e-7)
+job.workflow.tdhf(type="mrsf", nstate=5, target=2)
 
 mol = job.run()
 ```
@@ -88,8 +87,8 @@ mol = job.run()
 Attribute assignment is also available for small edits:
 
 ```python
-job.tdhf.nstate = 7
-job.control(runtype="grad")
+job.workflow.tdhf.nstate = 7
+job.workflow.gradient(grad=3)
 ```
 
 Dotted keywords and sectioned dictionaries remain useful when another program

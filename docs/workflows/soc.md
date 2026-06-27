@@ -34,7 +34,8 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_soc", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=3)
-job.soc(nstate=12, functional="bhhlyp", basis="6-31G(2df,p)", soc_2e=1)
+job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31G(2df,p)", nstate=12)
+job.workflow.soc(soc_2e=1)
 
 mol = job.run()
 soc = mol.get_soc()
@@ -54,7 +55,9 @@ Runnable inputs:
 | `0` | One-electron SOC terms only. |
 | `1` | One-electron plus mean-field two-electron SOC terms. |
 
-SOC workflows require a triplet ROHF reference and `[tdhf] type=mrsf`.
+SOC workflows currently require MRSF-TDDFT: a triplet ROHF reference and
+`[tdhf] type=mrsf`.
 The SOC driver computes both singlet and triplet response roots internally, so
-Python scripts should use `job.soc(...)` rather than setting
+Python scripts should use `job.workflow.soc(...)` after
+`job.theory("mrsf-tddft", ...)` rather than setting
 `job.tdhf.multiplicity`.

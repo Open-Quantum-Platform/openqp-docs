@@ -82,9 +82,8 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf_grad", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=3)
-job.control(runtype="grad")
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
-job.properties(grad=3)
+job.workflow.gradient(grad=3)
 
 mol = job.run()
 gradient = mol.get_grad()
