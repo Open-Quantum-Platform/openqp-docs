@@ -19,14 +19,7 @@ For a user-level guide with complete scripts, see
 from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
-job.molecule(
-    """
-O   0.000000   0.000000  -0.041062
-H  -0.533194   0.533194  -0.614469
-H   0.533194  -0.533194  -0.614469
-""",
-    basis="6-31g*",
-)
+job.molecule(geometry="water", basis="6-31g*")
 job.mrsf(nstate=3)
 
 mol = job.run()
@@ -69,6 +62,11 @@ job.molecule(
 ```
 
 ```python
+job.molecule(geometry="water", basis="6-31g*")
+job.molecule(geometry="benzene", source="pubchem", basis="6-31g*")
+```
+
+```python
 job.molecule([
     ("H", 0.0, 0.0, 0.0),
     ("H", 0.0, 0.0, 0.74),
@@ -77,10 +75,11 @@ job.molecule([
 
 | Method | Returns | Use |
 | --- | --- | --- |
-| `molecule(system, basis=None, charge=None, unit="Angstrom", **kwargs)` | `OpenQP` | Writes molecular data into `[input]`, including `system`, `basis`, `charge`, and any extra input-section keyword. |
+| `molecule(system=None, basis=None, charge=None, unit="Angstrom", geometry=None, source="auto", timeout=10, **kwargs)` | `OpenQP` | Writes molecular data into `[input]`, including explicit `system` text or a named `geometry`, `basis`, `charge`, and any extra input-section keyword. |
 
 Inline coordinates are Angstrom by default. Use `unit="Bohr"` for Bohr input
-coordinates.
+coordinates. `geometry=...` accepts built-in small molecules first and can fall
+back to PubChem when `source="auto"` or `source="pubchem"` is used.
 
 ### Workflow Helpers
 

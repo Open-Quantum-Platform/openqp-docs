@@ -18,15 +18,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
 
-job.molecule(
-    """
-O   0.000000000   0.000000000  -0.041061554
-H  -0.533194329   0.533194329  -0.614469223
-H   0.533194329  -0.533194329  -0.614469223
-""",
-    basis="6-31g*",
-    charge=0,
-)
+job.molecule(geometry="water", basis="6-31g*", charge=0)
 job.mrsf(nstate=3)
 
 mol = job.run()
@@ -129,8 +121,35 @@ job.update({
 
 ## Molecular Geometry
 
-`job.molecule(...)` accepts the same inline geometry forms used by the legacy
-wrapper.
+`job.molecule(...)` accepts named geometries, inline coordinates, atom lists,
+and file paths.
+
+Named geometries keep small setup scripts short:
+
+```python
+job.molecule(geometry="water", basis="6-31g*")
+job.molecule(geometry="h2o", basis="6-31g*")
+job.molecule(geometry="ch4", basis="6-31g*")
+```
+
+OpenQP first checks a small built-in table for common molecules such as `water`,
+`h2o`, `h2`, `ch4`, `methane`, `nh3`, and `co2`. If the name is not built in,
+`source="auto"` tries PubChem.
+
+```python
+job.molecule(geometry="benzene", source="pubchem", basis="6-31g*")
+```
+
+To inspect or reuse the generated geometry text directly:
+
+```python
+from oqp.openqp import get_geometry
+
+system = get_geometry("water")
+job.molecule(system, basis="6-31g*")
+```
+
+Explicit molecular geometries still work as before:
 
 ```python
 job.molecule("H 0 0 0; H 0 0 0.74", basis="6-31g*")
