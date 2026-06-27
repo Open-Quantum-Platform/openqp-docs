@@ -1,9 +1,13 @@
-site_name: OpenQP Manual
+site_name: OpenQP Manual 1.2.0
 site_description: User manual for the Open Quantum Platform
 site_url: https://open-quantum-platform.github.io/openqp-docs/
 repo_url: https://github.com/Open-Quantum-Platform/openqp-docs
 repo_name: Open-Quantum-Platform/openqp-docs
 edit_uri: edit/main/docs/
+
+extra:
+  manual_version: "1.2.0"
+  openqp_version: "1.2.0"
 
 theme:
   name: material
