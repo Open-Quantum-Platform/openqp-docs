@@ -53,6 +53,17 @@ OpenQP(
 The constructor is intentionally runtime-focused. Molecule and method setup use
 OpenQP-native methods after construction.
 
+The high-level API is organized around six top-level calls:
+
+| Call | Role |
+| --- | --- |
+| `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
+| `job.theory(...)` | Quantum theory: method, functional, ordinary basis, reference, and response-state count. |
+| `job.workflow.*(...)` | Calculation type: energy, gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, and related workflows. |
+| `job.control(...)` | Hardware/runtime controls such as MPI and OpenMP threads. |
+| `job.settings.*(...)` | Specialized detailed settings such as atom-wise basis and direct section overrides. |
+| `job.run()` | Execute the calculation. |
+
 ### Molecule Setup
 
 ```python
@@ -91,7 +102,7 @@ job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 
 | Method | Returns | Use |
 | --- | --- | --- |
-| `theory(method, functional=None, basis=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Sets the electronic-structure model. Use `method="hf"`, `"dft"`, or `"mrsf-tddft"`; DFT and MRSF accept `functional`, `basis`, and method-specific keywords. |
+| `theory(method, functional=None, basis=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Sets the electronic-structure model. Use `method="hf"`, `"dft"`, `"tdhf"`, `"tddft"`, `"sf-tddft"`, or `"mrsf-tddft"`; `basis`, `functional`, and `nstate` belong here. |
 | `control(omp_threads=None, usempi=None, **kwargs)` | `OpenQP` | Sets hardware/runtime controls such as `[input] omp_threads` and the runtime-only MPI flag. |
 | `workflow.gradient(state=None, **kwargs)` | `OpenQP` | Selects `runtype=grad` and stores the gradient state in `[properties] grad`. |
 | `workflow.hessian(**kwargs)` | `OpenQP` | Selects `runtype=hess` and stores Hessian controls in `[hess]`. |
@@ -115,16 +126,18 @@ HF/DFT, `state=0` means the reference ground state. For ordinary TDHF/TDDFT,
 is the lowest spin-flip/MRSF target state, which can be the multiconfigurational
 ground state. Existing scripts that use `grad=...` still work.
 
-### Section Updates
+### Detailed Settings
 
 ```python
-job.workflow.input(method="tdhf")
-job.workflow.scf(type="rohf", multiplicity=3)
-job.workflow.tdhf(type="mrsf", nstate=3)
+job.settings.scf(conv=1.0e-8)
+job.settings.tdhf(target=2)
 
 job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 
-job.workflow.tdhf.nstate = 5
+job.settings.tdhf.nstate = 5
+
+job.settings.basis(["LANL2DZ", "6-31g*"])
+job.settings.basis(c1="cc-pvdz", h1="6-31g*")
 
 job.set(**{"input.method": "tdhf", "tdhf.type": "mrsf"})
 job.update({"scf": {"type": "rohf", "multiplicity": 3}})
@@ -133,6 +146,8 @@ job.update({"scf": {"type": "rohf", "multiplicity": 3}})
 | Method | Returns | Use |
 | --- | --- | --- |
 | `section(name, **kwargs)` | `OpenQP` | Updates one OpenQP input section. |
+| `settings.basis(basis=None, **tags)` | `OpenQP` | Sets atom-wise basis assignment. Ordinary global basis selection belongs in `theory(..., basis=...)`. |
+| `settings.<section>(**kwargs)` | `OpenQP` | Updates one detailed OpenQP input section, for example `settings.scf(conv=...)`. |
 | `set(**kwargs)` | `OpenQP` | Updates dotted OpenQP keywords or section dictionaries. |
 | `update(config=None, **kwargs)` | `OpenQP` | Merges a sectioned dictionary plus optional section overrides. |
 | `to_input_dict()` | `dict` | Returns the sectioned dictionary that will be passed to `Runner`. |

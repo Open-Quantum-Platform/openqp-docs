@@ -35,7 +35,7 @@ nav:
   - Installation: installation.md
   - Build Options: build-options.md
   - Quickstart: quickstart.md
-  - Input Files: input-file.md
+  - Input File Format: input-file.md
   - Capabilities: capabilities.md
   - Run from Python: python-scripting.md
   - Workflows:

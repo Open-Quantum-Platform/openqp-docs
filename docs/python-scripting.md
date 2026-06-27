@@ -1,12 +1,24 @@
 # Run OpenQP from Python
 
 OpenQP can be driven entirely from Python. The Python API is meant to feel like
-an OpenQP input file expressed as a script: define the molecule, choose the
-workflow, run the calculation, and read results.
+an OpenQP calculation expressed as a script: define the molecule, choose the
+quantum theory, choose the workflow when it is not a plain energy calculation,
+run the calculation, and read results.
 
 The recommended high-level entry point is `oqp.openqp.OpenQP`. It keeps the
-native OpenQP section names available, while giving MRSF-TDDFT, HF, and DFT jobs
-compact workflow helpers.
+native OpenQP section names available for advanced cases, while keeping normal
+scripts organized around six top-level ideas.
+
+## API Shape
+
+| Top-level call | Purpose |
+| --- | --- |
+| `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
+| `job.theory(...)` | Quantum theory: HF, DFT, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
+| `job.workflow.*(...)` | Calculation type: gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, and related job workflows. Plain energy calculations need no workflow call. |
+| `job.control(...)` | Hardware and runtime controls such as `usempi` and `omp_threads`. |
+| `job.settings.*(...)` | Specialized detailed settings that are not part of ordinary molecule/theory/workflow setup, such as atom-wise basis assignment. |
+| `job.run()` | Execute the calculation and return the OpenQP `Molecule` result object. |
 
 ## Minimal MRSF-TDDFT Script
 
@@ -50,7 +62,7 @@ mol = job.run()
 print("SCF energy:", mol.get_scf_energy())
 ```
 
-Every value can still be overridden through the section API.
+Every value can still be overridden through detailed settings when needed.
 
 ## Minimal DFT Script
 
@@ -67,28 +79,34 @@ mol = job.run()
 print("DFT energy:", mol.get_scf_energy())
 ```
 
-## OpenQP Workflow Sublevels
+## Theory, Workflow, And Settings
 
-For precise workflow setup, use `job.workflow.<section>(...)`. These map directly to
-OpenQP input sections without adding more top-level job verbs.
+The distinction is intentional: `theory` chooses the quantum model, `workflow`
+chooses the kind of calculation to run, and `settings` holds specialized
+low-level details.
 
 ```python
 job = OpenQP("custom_mrsf")
 
 job.molecule("H 0 0 0; H 0 0 0.74", charge=0)
-job.workflow.input(method="tdhf", functional="bhhlyp")
-job.workflow.input.basis = "6-31g*"
-job.workflow.scf(type="rohf", multiplicity=3, conv=1.0e-7)
-job.workflow.tdhf(type="mrsf", nstate=5, target=2)
+job.theory(
+    "mrsf-tddft",
+    functional="bhhlyp",
+    basis="6-31g*",
+    nstate=5,
+)
+job.settings.tdhf(target=2)
+job.workflow.gradient(state=3)
 
 mol = job.run()
 ```
 
-Attribute assignment is also available for small edits:
+Ordinary basis selection belongs with the theory:
 
 ```python
-job.workflow.tdhf.nstate = 7
-job.workflow.gradient(state=3)
+job.theory("dft", functional="pbe0", basis="def2-svp")
+job.theory("tddft", functional="b3lyp5", basis="6-31g*", nstate=3)
+job.theory("sf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
 ```
 
 For gradients, Python uses `state=...` even though the input-file keyword is
@@ -97,16 +115,35 @@ TDHF/TDDFT state `1` is the first excited state. SF-TDDFT and MRSF-TDDFT state
 `1` is the lowest spin-flip/MRSF target state, which can be the
 multiconfigurational ground state.
 
-Dotted keywords and sectioned dictionaries remain useful when another program
-generates the input:
+Specialized atom-wise basis assignment belongs in `settings`:
 
 ```python
-job.set(**{
-    "input.method": "tdhf",
-    "input.functional": "bhhlyp",
-    "scf.type": "rohf",
-    "tdhf.type": "mrsf",
-})
+job.molecule("Br 0 0 0; H 0 0 1.4", charge=0, multiplicity=1)
+job.theory("dft", functional="bhhlyp")
+job.settings.basis(["LANL2DZ", "6-31g*"])
+```
+
+For tagged basis libraries, include atom tags in the geometry and map each tag:
+
+```python
+job.molecule(
+    """
+C  0.0  0.0  0.0  c1
+H  0.0  0.0  1.0  h1
+H  1.0  0.0  0.0  h1
+""",
+    charge=0,
+)
+job.theory("mrsf-tddft", functional="bhhlyp", nstate=5)
+job.settings.basis(c1="cc-pvdz", h1="6-31g*")
+```
+
+Raw section updates remain useful when another program generates the input:
+
+```python
+job.settings.input(ispher="auto")
+job.settings.scf(conv=1.0e-8)
+job.settings.tdhf(target=2)
 
 job.update({
     "input": {"method": "tdhf", "functional": "bhhlyp", "runtype": "energy"},

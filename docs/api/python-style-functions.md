@@ -18,6 +18,17 @@ mol = job.run()
 For complete examples, see [Run OpenQP from Python](../python-scripting.md).
 For direct file or dictionary execution, see [Python Runner](python-runner.md).
 
+## Top-Level Model
+
+| Namespace | Purpose |
+| --- | --- |
+| `job.molecule(...)` | Geometry, charge, multiplicity, and optional second geometry. |
+| `job.theory(...)` | Quantum theory, including method, functional, ordinary basis, reference, and response-state count. |
+| `job.workflow.*(...)` | Calculation type: gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, and related workflows. |
+| `job.control(...)` | Hardware/runtime controls such as MPI and OpenMP thread settings. |
+| `job.settings.*(...)` | Specialized detailed settings, such as atom-wise basis assignment or direct section overrides. |
+| `job.run()` | Execute the configured OpenQP calculation. |
+
 ## Imports
 
 | Name | Import | Use |
@@ -42,7 +53,7 @@ with `job.update(...)`.
 
 | Function | Returns | Writes or changes | Notes |
 | --- | --- | --- | --- |
-| `job.molecule(system=None, system2=None, basis=None, charge=None, multiplicity=None, unit="Angstrom", geometry=None, geometry2=None, source="auto", timeout=10, **kwargs)` | `OpenQP` | `[input] system`, optional `[input] system2`, `[input] charge`, optional `[input] basis`, optional `[scf] multiplicity`, and extra `[input]` keywords. | Use either `system` or `geometry`, not both. Use either `system2` or `geometry2`, not both. |
+| `job.molecule(system=None, system2=None, basis=None, charge=None, multiplicity=None, unit="Angstrom", geometry=None, geometry2=None, source="auto", timeout=10, **kwargs)` | `OpenQP` | `[input] system`, optional `[input] system2`, `[input] charge`, optional `[scf] multiplicity`, and extra `[input]` keywords. | Use either `system` or `geometry`, not both. `basis=...` remains accepted for compatibility; new scripts should put ordinary basis selection in `job.theory(...)`. |
 | `get_geometry(query, source="auto", timeout=10)` | `str` | None. | Resolves a built-in molecule first, then PubChem when `source="auto"`. |
 | `builtin_geometry(query)` | `str` | None. | Uses OpenQP's local small-molecule table. |
 | `pubchem_geometry(query, timeout=10)` | `str` | None. | Fetches a 3D conformer from PubChem. Requires network access. |
@@ -57,9 +68,11 @@ table before trying PubChem.
 
 | Function | Returns | Writes or changes | Notes |
 | --- | --- | --- | --- |
-| `job.theory(method, functional=None, basis=None, runtype=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Dispatches to `hf`, `dft`, or `mrsf`. | Recommended entry point for method setup. `method` accepts `hf`, `dft`, and `mrsf-tddft`. |
+| `job.theory(method, functional=None, basis=None, runtype=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Dispatches to HF, DFT, TDHF, TDDFT, SF-TDDFT, or MRSF-TDDFT setup. | Recommended entry point for ordinary method setup. `basis`, `functional`, and `nstate` belong here. |
 | `job.hf(reference="rhf", runtype=None, multiplicity=None, basis=None, **scf_keywords)` | `OpenQP` | `[input] method=hf`, clears `[input] functional`, optional `[input] runtype`, optional `[input] basis`, and `[scf]` keywords. | Clears any old DFT functional so reused jobs become true HF jobs. |
 | `job.dft(functional, reference="rhf", runtype=None, multiplicity=None, basis=None, **scf_keywords)` | `OpenQP` | `[input] method=hf`, `[input] functional`, optional `[input] runtype`, optional `[input] basis`, and `[scf]` keywords. | OpenQP uses `method=hf` plus non-empty `functional` for DFT. |
+| `job.tddft(functional, reference="rhf", runtype=None, multiplicity=1, basis=None, nstate=3, **tdhf_keywords)` | `OpenQP` | `[input] method=tdhf`, `[input] functional`, optional `[input] basis`, `[scf]` reference, and `[tdhf] nstate`. | Equivalent to `job.theory("tddft", ...)`. |
+| `job.sf_tddft(functional, reference="rohf", runtype=None, multiplicity=3, basis=None, nstate=3, **tdhf_keywords)` | `OpenQP` | TDDFT response setup with `[tdhf] type=sf`. | Equivalent to `job.theory("sf-tddft", ...)`. |
 | `job.mrsf(nstate=3, reference="rohf", multiplicity=3, runtype=None, functional=None, basis=None, **tdhf_keywords)` | `OpenQP` | `[input] method=tdhf`, optional functional/basis/runtype, `[scf] type`, `[scf] multiplicity`, `[tdhf] type=mrsf`, `[tdhf] nstate`, and extra `[tdhf]` keywords. | Used by `job.theory("mrsf-tddft", ...)`; the usual ROHF triplet reference is implicit in the high-level API. |
 | `job.soc(nstate=3, functional=None, reference="rohf", reference_multiplicity=3, soc_2e=1, basis=None, **tdhf_keywords)` | `OpenQP` | Full legacy compact MRSF-SOC setup. | New scripts should prefer `job.theory("mrsf-tddft", ...); job.workflow.soc(...)`. |
 
@@ -70,6 +83,7 @@ a workflow call.
 
 | Function | Returns | Runtype | Writes or changes | Constraints |
 | --- | --- | --- | --- | --- |
+| `job.workflow.energy()` | `OpenQP` | `energy` | `[input] runtype=energy`. | Optional; energy is already the default. |
 | `job.workflow.gradient(state=None, grad=None, **kwargs)` | `OpenQP` | `grad` | `[properties] grad` plus extra `[properties]` keywords. | Prefer `state=...`; `grad=...` is legacy. Use one or the other. |
 | `job.workflow.hess(**kwargs)` | `OpenQP` | `hess` | `[hess]` keywords. | Alias: `job.workflow.hessian(...)`. |
 | `job.workflow.hessian(**kwargs)` | `OpenQP` | `hess` | `[hess]` keywords. | Same as `job.workflow.hess(...)`. |
@@ -89,21 +103,25 @@ a workflow call.
 | `job.workflow.nmr(gauge=None, **kwargs)` | `OpenQP` | `energy` | `[properties] scf_prop=nmr`, `[properties] nmr_gauge`, and extra `[properties]` keywords. | Requires HF/DFT reference-SCF. CGO is RHF-only; use GIAO for open-shell references. |
 | `job.workflow(runtype=None, **kwargs)` | `OpenQP` | selected `runtype` | Delegates to `job.control(...)`. | Compatibility form; prefer named workflow calls. |
 
-### Workflow Section Access
+## Settings Namespace
 
-Any OpenQP input section can also be reached through `job.workflow.<section>`.
-This is useful when a script needs the native keyword names without leaving the
-workflow namespace.
+`job.settings` is for detailed settings that are too specialized for the common
+molecule/theory/workflow path.
 
-| Form | Example | Meaning |
-| --- | --- | --- |
-| `job.workflow.<section>(**kwargs)` | `job.workflow.tdhf(type="mrsf", nstate=5)` | Updates the named input section. |
-| `job.workflow.<section>.<option> = value` | `job.workflow.tdhf.nstate = 7` | Sets one option in that section. |
-| `job.workflow.<section>.<option>` | `job.workflow.tdhf.nstate` | Reads the typed value from the current config. |
+| Function | Returns | Writes or changes | Notes |
+| --- | --- | --- | --- |
+| `job.settings.basis(basis=None, **tags)` | `OpenQP` | Atom-wise `[input] basis` assignment. | Use an ordered list or semicolon-separated string for atom-order basis assignment. Use keyword tags for `basis=library`. A single global basis belongs in `job.theory(..., basis=...)`. |
+| `job.settings.<section>(**kwargs)` | `OpenQP` | The named OpenQP input section. | Direct section access for advanced keywords such as `job.settings.scf(conv=1.0e-8)`. |
+| `job.settings.<section>.<option> = value` | None | One OpenQP keyword. | Attribute assignment form for detailed edits. |
 
-Examples of section names include `input`, `guess`, `scf`, `dftgrid`, `tdhf`,
-`properties`, `hess`, `nac`, `ekt`, `optimize`, `oqp`, `geometric`, `neb`,
-`pcm`, and `symmetry`.
+Examples:
+
+```python
+job.settings.basis(["LANL2DZ", "6-31g*"])
+job.settings.basis(c1="cc-pvdz", h1="6-31g*")
+job.settings.scf(conv=1.0e-8)
+job.settings.tdhf(target=2)
+```
 
 ## Control Namespace
 
@@ -148,13 +166,14 @@ job.tdhf.nstate = 7
 ```
 
 These are kept for users who want a Python spelling of the input file. The
-preferred compact style is still:
+preferred compact style is:
 
 ```python
 job.molecule(...)
 job.theory(...)
 job.workflow(...)
 job.control(...)
+job.settings.basis(...)
 job.run()
 ```
 
@@ -176,4 +195,3 @@ It is retained for existing scripts.
 | `OPENQP(cfg)` | `OPENQP` | Builds a `Runner` from dotted keys such as `input.system` and `scf.type`. | New scripts should prefer `OpenQP`. |
 | `op.set(**kwargs)` | `OPENQP` | Updates dotted keys and reloads the current `Molecule` config. | Legacy behavior. |
 | `op.run(run_type=None)` | `Molecule` | Runs the existing `Runner`. | Legacy behavior. |
-

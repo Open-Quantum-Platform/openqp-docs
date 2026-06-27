@@ -9,8 +9,8 @@ intersections, or spin-flip target-state ordering are central to the study. Use
 ordinary TDDFT/TDHF for standard single-reference vertical excitations and
 excited-state gradients.
 
-In Python scripts, TDHF and TDDFT use the native response-section helpers
-because the response model is selected directly through `[input]` and `[tdhf]`.
+In Python scripts, TDHF and TDDFT are theory choices. Select the calculation
+type separately with `job.workflow.*` only when you need a non-energy workflow.
 
 ## Energy
 
@@ -38,9 +38,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_tddft", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.workflow.input(method="tdhf", functional="b3lyp5", basis="6-31g*")
-job.workflow.scf(type="rhf", multiplicity=1)
-job.workflow.tdhf(nstate=3)
+job.theory("tddft", functional="b3lyp5", basis="6-31g*", nstate=3)
 
 mol = job.run()
 print("TD energies:", mol.get_td_energies())
@@ -84,9 +82,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_tddft_grad", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.workflow.input(method="tdhf", functional="b3lyp5", basis="6-31g*")
-job.workflow.scf(type="rhf", multiplicity=1)
-job.workflow.tdhf(nstate=3)
+job.theory("tddft", functional="b3lyp5", basis="6-31g*", nstate=3)
 job.workflow.gradient(state=3)
 
 mol = job.run()
@@ -110,3 +106,4 @@ TDHF gradient example:
   ground state.
 - Use `[tdhf] type=rpa` or omit `type` for the default response model. Use
   `[tdhf] type=tda` when a TDA calculation is desired.
+- For TDHF in Python, use `job.theory("tdhf", basis=..., nstate=...)`.

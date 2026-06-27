@@ -6,8 +6,8 @@ MRSF-TDDFT is the recommended OpenQP route when the mixed-reference correction
 is needed to reduce spin contamination and to describe multiconfigurational
 ground-state surfaces.
 
-In Python scripts, SF-TDDFT uses the native response-section helpers because
-the high-spin reference and spin-flip response model are selected explicitly.
+In Python scripts, SF-TDDFT is a theory choice. Select the calculation type
+separately with `job.workflow.*` only when you need a non-energy workflow.
 
 ## Energy
 
@@ -36,9 +36,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_sf", silent=1)
 job.molecule(geometry="water", charge=0)
-job.workflow.input(method="tdhf", functional="bhhlyp", basis="6-31g*")
-job.workflow.scf(type="rohf", multiplicity=3)
-job.workflow.tdhf(type="sf", nstate=3)
+job.theory("sf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
 print("SF-TDDFT energies:", mol.get_td_energies())
@@ -81,9 +79,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_sf_grad", silent=1)
 job.molecule(geometry="water", charge=0)
-job.workflow.input(method="tdhf", functional="bhhlyp", basis="6-31g*")
-job.workflow.scf(type="rohf", multiplicity=3)
-job.workflow.tdhf(type="sf", nstate=3)
+job.theory("sf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
 job.workflow.gradient(state=3)
 
 mol = job.run()

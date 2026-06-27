@@ -1,4 +1,4 @@
-# Input Files
+# Input File Format
 
 OpenQP inputs are INI-like text files. Options are grouped by section:
 
