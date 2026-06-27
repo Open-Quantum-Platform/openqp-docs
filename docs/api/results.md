@@ -34,6 +34,21 @@ friendly dictionary with atoms, coordinates, total energy, symmetry metadata,
 TDDFT energies, gradients, NAC, SOC, Hessian data, and MRSF-EKT records when
 present.
 
+When the corresponding property is requested via `[properties] scf_prop`,
+`get_results()` also includes the following (identically for file-based and
+`input_dict`/scripting-API runs):
+
+| Key | Requested by | Meaning |
+| --- | --- | --- |
+| `dipole` | `el_mom` | Electric dipole vector (a.u.). |
+| `mulliken_charges` | `mulliken` | Mulliken atomic partial charges (e). |
+| `lowdin_charges` | `lowdin` | Löwdin atomic partial charges (e). |
+| `resp_charges` | `resp` | RESP/ESP-fitted atomic charges (e). |
+| `nmr_shielding` | `nmr` | Isotropic NMR shielding (ppm), shape `(natom, 5)`: columns are `dia`, `para_uncoupled`, `para_coupled`, `total_uncoupled`, `total_coupled`. |
+
+`nac` is populated with the NACME derivative-coupling matrix for `runtype=nacme`
+and is empty otherwise.
+
 ## Common Molecule Methods
 
 | Method | Returns |

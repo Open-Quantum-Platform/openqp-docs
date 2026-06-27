@@ -80,3 +80,4 @@ nav:
       - Contributing to OpenQP: developers/contributing.md
       - Native Interface: developers/native-interface.md
       - Data Tags and Tagarray: developers/tagarray.md
+      - Regression References and Registry: developers/regression-references.md
