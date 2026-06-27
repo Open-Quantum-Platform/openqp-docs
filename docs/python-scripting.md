@@ -5,8 +5,8 @@ an OpenQP input file expressed as a script: define the molecule, choose the
 workflow, run the calculation, and read results.
 
 The recommended high-level entry point is `oqp.openqp.OpenQP`. It keeps the
-native OpenQP section names available, while giving MRSF-TDDFT and ordinary HF
-jobs compact workflow helpers.
+native OpenQP section names available, while giving MRSF-TDDFT, HF, and DFT jobs
+compact workflow helpers.
 
 ## Minimal MRSF-TDDFT Script
 
@@ -78,6 +78,33 @@ type = rhf
 ```
 
 Every value can still be overridden through the section API.
+
+## Minimal DFT Script
+
+DFT uses its own helper so HF and Kohn-Sham jobs stay visually distinct.
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_pbe", silent=1, usempi=False)
+job.molecule(geometry="water", basis="6-31g*")
+job.dft("pbe")
+
+mol = job.run()
+print("DFT energy:", mol.get_scf_energy())
+```
+
+`job.dft("pbe")` sets:
+
+```ini
+[input]
+method = hf
+functional = pbe
+runtype = energy
+
+[scf]
+type = rhf
+```
 
 ## OpenQP Section Style
 

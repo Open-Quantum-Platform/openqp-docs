@@ -86,11 +86,13 @@ back to PubChem when `source="auto"` or `source="pubchem"` is used.
 ```python
 job.mrsf(nstate=3)
 job.hf()
+job.dft("pbe")
 ```
 
 | Method | Returns | Use |
 | --- | --- | --- |
 | `hf(reference="rhf", runtype="energy", multiplicity=None, **scf_keywords)` | `OpenQP` | Sets `[input] method=hf`, `[input] runtype`, and `[scf] type`. |
+| `dft(functional, reference="rhf", runtype="energy", multiplicity=None, **scf_keywords)` | `OpenQP` | Sets `[input] method=hf`, `[input] functional`, `[input] runtype`, and `[scf] type` for Kohn-Sham jobs. |
 | `mrsf(nstate=3, reference="rohf", multiplicity=3, runtype="energy", **tdhf_keywords)` | `OpenQP` | Sets the standard MRSF-TDDFT `[input]`, `[scf]`, and `[tdhf]` blocks. |
 
 These helpers are only shorthand for OpenQP sections. Advanced calculations can
