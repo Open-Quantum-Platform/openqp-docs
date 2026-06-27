@@ -18,8 +18,8 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
 
-job.molecule(geometry="water", basis="6-31g*", charge=0)
-job.mrsf(nstate=3, functional="bhhlyp")
+job.molecule(geometry="water", charge=0, multiplicity=3)
+job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
 results = mol.get_results()
@@ -41,10 +41,10 @@ O   0.000000000   0.000000000  -0.041061554
 H  -0.533194329   0.533194329  -0.614469223
 H   0.533194329  -0.533194329  -0.614469223
 """,
-    basis="6-31g*",
     charge=0,
+    multiplicity=1,
 )
-job.hf()
+job.theory("hf", basis="6-31g*")
 
 mol = job.run()
 print("SCF energy:", mol.get_scf_energy())
@@ -60,8 +60,8 @@ DFT uses its own helper so HF and Kohn-Sham jobs stay visually distinct.
 from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_pbe", silent=1, usempi=False)
-job.molecule(geometry="water", basis="6-31g*")
-job.dft("pbe")
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory("dft", functional="pbe", basis="6-31g*")
 
 mol = job.run()
 print("DFT energy:", mol.get_scf_energy())
@@ -75,8 +75,10 @@ sections.
 ```python
 job = OpenQP("custom_mrsf")
 
-job.molecule("H 0 0 0; H 0 0 0.74", basis="6-31g*", charge=0)
-job.input(method="tdhf", functional="bhhlyp", runtype="energy")
+job.molecule("H 0 0 0; H 0 0 0.74", charge=0, multiplicity=3)
+job.control(runtype="energy")
+job.input(method="tdhf", functional="bhhlyp")
+job.input.basis = "6-31g*"
 job.scf(type="rohf", multiplicity=3, conv=1.0e-7)
 job.tdhf(type="mrsf", nstate=5, target=2)
 
@@ -87,7 +89,7 @@ Attribute assignment is also available for small edits:
 
 ```python
 job.tdhf.nstate = 7
-job.input.runtype = "grad"
+job.control(runtype="grad")
 ```
 
 Dotted keywords and sectioned dictionaries remain useful when another program
@@ -111,14 +113,15 @@ job.update({
 ## Molecular Geometry
 
 `job.molecule(...)` accepts named geometries, inline coordinates, atom lists,
-and file paths.
+file paths, and an optional second geometry for two-structure workflows such as
+NACME. Keep method, functional, and basis setup in `job.theory(...)`.
 
 Named geometries keep small setup scripts short:
 
 ```python
-job.molecule(geometry="water", basis="6-31g*")
-job.molecule(geometry="h2o", basis="6-31g*")
-job.molecule(geometry="ch4", basis="6-31g*")
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.molecule(geometry="h2o", charge=0, multiplicity=1)
+job.molecule(geometry="ch4", charge=0, multiplicity=1)
 ```
 
 OpenQP first checks a small built-in table for common molecules such as `water`,
@@ -126,7 +129,7 @@ OpenQP first checks a small built-in table for common molecules such as `water`,
 `source="auto"` tries PubChem.
 
 ```python
-job.molecule(geometry="benzene", source="pubchem", basis="6-31g*")
+job.molecule(geometry="benzene", source="pubchem", charge=0, multiplicity=1)
 ```
 
 To inspect or reuse the generated geometry text directly:
@@ -135,20 +138,20 @@ To inspect or reuse the generated geometry text directly:
 from oqp.openqp import get_geometry
 
 system = get_geometry("water")
-job.molecule(system, basis="6-31g*")
+job.molecule(system, charge=0, multiplicity=1)
 ```
 
 Explicit molecular geometries still work as before:
 
 ```python
-job.molecule("H 0 0 0; H 0 0 0.74", basis="6-31g*")
+job.molecule("H 0 0 0; H 0 0 0.74", charge=0, multiplicity=1)
 
 job.molecule([
     ("H", 0.0, 0.0, 0.0),
     ("H", 0.0, 0.0, 0.74),
 ])
 
-job.molecule("h2.xyz", basis="cc-pvdz")
+job.molecule("h2.xyz", charge=0, multiplicity=1)
 ```
 
 Inline coordinates are Angstrom by default. If a script supplies Bohr
@@ -156,7 +159,13 @@ coordinates, pass `unit="Bohr"` and OpenQP will convert the geometry text before
 loading it.
 
 ```python
-job.molecule("H 0 0 0; H 0 0 1.4", unit="Bohr", basis="6-31g*")
+job.molecule("H 0 0 0; H 0 0 1.4", unit="Bohr", charge=0, multiplicity=1)
+```
+
+Two-geometry workflows can pass the second geometry directly:
+
+```python
+job.molecule(system, system2, charge=0, multiplicity=3)
 ```
 
 ## PySCF Conversion Bridge
@@ -168,7 +177,7 @@ language. For mixed workflows, use the explicit conversion bridge:
 from oqp.openqp import OpenQP
 
 job = OpenQP.from_pyscf(pyscf_mol, project="mixed_workflow")
-job.mrsf(nstate=5, functional="bhhlyp")
+job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
 
 mol = job.run()
 ```
@@ -215,13 +224,13 @@ available.
 For ordinary Python scripts, set `usempi=False` unless the script is launched in
 an MPI environment.
 
-OpenMP threads can be controlled through the OpenQP input schema:
+OpenMP threads can be controlled through `job.control(...)`:
 
 ```python
 job = OpenQP("h2", usempi=False)
-job.molecule("H 0 0 0; H 0 0 0.74", basis="6-31g*")
-job.hf()
-job.input.omp_threads = 8
+job.molecule("H 0 0 0; H 0 0 0.74", charge=0, multiplicity=1)
+job.theory("hf", basis="6-31g*")
+job.control(omp_threads=8)
 job.run()
 ```
 

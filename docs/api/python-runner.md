@@ -19,8 +19,8 @@ For a user-level guide with complete scripts, see
 from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
-job.molecule(geometry="water", basis="6-31g*")
-job.mrsf(nstate=3, functional="bhhlyp")
+job.molecule(geometry="water", charge=0, multiplicity=3)
+job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
 print(mol.get_results()["td_energies"])
@@ -54,16 +54,9 @@ OpenQP-native methods after construction.
 ### Molecule Setup
 
 ```python
-job.molecule(
-    "H 0 0 0; H 0 0 0.74",
-    basis="6-31g*",
-    charge=0,
-)
-```
-
-```python
-job.molecule(geometry="water", basis="6-31g*")
-job.molecule(geometry="benzene", source="pubchem", basis="6-31g*")
+job.molecule("H 0 0 0; H 0 0 0.74", charge=0, multiplicity=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.molecule(geometry="benzene", source="pubchem", charge=0, multiplicity=1)
 ```
 
 ```python
@@ -75,28 +68,38 @@ job.molecule([
 
 | Method | Returns | Use |
 | --- | --- | --- |
-| `molecule(system=None, basis=None, charge=None, unit="Angstrom", geometry=None, source="auto", timeout=10, **kwargs)` | `OpenQP` | Writes molecular data into `[input]`, including explicit `system` text or a named `geometry`, `basis`, `charge`, and any extra input-section keyword. |
+| `molecule(system=None, system2=None, charge=None, multiplicity=None, unit="Angstrom", geometry=None, geometry2=None, source="auto", timeout=10, **kwargs)` | `OpenQP` | Writes molecular data into `[input]`, including explicit `system` text, optional `system2`, named `geometry`, charge, and the reference multiplicity. |
 
 Inline coordinates are Angstrom by default. Use `unit="Bohr"` for Bohr input
 coordinates. `geometry=...` accepts built-in small molecules first and can fall
 back to PubChem when `source="auto"` or `source="pubchem"` is used.
+For compatibility with earlier scripts, `molecule(...)` can still accept
+`basis=...`; new scripts should put basis in `theory(...)`.
 
-### Workflow Helpers
+### Control and Theory Helpers
 
 ```python
-job.mrsf(nstate=3, functional="bhhlyp")
-job.hf()
-job.dft("pbe")
+job.control(runtype="grad", omp_threads=8)
+job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
+
+job.control(runtype="optimize", lib="oqp", coordsys="tric", trust=0.2)
+job.theory("dft", functional="pbe0", basis="6-31g*")
 ```
 
 | Method | Returns | Use |
 | --- | --- | --- |
-| `hf(reference="rhf", runtype="energy", multiplicity=None, **scf_keywords)` | `OpenQP` | Sets `[input] method=hf`, `[input] runtype`, and `[scf] type`. |
-| `dft(functional, reference="rhf", runtype="energy", multiplicity=None, **scf_keywords)` | `OpenQP` | Sets `[input] method=hf`, `[input] functional`, `[input] runtype`, and `[scf] type` for Kohn-Sham jobs. |
-| `mrsf(nstate=3, reference="rohf", multiplicity=3, runtype="energy", functional=None, **tdhf_keywords)` | `OpenQP` | Sets the standard MRSF-TDDFT `[input]`, `[scf]`, and `[tdhf]` blocks; pass `functional="bhhlyp"` or another functional to set `[input] functional` in the same call. |
+| `control(runtype=None, omp_threads=None, **kwargs)` | `OpenQP` | Sets run controls such as `[input] runtype` and `[input] omp_threads`. For optimization run types, extra keywords are routed to `[optimize]` and the selected optimizer backend. |
+| `theory(method, functional=None, basis=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Sets the electronic-structure model. Use `method="hf"`, `"dft"`, or `"mrsf-tddft"`; DFT and MRSF accept `functional`, `basis`, and method-specific keywords. |
+| `soc(nstate=3, functional=None, basis=None, soc_2e=1, **tdhf_keywords)` | `OpenQP` | Sets the OpenQP MRSF-TDDFT SOC workflow without requiring users to set separate TDHF multiplicities. |
+| `hf(reference="rhf", multiplicity=None, basis=None, **scf_keywords)` | `OpenQP` | Compact HF helper retained for direct setup. |
+| `dft(functional, reference="rhf", multiplicity=None, basis=None, **scf_keywords)` | `OpenQP` | Compact DFT helper retained for direct setup. |
+| `mrsf(nstate=3, reference="rohf", multiplicity=3, functional=None, basis=None, **tdhf_keywords)` | `OpenQP` | Compact MRSF-TDDFT helper retained for direct setup. |
 
-These helpers are only shorthand for OpenQP sections. Advanced calculations can
-always override or extend the sections directly.
+`control(...)` is the preferred place for execution controls. The older compact
+HF, DFT, and MRSF helpers still accept runtype-compatible setups for existing
+scripts, but new examples keep runtype and OpenMP settings in `control(...)`.
+Likewise, `theory(...)` accepts `runtype=...` for compatibility, but the
+recommended style is `job.control(runtype=...)` followed by `job.theory(...)`.
 
 ### Section Updates
 
@@ -105,7 +108,7 @@ job.input(method="tdhf", runtype="energy")
 job.scf(type="rohf", multiplicity=3)
 job.tdhf(type="mrsf", nstate=3)
 
-job.optimize(lib="oqp", coordsys="tric", trust=0.2)
+job.control(runtype="optimize", lib="oqp", coordsys="tric", trust=0.2)
 
 job.tdhf.nstate = 5
 
@@ -121,9 +124,10 @@ job.update({"scf": {"type": "rohf", "multiplicity": 3}})
 | `to_input_dict()` | `dict` | Returns the sectioned dictionary that will be passed to `Runner`. |
 | `run(run_type=None)` | `Molecule` | Builds `Runner`, executes the calculation, stores `job.runner` and `job.mol`, and returns the `Molecule`. |
 
-`job.optimize(...)` is a routed section helper: ordinary optimization keywords
-stay in `[optimize]`, while backend options such as `coordsys`, `trust`, and
-`constraints_file` are sent to the selected backend section.
+For optimization workflows, `job.control(...)` routes ordinary optimization
+keywords to `[optimize]`, while backend options such as `coordsys`, `trust`, and
+`constraints_file` are sent to the selected backend section. The lower-level
+`job.optimize(...)` section helper remains available for existing scripts.
 
 `oqp.openqp.OQP` is an alias for `OpenQP`.
 
@@ -135,7 +139,7 @@ object, translates them into OpenQP sections, and returns an `OpenQP` job.
 
 ```python
 job = OpenQP.from_pyscf(pyscf_mol, project="mixed_workflow")
-job.mrsf(nstate=5, functional="bhhlyp")
+job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
 mol = job.run()
 ```
 

@@ -40,6 +40,10 @@ when a paper uses MRSF-TDDFT, SOC, PCM/ddX, or related workflows.
 
 ## Spin-Orbit Coupling
 
+- Komarov K, Park W, Lee S, Zeng T, and Choi CH. "Accurate Spin-Orbit
+  Coupling by Relativistic Mixed-Reference Spin-Flip-TDDFT." Journal of
+  Chemical Theory and Computation 19, 953-964 (2023).
+  [doi:10.1021/acs.jctc.2c01036](https://doi.org/10.1021/acs.jctc.2c01036)
 - Hess BA, Marian CM, Wahlgren U, and Gropen O. "A mean-field spin-orbit method
   applicable to correlated wavefunctions." Chemical Physics Letters 251,
   365-371 (1996).

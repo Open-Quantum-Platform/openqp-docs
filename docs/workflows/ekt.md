@@ -31,8 +31,9 @@ Python style:
 from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf_ekt", silent=1)
-job.molecule(geometry="water", basis="6-31g", charge=0)
-job.mrsf(nstate=10, functional="bhhlyp", runtype="ekt")
+job.molecule(geometry="water", charge=0, multiplicity=3)
+job.control(runtype="ekt")
+job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g", nstate=10)
 job.ekt(ip=True, ea=False)
 
 mol = job.run()

@@ -43,9 +43,16 @@ Python style:
 from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_opt", silent=1, usempi=False)
-job.molecule(geometry="water", basis="6-31g*", charge=0)
-job.dft("bhhlyp", runtype="optimize")
-job.optimize(lib="oqp", istate=0, maxit=10, coordsys="tric", trust=0.2)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.control(
+    runtype="optimize",
+    lib="oqp",
+    istate=0,
+    maxit=10,
+    coordsys="tric",
+    trust=0.2,
+)
+job.theory("dft", functional="bhhlyp", basis="6-31g*")
 
 mol = job.run()
 ```
@@ -68,11 +75,12 @@ trust=0.1
 constraints_file=my.constraints
 ```
 
-Python style uses the same `job.optimize(...)` call shape and routes the
+Python style uses `job.control(...)` for the optimizer selection and routes the
 backend options to geomeTRIC:
 
 ```python
-job.optimize(
+job.control(
+    runtype="optimize",
     lib="geometric",
     coordsys="tric",
     trust=0.1,
@@ -113,9 +121,9 @@ Python style:
 from oqp.openqp import OpenQP
 
 job = OpenQP("meci_mrsf", silent=1)
-job.molecule("reactant.xyz", basis="6-31g*", charge=0)
-job.mrsf(nstate=5, functional="bhhlyp", runtype="meci")
-job.optimize(lib="oqp", istate=1, jstate=2)
+job.molecule("reactant.xyz", charge=0, multiplicity=3)
+job.control(runtype="meci", lib="oqp", istate=1, jstate=2)
+job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
 
 mol = job.run()
 ```

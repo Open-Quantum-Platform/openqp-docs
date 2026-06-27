@@ -37,8 +37,8 @@ The same setup in Python keeps the native section names visible:
 from oqp.openqp import OpenQP
 
 job = OpenQP("mrsf_keywords")
-job.molecule(geometry="water", basis="6-31g*", charge=0)
-job.mrsf(nstate=5, functional="bhhlyp")
+job.molecule(geometry="water", charge=0, multiplicity=3)
+job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
 job.tdhf.multiplicity = 1
 ```
 
