@@ -11,7 +11,9 @@ Both layers use the same OpenQP input schema and the same native calculation
 engine. `OpenQP` builds a sectioned dictionary and passes it to `Runner`.
 
 For a user-level guide with complete scripts, see
-[Run OpenQP from Python](../python-scripting.md).
+[Run OpenQP from Python](../python-scripting.md). For a compact list of every
+high-level `OpenQP` helper, see
+[Python-Style API Function Reference](python-style-functions.md).
 
 ## High-Level OpenQP Wrapper
 

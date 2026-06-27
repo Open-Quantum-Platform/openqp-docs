@@ -10,6 +10,7 @@ post-processing.
 | Layer | Entry point | Audience | Stability |
 | --- | --- | --- | --- |
 | Command line | `openqp input.inp` | Production runs, shell scripts, workflows | Stable |
+| Python-style API | `oqp.openqp.OpenQP` | Compact OpenQP-native Python scripts | Recommended |
 | Python runner | `oqp.pyoqp.Runner` | Python automation and notebooks | Recommended |
 | Molecule data | `runner.mol` | Result extraction and advanced workflows | Semi-stable |
 | Input checker | `oqp.utils.input_checker.check_input_values` | Input builders, web forms, preflight validation | Recommended |
@@ -23,6 +24,9 @@ directory and the installable distribution is named `OpenQP`.
 
 - Use [Run OpenQP from Python](../python-scripting.md) for complete script-based
   calculation examples.
+- Use [Python-Style API Function Reference](python-style-functions.md) for a
+  complete list of high-level `OpenQP` functions, workflow helpers, section
+  proxies, and geometry helpers.
 - Use [Python Runner](python-runner.md) to run calculations from scripts,
   notebooks, services, or tests.
 - Use [Results and Molecule Data](results.md) to retrieve energies, gradients,

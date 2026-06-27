@@ -70,6 +70,7 @@ nav:
   - API:
       - Overview: api/index.md
       - Python Runner: api/python-runner.md
+      - Python-Style Function Reference: api/python-style-functions.md
       - Results and Molecule Data: api/results.md
       - Input Validation: api/input-validation.md
       - Developer Interface: api/developer-interface.md
