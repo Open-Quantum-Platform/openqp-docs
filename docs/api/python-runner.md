@@ -1,11 +1,145 @@
-# Python Runner
+# Python API
 
-`oqp.pyoqp.Runner` is the main Python entry point for OpenQP calculations. It
-loads the same configuration used by input files, runs the selected workflow,
-and keeps the resulting `Molecule` object available as `runner.mol`.
+OpenQP exposes two Python layers.
+
+| Layer | Import | Use |
+| --- | --- | --- |
+| High-level wrapper | `from oqp.openqp import OpenQP` | OpenQP-native scripts with molecule, workflow, and section-style keyword setup. |
+| Runner | `from oqp.pyoqp import Runner` | Existing input files, explicit sectioned dictionaries, and front ends that already build OpenQP input data. |
+
+Both layers use the same OpenQP input schema and the same native calculation
+engine. `OpenQP` builds a sectioned dictionary and passes it to `Runner`.
 
 For a user-level guide with complete scripts, see
 [Run OpenQP from Python](../python-scripting.md).
+
+## High-Level OpenQP Wrapper
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_mrsf", silent=1)
+job.molecule(geometry="water", basis="6-31g*")
+job.mrsf(nstate=3)
+
+mol = job.run()
+print(mol.get_results()["td_energies"])
+```
+
+### Constructor
+
+```python
+OpenQP(
+    project="oqp_project",
+    log=None,
+    silent=0,
+    usempi=True,
+    config=None,
+    **sections,
+)
+```
+
+| Argument | Meaning |
+| --- | --- |
+| `project` | Project name used in logs and output files. It can be passed positionally, as in `OpenQP("h2o")`. |
+| `log` | Log file path. Defaults to `<project>.log`. |
+| `silent` | `0` prints parsed input and normal messages; `1` suppresses them. |
+| `usempi` | Enables MPI-aware behavior when the runtime supports it. |
+| `config` | Optional sectioned OpenQP input dictionary. |
+| `**sections` | Optional section dictionaries, for example `input={...}` or `scf={...}`. |
+
+The constructor is intentionally runtime-focused. Molecule and method setup use
+OpenQP-native methods after construction.
+
+### Molecule Setup
+
+```python
+job.molecule(
+    "H 0 0 0; H 0 0 0.74",
+    basis="6-31g*",
+    charge=0,
+)
+```
+
+```python
+job.molecule(geometry="water", basis="6-31g*")
+job.molecule(geometry="benzene", source="pubchem", basis="6-31g*")
+```
+
+```python
+job.molecule([
+    ("H", 0.0, 0.0, 0.0),
+    ("H", 0.0, 0.0, 0.74),
+])
+```
+
+| Method | Returns | Use |
+| --- | --- | --- |
+| `molecule(system=None, basis=None, charge=None, unit="Angstrom", geometry=None, source="auto", timeout=10, **kwargs)` | `OpenQP` | Writes molecular data into `[input]`, including explicit `system` text or a named `geometry`, `basis`, `charge`, and any extra input-section keyword. |
+
+Inline coordinates are Angstrom by default. Use `unit="Bohr"` for Bohr input
+coordinates. `geometry=...` accepts built-in small molecules first and can fall
+back to PubChem when `source="auto"` or `source="pubchem"` is used.
+
+### Workflow Helpers
+
+```python
+job.mrsf(nstate=3)
+job.hf()
+job.dft("pbe")
+```
+
+| Method | Returns | Use |
+| --- | --- | --- |
+| `hf(reference="rhf", runtype="energy", multiplicity=None, **scf_keywords)` | `OpenQP` | Sets `[input] method=hf`, `[input] runtype`, and `[scf] type`. |
+| `dft(functional, reference="rhf", runtype="energy", multiplicity=None, **scf_keywords)` | `OpenQP` | Sets `[input] method=hf`, `[input] functional`, `[input] runtype`, and `[scf] type` for Kohn-Sham jobs. |
+| `mrsf(nstate=3, reference="rohf", multiplicity=3, runtype="energy", **tdhf_keywords)` | `OpenQP` | Sets the standard MRSF-TDDFT `[input]`, `[scf]`, and `[tdhf]` blocks. |
+
+These helpers are only shorthand for OpenQP sections. Advanced calculations can
+always override or extend the sections directly.
+
+### Section Updates
+
+```python
+job.input(method="tdhf", runtype="energy")
+job.scf(type="rohf", multiplicity=3)
+job.tdhf(type="mrsf", nstate=3)
+
+job.tdhf.nstate = 5
+
+job.set(**{"input.method": "tdhf", "tdhf.type": "mrsf"})
+job.update({"scf": {"type": "rohf", "multiplicity": 3}})
+```
+
+| Method | Returns | Use |
+| --- | --- | --- |
+| `section(name, **kwargs)` | `OpenQP` | Updates one OpenQP input section. |
+| `set(**kwargs)` | `OpenQP` | Updates dotted OpenQP keywords or section dictionaries. |
+| `update(config=None, **kwargs)` | `OpenQP` | Merges a sectioned dictionary plus optional section overrides. |
+| `to_input_dict()` | `dict` | Returns the sectioned dictionary that will be passed to `Runner`. |
+| `run(run_type=None)` | `Molecule` | Builds `Runner`, executes the calculation, stores `job.runner` and `job.mol`, and returns the `Molecule`. |
+
+`oqp.openqp.OQP` is an alias for `OpenQP`.
+
+### PySCF Conversion
+
+`OpenQP.from_pyscf(mol, **kwargs)` is an explicit compatibility bridge. It
+reads `atom`, `basis`, `charge`, `spin`, and `unit` attributes from a PySCF-like
+object, translates them into OpenQP sections, and returns an `OpenQP` job.
+
+```python
+job = OpenQP.from_pyscf(pyscf_mol, project="mixed_workflow")
+job.mrsf(nstate=5)
+mol = job.run()
+```
+
+After conversion, use normal OpenQP workflow and section calls.
+
+## Runner
+
+`oqp.pyoqp.Runner` loads the same configuration used by input files, runs the
+selected workflow, and keeps the resulting `Molecule` object available as
+`runner.mol`.
 
 ```python
 from oqp.pyoqp import Runner
@@ -23,7 +157,7 @@ summary = runner.results()
 print(summary["energy"])
 ```
 
-## Signature
+### Signature
 
 ```python
 Runner(
@@ -48,7 +182,7 @@ Runner(
 `Runner` validates the parsed input before the calculation starts. A validation
 failure prints an input-check report and exits before expensive kernels run.
 
-## File-Based Runs
+### File-Based Runs
 
 File-based runs are closest to command-line OpenQP:
 
@@ -70,7 +204,7 @@ runner.run()
 Use this pattern when you want reproducible inputs, logs, JSON restart files,
 and output files on disk.
 
-## In-Memory Runs
+### In-Memory Runs
 
 For notebooks, tests, services, or agents, pass a sectioned dictionary through
 `input_dict`.
@@ -106,7 +240,7 @@ The dictionary is organized as `{section: {keyword: value}}`, matching the input
 file sections. Values can be strings; the OpenQP parser converts them using the
 same schema used by file inputs.
 
-## MRSF-TDDFT Example
+### MRSF-TDDFT Example
 
 MRSF-TDDFT normally starts from an open-shell reference. This compact example
 uses an ROHF triplet reference and asks for MRSF-TDDFT states.
@@ -138,7 +272,7 @@ mol = runner.mol
 print(mol.get_results()["td_energies"])
 ```
 
-## Runtime Methods
+### Runtime Methods
 
 | Method | Returns | Use |
 | --- | --- | --- |
@@ -148,7 +282,7 @@ print(mol.get_results()["td_energies"])
 | `back_door(data)` | `None` | Supplies previous-state data for advanced internal workflows. |
 | `test()` | `(message, diff)` | Compares against reference data in OpenQP test mode. |
 
-## Convenience Wrapper
+## Legacy Dotted-Keyword Wrapper
 
 `oqp.openqp.OPENQP` accepts dotted keyword names such as `input.system` and
 `scf.type`, normalizes inline geometries, and then constructs a `Runner`.
@@ -166,6 +300,6 @@ op = OPENQP({
 mol = op.run()
 ```
 
-This wrapper is useful for compact scripts and front-end prototypes. For
-production automation, prefer `Runner` directly because it is the canonical
-execution API.
+This wrapper is retained for existing scripts. New scripts should prefer
+`OpenQP` for OpenQP-native scripting or `Runner` for direct input-file and
+section-dictionary execution.
