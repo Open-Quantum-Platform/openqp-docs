@@ -44,7 +44,7 @@ When the corresponding property is requested via `[properties] scf_prop`,
 | `mulliken_charges` | `mulliken` | Mulliken atomic partial charges (e). |
 | `lowdin_charges` | `lowdin` | Löwdin atomic partial charges (e). |
 | `resp_charges` | `resp` | RESP/ESP-fitted atomic charges (e). |
-| `nmr_shielding` | `nmr` | Isotropic NMR shielding per atom (ppm). |
+| `nmr_shielding` | `nmr` | Isotropic NMR shielding (ppm), shape `(natom, 5)`: columns are `dia`, `para_uncoupled`, `para_coupled`, `total_uncoupled`, `total_coupled`. |
 
 `nac` is populated with the NACME derivative-coupling matrix for `runtype=nacme`
 and is empty otherwise.
