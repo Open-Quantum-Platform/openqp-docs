@@ -28,22 +28,6 @@ print("Ground/reference energy:", results["energy"])
 print("TD energies:", results["td_energies"])
 ```
 
-`job.mrsf(nstate=3)` sets:
-
-```ini
-[input]
-method = tdhf
-runtype = energy
-
-[scf]
-type = rohf
-multiplicity = 3
-
-[tdhf]
-type = mrsf
-nstate = 3
-```
-
 ## Minimal HF Script
 
 ```python
@@ -66,17 +50,6 @@ mol = job.run()
 print("SCF energy:", mol.get_scf_energy())
 ```
 
-For the shortest ordinary HF input, `job.hf()` sets:
-
-```ini
-[input]
-method = hf
-runtype = energy
-
-[scf]
-type = rhf
-```
-
 Every value can still be overridden through the section API.
 
 ## Minimal DFT Script
@@ -92,18 +65,6 @@ job.dft("pbe")
 
 mol = job.run()
 print("DFT energy:", mol.get_scf_energy())
-```
-
-`job.dft("pbe")` sets:
-
-```ini
-[input]
-method = hf
-functional = pbe
-runtype = energy
-
-[scf]
-type = rhf
 ```
 
 ## OpenQP Section Style
