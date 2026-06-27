@@ -215,64 +215,12 @@ The bridge reads common PySCF-like molecule attributes (`atom`, `basis`,
 `charge`, `spin`, and `unit`) and translates them into OpenQP sections. After
 conversion, use normal OpenQP workflow and section calls.
 
-## Existing Input Files
+## Existing Input Files and Lower-Level API
 
-If you already have an `.inp` file, run it directly with `Runner`.
-
-```python
-from pathlib import Path
-from oqp.pyoqp import Runner
-
-input_file = Path("h2o_mrsf.inp").resolve()
-project = input_file.stem
-
-runner = Runner(
-    project=project,
-    input_file=str(input_file),
-    log=f"{project}.log",
-)
-runner.run()
-
-print(runner.results()["energy"])
-```
-
-This path is closest to command-line OpenQP and is the best choice when the
-input file itself is the reproducible record.
-
-## Sectioned Runner Input
-
-`Runner` also accepts an in-memory sectioned dictionary. This is the canonical
-lower-level API used by front ends and by the high-level `OpenQP` wrapper.
-
-```python
-from oqp.pyoqp import Runner
-
-config = {
-    "input": {
-        "system": "\nH 0.0 0.0 0.0\nH 0.0 0.0 0.74",
-        "basis": "6-31g*",
-        "method": "hf",
-        "runtype": "energy",
-    },
-    "scf": {
-        "type": "rhf",
-        "multiplicity": "1",
-    },
-}
-
-runner = Runner(
-    project="h2",
-    input_dict=config,
-    log="h2.log",
-    silent=1,
-    usempi=False,
-)
-runner.run()
-print(runner.results()["energy"])
-```
-
-Values may be strings; OpenQP validates and converts them through the same input
-schema used by text input files.
+For direct `.inp` file execution or explicit sectioned dictionaries, use the
+lower-level `Runner` API. Those examples are kept in the
+[Python API](api/python-runner.md) reference so this manual page stays focused
+on the compact `OpenQP` scripting style.
 
 ## Reading Results
 
