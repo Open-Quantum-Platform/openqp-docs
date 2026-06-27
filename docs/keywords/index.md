@@ -26,14 +26,15 @@ Each keyword entry uses the same structure:
 Boolean keywords accept ordinary true/false spellings such as `true`, `false`,
 `yes`, `no`, `1`, and `0` unless a keyword documents a narrower set.
 
-State numbering is workflow dependent. HF/DFT reference-state properties usually
-use state `0`; TDHF, TDDFT, SF-TDDFT, and MRSF-TDDFT excited states use positive
-state indices.
+State numbering is workflow dependent. HF/DFT reference-state properties use
+state `0`. Ordinary TDHF/TDDFT state `1` means the first excited state. SF-TDDFT
+and MRSF-TDDFT state `1` means the lowest spin-flip/MRSF target state, which can
+be the multiconfigurational ground state.
 
 Method background and literature pointers are collected in
 [References](../references.md). The keyword pages link there for MRSF-TDDFT,
-SOC, and PCM/ddX rather than repeating full bibliographies inside each keyword
-entry.
+SOC, scalar relativistic correction, and PCM/ddX rather than repeating full
+bibliographies inside each keyword entry.
 
 ## Section Index
 

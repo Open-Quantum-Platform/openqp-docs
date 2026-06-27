@@ -24,7 +24,8 @@ workflows and keywords.
   output files.
 - [Examples](examples/index.md): runnable inputs stored in the OpenQP code
   repository.
-- [References](references.md): platform, MRSF-TDDFT, SOC, and PCM/ddX papers
+- [References](references.md): platform, MRSF-TDDFT, SOC, scalar relativistic,
+  and PCM/ddX papers
   cited by the manual.
 
 ## Common Workflows
@@ -32,7 +33,7 @@ workflows and keywords.
 - Ground-state [HF and DFT](workflows/hf-dft.md)
 - [MRSF-TDDFT](workflows/mrsf-tddft.md) energies and gradients
 - Geometry [optimization](workflows/optimization.md)
-- [Spin-orbit coupling](workflows/soc.md)
+- [Spin-orbit coupling](workflows/soc.md) and scalar relativistic DKH correction
 - [NACME](workflows/nacme.md)
 - Energy-only [PCM/ddX](workflows/pcm.md)
 - [MRSF-EKT](workflows/ekt.md) ionization potentials and electron affinities

@@ -42,7 +42,7 @@ Python style:
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP("h2o_opt", silent=1, usempi=False)
+job = OpenQP("h2o_opt", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory("dft", functional="bhhlyp", basis="6-31g*")
 job.workflow.optimize(
@@ -119,7 +119,7 @@ Python style:
 from oqp.openqp import OpenQP
 
 job = OpenQP("meci_mrsf", silent=1)
-job.molecule("reactant.xyz", charge=0, multiplicity=3)
+job.molecule("reactant.xyz", charge=0)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
 job.workflow.meci(lib="oqp", istate=1, jstate=2)
 

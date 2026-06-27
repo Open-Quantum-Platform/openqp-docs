@@ -19,7 +19,7 @@ For a user-level guide with complete scripts, see
 from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=3)
+job.molecule(geometry="water", charge=0)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
@@ -44,7 +44,7 @@ OpenQP(
 | `project` | Project name used in logs and output files. It can be passed positionally, as in `OpenQP("h2o")`. |
 | `log` | Log file path. Defaults to `<project>.log`. |
 | `silent` | `0` prints parsed input and normal messages; `1` suppresses them. |
-| `usempi` | Enables MPI-aware behavior when the runtime supports it. |
+| `usempi` | Low-level runtime flag. New high-level scripts normally set this through `job.control(usempi=...)`. |
 | `config` | Optional sectioned OpenQP input dictionary. |
 | `**sections` | Optional section dictionaries, for example `input={...}` or `scf={...}`. |
 
@@ -80,8 +80,8 @@ For compatibility with earlier scripts, `molecule(...)` can still accept
 
 ```python
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
-job.workflow.gradient(grad=3)
-job.control(omp_threads=8)
+job.workflow.gradient(state=3)
+job.control(omp_threads=8, usempi=False)
 
 job.theory("dft", functional="pbe0", basis="6-31g*")
 job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
@@ -90,8 +90,8 @@ job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 | Method | Returns | Use |
 | --- | --- | --- |
 | `theory(method, functional=None, basis=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Sets the electronic-structure model. Use `method="hf"`, `"dft"`, or `"mrsf-tddft"`; DFT and MRSF accept `functional`, `basis`, and method-specific keywords. |
-| `control(omp_threads=None, **kwargs)` | `OpenQP` | Sets hardware/runtime controls such as `[input] omp_threads`. |
-| `workflow.gradient(grad=None, **kwargs)` | `OpenQP` | Selects `runtype=grad` and stores gradient-state controls in `[properties]`. |
+| `control(omp_threads=None, usempi=None, **kwargs)` | `OpenQP` | Sets hardware/runtime controls such as `[input] omp_threads` and the runtime-only MPI flag. |
+| `workflow.gradient(state=None, **kwargs)` | `OpenQP` | Selects `runtype=grad` and stores the gradient state in `[properties] grad`. |
 | `workflow.hessian(**kwargs)` | `OpenQP` | Selects `runtype=hess` and stores Hessian controls in `[hess]`. |
 | `workflow.optimize(**kwargs)` | `OpenQP` | Selects `runtype=optimize` and routes optimizer/backend options to `[optimize]`, `[oqp]`, or `[geometric]`. |
 | `workflow.meci(**kwargs)` | `OpenQP` | Selects `runtype=meci`; the same style is available for `mecp`, `tci`, `mep`, `ts`, `irc`, and `neb`. |
@@ -105,6 +105,13 @@ Plain energy calculations do not need a workflow call. Use `job.workflow.<name>(
 only when selecting a non-energy workflow or setting workflow-specific controls.
 `job.control(...)` and the older compact `hf`, `dft`, `mrsf`, and `soc` helpers
 remain available for existing scripts.
+
+The Python gradient helper uses `state=...` because users choose a molecular
+state, even though the input-file keyword remains `[properties] grad`. For
+HF/DFT, `state=0` means the reference ground state. For ordinary TDHF/TDDFT,
+`state=1` is the first excited state. For SF-TDDFT and MRSF-TDDFT, `state=1`
+is the lowest spin-flip/MRSF target state, which can be the multiconfigurational
+ground state. Existing scripts that use `grad=...` still work.
 
 ### Section Updates
 
@@ -245,7 +252,6 @@ runner = Runner(
     input_dict=config,
     log="h2.log",
     silent=1,
-    usempi=False,
 )
 runner.run()
 print(runner.results()["energy"])

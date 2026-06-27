@@ -37,7 +37,7 @@ Python style:
 from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=3)
+job.molecule(geometry="water", charge=0)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
@@ -51,8 +51,7 @@ Runnable input:
 
 ## Gradient
 
-Use `runtype=grad` and select the response state through
-`[properties] grad`.
+Use `runtype=grad` and select the state through `[properties] grad`.
 
 Input style:
 
@@ -81,9 +80,9 @@ Python style:
 from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf_grad", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=3)
+job.molecule(geometry="water", charge=0)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
-job.workflow.gradient(grad=3)
+job.workflow.gradient(state=3)
 
 mol = job.run()
 gradient = mol.get_grad()
@@ -94,6 +93,13 @@ Runnable input:
 
 ## Notes
 
+- In Python, `job.theory("mrsf-tddft", ...)` supplies the usual ROHF triplet
+  reference for MRSF-TDDFT. Raw input files still show `[scf] multiplicity=3`
+  explicitly because they are the direct OpenQP keyword form.
+- MRSF state numbering follows the spin-flip/MRSF target-state list. `state=1`
+  in Python, or `grad=1` in `[properties]`, means the lowest MRSF target state,
+  which can be the multiconfigurational ground state. This differs from
+  ordinary TDHF/TDDFT, where state `1` means the first excited state.
 - `[tdhf] nstate` must include every state requested by gradients, NACME, SOC,
   or EKT analysis.
 - For ordinary TDDFT, use `[tdhf] type=rpa` or `tda`.

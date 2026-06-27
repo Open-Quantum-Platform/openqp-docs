@@ -28,7 +28,6 @@ multiplicity=3
 [tdhf]
 type=mrsf
 nstate=5
-multiplicity=1
 ```
 
 The same setup in Python keeps the native section names visible:
@@ -37,9 +36,8 @@ The same setup in Python keeps the native section names visible:
 from oqp.openqp import OpenQP
 
 job = OpenQP("mrsf_keywords")
-job.molecule(geometry="water", charge=0, multiplicity=3)
+job.molecule(geometry="water", charge=0)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
-job.workflow.tdhf.multiplicity = 1
 ```
 
 ## Keywords
@@ -94,6 +92,8 @@ Target response state for workflows that read a single TDHF/MRSF state.
 Requested response-state multiplicity. For MRSF-TDDFT, this is the target spin
 multiplicity after spin flip, not necessarily the same as the high-spin ROHF
 reference multiplicity.
+For SOC, do not set this as a single target multiplicity; the SOC workflow
+computes singlet and triplet response roots internally.
 
 ### `maxit`
 

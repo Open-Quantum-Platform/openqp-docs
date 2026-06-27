@@ -18,7 +18,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
 
-job.molecule(geometry="water", charge=0, multiplicity=3)
+job.molecule(geometry="water", charge=0)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
@@ -33,7 +33,7 @@ print("TD energies:", results["td_energies"])
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP("h2o_hf", silent=1, usempi=False)
+job = OpenQP("h2o_hf", silent=1)
 
 job.molecule(
     """
@@ -59,7 +59,7 @@ DFT uses its own helper so HF and Kohn-Sham jobs stay visually distinct.
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP("h2o_pbe", silent=1, usempi=False)
+job = OpenQP("h2o_pbe", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory("dft", functional="pbe", basis="6-31g*")
 
@@ -75,7 +75,7 @@ OpenQP input sections without adding more top-level job verbs.
 ```python
 job = OpenQP("custom_mrsf")
 
-job.molecule("H 0 0 0; H 0 0 0.74", charge=0, multiplicity=3)
+job.molecule("H 0 0 0; H 0 0 0.74", charge=0)
 job.workflow.input(method="tdhf", functional="bhhlyp")
 job.workflow.input.basis = "6-31g*"
 job.workflow.scf(type="rohf", multiplicity=3, conv=1.0e-7)
@@ -88,8 +88,14 @@ Attribute assignment is also available for small edits:
 
 ```python
 job.workflow.tdhf.nstate = 7
-job.workflow.gradient(grad=3)
+job.workflow.gradient(state=3)
 ```
+
+For gradients, Python uses `state=...` even though the input-file keyword is
+`[properties] grad`. HF/DFT reference gradients use `state=0`. Ordinary
+TDHF/TDDFT state `1` is the first excited state. SF-TDDFT and MRSF-TDDFT state
+`1` is the lowest spin-flip/MRSF target state, which can be the
+multiconfigurational ground state.
 
 Dotted keywords and sectioned dictionaries remain useful when another program
 generates the input:
@@ -164,7 +170,7 @@ job.molecule("H 0 0 0; H 0 0 1.4", unit="Bohr", charge=0, multiplicity=1)
 Two-geometry workflows can pass the second geometry directly:
 
 ```python
-job.molecule(system, system2, charge=0, multiplicity=3)
+job.molecule(system, system2, charge=0)
 ```
 
 ## PySCF Conversion Bridge
@@ -220,16 +226,15 @@ available.
 
 ## Threading and MPI
 
-For ordinary Python scripts, set `usempi=False` unless the script is launched in
-an MPI environment.
-
-OpenMP threads can be controlled through `job.control(...)`:
+Runtime controls belong in `job.control(...)`. For ordinary Python scripts, use
+`usempi=False` unless the script is launched in an MPI environment. OpenMP
+threads can be set in the same call:
 
 ```python
-job = OpenQP("h2", usempi=False)
+job = OpenQP("h2")
 job.molecule("H 0 0 0; H 0 0 0.74", charge=0, multiplicity=1)
 job.theory("hf", basis="6-31g*")
-job.control(omp_threads=8)
+job.control(usempi=False, omp_threads=8)
 job.run()
 ```
 

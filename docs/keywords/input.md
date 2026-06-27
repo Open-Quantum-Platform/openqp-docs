@@ -231,7 +231,9 @@ than a response-solver detail.
 Spin-orbit coupling is a relativistic interaction that mixes spin-free states of
 different spin character. OpenQP's documented SOC workflow is an MRSF-TDDFT
 workflow selected with `runtype=soc`; `soc_2e=1` adds the mean-field
-two-electron SOC contribution used in practical molecular SOC calculations. See
+two-electron SOC contribution used in practical molecular SOC calculations.
+Scalar relativistic DKH correction is a separate spin-free Hamiltonian option
+controlled by `[scf] scal_rel`. See
 [References](../references.md#spin-orbit-coupling) for OpenQP's relativistic
 MRSF-TDDFT SOC method and mean-field SOC operator background.
 
@@ -241,7 +243,7 @@ Python style:
 from oqp.openqp import OpenQP
 
 job = OpenQP("soc_keywords")
-job.molecule(geometry="water", charge=0, multiplicity=3)
+job.molecule(geometry="water", charge=0)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31G(2df,p)", nstate=12)
 job.workflow.soc(soc_2e=1)
 ```

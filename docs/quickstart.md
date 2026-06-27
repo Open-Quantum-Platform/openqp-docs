@@ -45,7 +45,7 @@ The same calculation can be set up from Python:
 from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=3)
+job.molecule(geometry="water", charge=0)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
@@ -54,6 +54,11 @@ results = mol.get_results()
 print("Ground/reference energy:", results["energy"])
 print("TD energies:", results["td_energies"])
 ```
+
+For MRSF-TDDFT, the Python theory helper supplies the required ROHF triplet
+reference internally. HF and DFT scripts can set `multiplicity` directly in
+`job.molecule(...)` when the molecular reference multiplicity is part of the
+ordinary SCF setup.
 
 OpenQP writes a log and structured output files in the working directory. For
 more Python examples, see [Run OpenQP from Python](python-scripting.md).

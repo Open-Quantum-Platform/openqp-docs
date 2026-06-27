@@ -31,7 +31,7 @@ Python style:
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP("h2o_hf", silent=1, usempi=False)
+job = OpenQP("h2o_hf", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory("hf", basis="6-31g*")
 
@@ -45,7 +45,8 @@ Runnable input:
 ## Gradient
 
 For a DFT gradient, request `runtype=grad`, set a functional, and use
-`[properties] grad=0` for the reference-state gradient:
+`[properties] grad=0` for the reference-state gradient. In Python, the same
+choice is written as `job.workflow.gradient(state=0)`.
 
 Input style:
 
@@ -65,10 +66,10 @@ Python style:
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP("h2o_dft_grad", silent=1, usempi=False)
+job = OpenQP("h2o_dft_grad", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory("dft", functional="bhhlyp", basis="6-31g*")
-job.workflow.gradient(grad=0)
+job.workflow.gradient(state=0)
 
 mol = job.run()
 gradient = mol.get_grad()
@@ -100,7 +101,7 @@ Python style:
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP("h2o_dft_hess", silent=1, usempi=False)
+job = OpenQP("h2o_dft_hess", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory("dft", functional="bhhlyp", basis="6-31g*")
 job.workflow.hessian(type="analytical", state=0)

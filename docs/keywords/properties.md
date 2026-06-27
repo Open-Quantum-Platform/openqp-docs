@@ -53,8 +53,11 @@ the documented production surface.
 | Default | `0` |
 | Used by | `runtype=grad` and state-specific gradients |
 
-Selects gradient states. HF/DFT gradients use state `0`. TDHF, TDDFT, SF-TDDFT,
-and MRSF-TDDFT gradients use positive excited-state indices.
+Selects gradient states. HF/DFT gradients use state `0`. Ordinary TDHF/TDDFT
+state `1` is the first excited state. SF-TDDFT and MRSF-TDDFT state `1` is the
+lowest spin-flip/MRSF target state, which can be the multiconfigurational ground
+state. In Python, prefer `job.workflow.gradient(state=...)`; it maps to this
+input-file keyword.
 
 Example:
 

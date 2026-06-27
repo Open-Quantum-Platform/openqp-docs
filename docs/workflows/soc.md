@@ -33,7 +33,7 @@ Python style:
 from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_soc", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=3)
+job.molecule(geometry="water", charge=0)
 job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31G(2df,p)", nstate=12)
 job.workflow.soc(soc_2e=1)
 
@@ -48,7 +48,9 @@ Runnable inputs:
 
 ## SOC Terms
 
-`[input] soc_2e` controls the SOC Hamiltonian:
+`[input] soc_2e` controls the SOC Hamiltonian. The current MRSF-SOC driver forms
+one-electron Breit-Pauli SOC matrix elements and can add a mean-field
+two-electron SOC contribution:
 
 | Value | Meaning |
 | --- | --- |
@@ -61,3 +63,21 @@ The SOC driver computes both singlet and triplet response roots internally, so
 Python scripts should use `job.workflow.soc(...)` after
 `job.theory("mrsf-tddft", ...)` rather than setting
 `job.tdhf.multiplicity`.
+
+## Scalar Relativistic Correction
+
+Scalar relativistic correction is separate from SOC. It changes the spin-free
+one-electron core Hamiltonian and does not mix spin states by itself. In the
+current OpenQP input surface, the exposed scalar-relativistic keyword is
+`[scf] scal_rel`:
+
+| Value | Meaning |
+| --- | --- |
+| `0` | No scalar relativistic correction. |
+| `1` | First-order Douglas-Kroll-Hess correction. |
+| `2` | First- and second-order Douglas-Kroll-Hess correction. |
+
+Use `scal_rel` when the spin-free Hamiltonian should include DKH scalar
+relativistic effects. Use `runtype=soc` and `soc_2e` when the calculation needs
+spin-orbit coupling. X2C support is under implementation and should be
+documented as a user-facing option only after an OpenQP keyword is exposed.

@@ -2,7 +2,8 @@
 
 This page collects the paper references cited by the manual. Use the OpenQP
 platform paper when citing the code itself, and add method-specific references
-when a paper uses MRSF-TDDFT, SOC, PCM/ddX, or related workflows.
+when a paper uses MRSF-TDDFT, SOC, scalar relativistic correction, PCM/ddX, or
+related workflows.
 
 ## OpenQP
 
@@ -51,6 +52,16 @@ when a paper uses MRSF-TDDFT, SOC, PCM/ddX, or related workflows.
 - Marian CM. "Spin-orbit coupling and intersystem crossing in molecules." WIREs
   Computational Molecular Science 2, 187-203 (2012).
   [doi:10.1002/wcms.83](https://doi.org/10.1002/wcms.83)
+
+## Scalar Relativistic Correction
+
+- Douglas M and Kroll NM. "Quantum electrodynamical corrections to the fine
+  structure of helium." Annals of Physics 82, 89-155 (1974).
+  [doi:10.1016/0003-4916(74)90333-9](https://doi.org/10.1016/0003-4916(74)90333-9)
+- Hess BA. "Applicability of the no-pair equation with free-particle projection
+  operators to atomic and molecular structure calculations." Physical Review A
+  33, 3742-3748 (1986).
+  [doi:10.1103/PhysRevA.33.3742](https://doi.org/10.1103/PhysRevA.33.3742)
 
 ## PCM and ddX
 

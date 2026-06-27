@@ -24,6 +24,7 @@ specific input contract.
 | Numerical Hessians | Available through the Hessian workflow. |
 | NACME | MRSF-TDDFT state-coupling workflow. |
 | SOC | MRSF-TDDFT one-electron and mean-field two-electron SOC. |
+| Scalar relativistic correction | Spin-free DKH correction through `[scf] scal_rel=1` or `2`. |
 | PCM/ddX | Energy-only reference-SCF path for RHF/ROHF. |
 | NMR | Nuclear magnetic shielding via `[properties] scf_prop=nmr`. |
 | IR/Raman | Frequency-analysis intensities from supported Hessian workflows. |
