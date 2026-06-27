@@ -10,16 +10,31 @@ gradient-like workflows.
 | Field | Value |
 | --- | --- |
 | Type | comma-separated string list |
-| Default | `el_mom,mulliken` |
-| Values | `el_mom`, `mulliken`, `nmr` |
+| Default | empty (no SCF properties) |
+| Values | `el_mom`, `mulliken`, `lowdin`, `resp`, `nmr` |
 | Used by | SCF property driver |
 
-Requests SCF properties. Add `nmr` for nuclear magnetic shielding:
+Requests SCF properties. Properties are **opt-in**: a property is computed only
+when listed here, and only requested properties are written to the JSON
+reference and regression-tested. Available analyses:
+
+- `el_mom` — electric dipole (and moments); the dipole (a.u.) is exposed as
+  `dipole` in `get_results()`.
+- `mulliken` / `lowdin` — Mulliken / Löwdin atomic partial charges, exposed as
+  `mulliken_charges` / `lowdin_charges`.
+- `resp` — RESP/ESP-fitted atomic charges, exposed as `resp_charges`.
+- `nmr` — isotropic NMR shielding (`nmr_shielding`).
 
 ```ini
 [properties]
-scf_prop=nmr
+scf_prop=el_mom,mulliken,lowdin,resp
 ```
+
+!!! note "Behavior change"
+    `scf_prop` previously defaulted to `el_mom,mulliken`. It now defaults to
+    empty so population/moment analysis runs only on request and properties are
+    not added to every reference. Request them explicitly to restore the old
+    output.
 
 ### `nmr_gauge`
 
