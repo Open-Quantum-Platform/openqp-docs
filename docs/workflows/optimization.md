@@ -45,8 +45,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("h2o_opt", silent=1, usempi=False)
 job.molecule(geometry="water", basis="6-31g*", charge=0)
 job.dft("bhhlyp", runtype="optimize")
-job.optimize(lib="oqp", istate=0, maxit=10)
-job.oqp(coordsys="tric", trust=0.2)
+job.optimize(lib="oqp", istate=0, maxit=10, coordsys="tric", trust=0.2)
 
 mol = job.run()
 ```
@@ -67,6 +66,18 @@ lib=geometric
 coordsys=tric
 trust=0.1
 constraints_file=my.constraints
+```
+
+Python style uses the same `job.optimize(...)` call shape and routes the
+backend options to geomeTRIC:
+
+```python
+job.optimize(
+    lib="geometric",
+    coordsys="tric",
+    trust=0.1,
+    constraints_file="my.constraints",
+)
 ```
 
 Runnable geomeTRIC inputs are available in

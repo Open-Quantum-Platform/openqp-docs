@@ -3,6 +3,11 @@
 The `[optimize]` section selects the optimization backend, target states, and
 convergence thresholds for geometry and reaction-path workflows.
 
+In Python scripts, use `job.optimize(...)` for both common optimization options
+and backend options. For example, `job.optimize(lib="oqp", coordsys="tric")`
+routes `coordsys` to the native optimizer backend while keeping state and
+convergence options in `[optimize]`.
+
 ## Keywords
 
 ### `lib`

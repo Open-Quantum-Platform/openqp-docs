@@ -105,6 +105,8 @@ job.input(method="tdhf", runtype="energy")
 job.scf(type="rohf", multiplicity=3)
 job.tdhf(type="mrsf", nstate=3)
 
+job.optimize(lib="oqp", coordsys="tric", trust=0.2)
+
 job.tdhf.nstate = 5
 
 job.set(**{"input.method": "tdhf", "tdhf.type": "mrsf"})
@@ -118,6 +120,10 @@ job.update({"scf": {"type": "rohf", "multiplicity": 3}})
 | `update(config=None, **kwargs)` | `OpenQP` | Merges a sectioned dictionary plus optional section overrides. |
 | `to_input_dict()` | `dict` | Returns the sectioned dictionary that will be passed to `Runner`. |
 | `run(run_type=None)` | `Molecule` | Builds `Runner`, executes the calculation, stores `job.runner` and `job.mol`, and returns the `Molecule`. |
+
+`job.optimize(...)` is a routed section helper: ordinary optimization keywords
+stay in `[optimize]`, while backend options such as `coordsys`, `trust`, and
+`constraints_file` are sent to the selected backend section.
 
 `oqp.openqp.OQP` is an alias for `OpenQP`.
 
