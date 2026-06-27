@@ -38,8 +38,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
 job.molecule(geometry="water", basis="6-31g*", charge=0)
-job.input(functional="bhhlyp")
-job.mrsf(nstate=3)
+job.mrsf(nstate=3, functional="bhhlyp")
 
 mol = job.run()
 results = mol.get_results()
@@ -83,8 +82,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf_grad", silent=1)
 job.molecule(geometry="water", basis="6-31g*", charge=0)
-job.input(functional="bhhlyp")
-job.mrsf(nstate=3, runtype="grad")
+job.mrsf(nstate=3, functional="bhhlyp", runtype="grad")
 job.properties(grad=3)
 
 mol = job.run()

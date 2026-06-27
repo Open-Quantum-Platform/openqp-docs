@@ -20,7 +20,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
 job.molecule(geometry="water", basis="6-31g*")
-job.mrsf(nstate=3)
+job.mrsf(nstate=3, functional="bhhlyp")
 
 mol = job.run()
 print(mol.get_results()["td_energies"])
@@ -84,7 +84,7 @@ back to PubChem when `source="auto"` or `source="pubchem"` is used.
 ### Workflow Helpers
 
 ```python
-job.mrsf(nstate=3)
+job.mrsf(nstate=3, functional="bhhlyp")
 job.hf()
 job.dft("pbe")
 ```
@@ -93,7 +93,7 @@ job.dft("pbe")
 | --- | --- | --- |
 | `hf(reference="rhf", runtype="energy", multiplicity=None, **scf_keywords)` | `OpenQP` | Sets `[input] method=hf`, `[input] runtype`, and `[scf] type`. |
 | `dft(functional, reference="rhf", runtype="energy", multiplicity=None, **scf_keywords)` | `OpenQP` | Sets `[input] method=hf`, `[input] functional`, `[input] runtype`, and `[scf] type` for Kohn-Sham jobs. |
-| `mrsf(nstate=3, reference="rohf", multiplicity=3, runtype="energy", **tdhf_keywords)` | `OpenQP` | Sets the standard MRSF-TDDFT `[input]`, `[scf]`, and `[tdhf]` blocks. |
+| `mrsf(nstate=3, reference="rohf", multiplicity=3, runtype="energy", functional=None, **tdhf_keywords)` | `OpenQP` | Sets the standard MRSF-TDDFT `[input]`, `[scf]`, and `[tdhf]` blocks; pass `functional="bhhlyp"` or another functional to set `[input] functional` in the same call. |
 
 These helpers are only shorthand for OpenQP sections. Advanced calculations can
 always override or extend the sections directly.
@@ -129,7 +129,7 @@ object, translates them into OpenQP sections, and returns an `OpenQP` job.
 
 ```python
 job = OpenQP.from_pyscf(pyscf_mol, project="mixed_workflow")
-job.mrsf(nstate=5)
+job.mrsf(nstate=5, functional="bhhlyp")
 mol = job.run()
 ```
 

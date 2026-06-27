@@ -19,7 +19,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("h2o_mrsf", silent=1)
 
 job.molecule(geometry="water", basis="6-31g*", charge=0)
-job.mrsf(nstate=3)
+job.mrsf(nstate=3, functional="bhhlyp")
 
 mol = job.run()
 results = mol.get_results()
@@ -76,7 +76,7 @@ sections.
 job = OpenQP("custom_mrsf")
 
 job.molecule("H 0 0 0; H 0 0 0.74", basis="6-31g*", charge=0)
-job.input(method="tdhf", runtype="energy")
+job.input(method="tdhf", functional="bhhlyp", runtype="energy")
 job.scf(type="rohf", multiplicity=3, conv=1.0e-7)
 job.tdhf(type="mrsf", nstate=5, target=2)
 
@@ -96,12 +96,13 @@ generates the input:
 ```python
 job.set(**{
     "input.method": "tdhf",
+    "input.functional": "bhhlyp",
     "scf.type": "rohf",
     "tdhf.type": "mrsf",
 })
 
 job.update({
-    "input": {"method": "tdhf", "runtype": "energy"},
+    "input": {"method": "tdhf", "functional": "bhhlyp", "runtype": "energy"},
     "scf": {"type": "rohf", "multiplicity": 3},
     "tdhf": {"type": "mrsf", "nstate": 3},
 })
@@ -167,7 +168,7 @@ language. For mixed workflows, use the explicit conversion bridge:
 from oqp.openqp import OpenQP
 
 job = OpenQP.from_pyscf(pyscf_mol, project="mixed_workflow")
-job.mrsf(nstate=5)
+job.mrsf(nstate=5, functional="bhhlyp")
 
 mol = job.run()
 ```

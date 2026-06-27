@@ -49,8 +49,7 @@ H   0.543194329  -0.543194329  -0.624469223
 job = OpenQP("h2o_nacme", silent=1)
 job.molecule(system, basis="6-31g", charge=0)
 job.set(**{"input.system2": system2})
-job.input(functional="bhhlyp")
-job.mrsf(nstate=10, runtype="nacme")
+job.mrsf(nstate=10, functional="bhhlyp", runtype="nacme")
 
 mol = job.run()
 ```
