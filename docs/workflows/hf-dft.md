@@ -81,33 +81,5 @@ Runnable input:
 ## Hessian
 
 HF/DFT Hessians are run with `runtype=hess` and controlled by `[hess]`.
-
-Input style:
-
-```ini
-[input]
-runtype=hess
-method=hf
-functional=bhhlyp
-basis=6-31g*
-
-[hess]
-type=analytical
-state=0
-```
-
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_dft_hess", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("dft", functional="bhhlyp", basis="6-31g*")
-job.workflow.hessian(type="analytical", state=0)
-
-mol = job.run()
-```
-
-Runnable input:
-[`examples/HESS/H2O_RHF-DFT_ANA_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.inp).
+Analytical and numerical Hessian examples are collected on the
+[Hessian and Frequencies](hessian.md) workflow page.

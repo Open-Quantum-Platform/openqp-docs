@@ -31,7 +31,10 @@ workflows and keywords.
 ## Common Workflows
 
 - Ground-state [HF and DFT](workflows/hf-dft.md)
+- [TDDFT and TDHF](workflows/tddft.md) energies and gradients
+- [SF-TDDFT](workflows/sf-tddft.md) spin-flip energies and gradients
 - [MRSF-TDDFT](workflows/mrsf-tddft.md) energies and gradients
+- [Hessian and frequencies](workflows/hessian.md)
 - Geometry [optimization](workflows/optimization.md)
 - [Spin-orbit coupling](workflows/soc.md) and scalar relativistic DKH correction
 - [NACME](workflows/nacme.md)

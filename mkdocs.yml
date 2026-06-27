@@ -40,7 +40,10 @@ nav:
   - Run from Python: python-scripting.md
   - Workflows:
       - HF and DFT: workflows/hf-dft.md
+      - TDDFT and TDHF: workflows/tddft.md
+      - SF-TDDFT: workflows/sf-tddft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
+      - Hessian and Frequencies: workflows/hessian.md
       - Optimization: workflows/optimization.md
       - Spin-Orbit Coupling: workflows/soc.md
       - NACME: workflows/nacme.md

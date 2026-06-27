@@ -52,7 +52,8 @@ NMR because those paths are not implemented.
 ## IR and Raman
 
 IR and Raman intensities are produced from supported Hessian/frequency
-workflows. Start from the Hessian examples:
+workflows. See [Hessian and Frequencies](hessian.md) for the main Hessian
+workflow page.
 
 Input style:
 

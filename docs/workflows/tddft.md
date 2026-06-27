@@ -1,0 +1,112 @@
+# TDDFT and TDHF
+
+TDDFT and TDHF response calculations use `[input] method=tdhf`. A non-empty
+`[input] functional` selects TDDFT; leaving `functional` empty gives TDHF.
+Closed-shell examples normally use an RHF reference with `[scf] multiplicity=1`.
+
+Use MRSF-TDDFT when multiconfigurational ground-state character, conical
+intersections, or spin-flip target-state ordering are central to the study. Use
+ordinary TDDFT/TDHF for standard single-reference vertical excitations and
+excited-state gradients.
+
+In Python scripts, TDHF and TDDFT use the native response-section helpers
+because the response model is selected directly through `[input]` and `[tdhf]`.
+
+## Energy
+
+Input style:
+
+```ini
+[input]
+runtype=energy
+method=tdhf
+functional=b3lyp5
+basis=6-31g*
+
+[scf]
+type=rhf
+multiplicity=1
+
+[tdhf]
+nstate=3
+```
+
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_tddft", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.workflow.input(method="tdhf", functional="b3lyp5", basis="6-31g*")
+job.workflow.scf(type="rhf", multiplicity=1)
+job.workflow.tdhf(nstate=3)
+
+mol = job.run()
+print("TD energies:", mol.get_td_energies())
+```
+
+Runnable input:
+[`examples/TDDFT/H2O_B3LYP5-TDDFT_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDDFT/H2O_B3LYP5-TDDFT_ENERGY.inp).
+
+For TDHF, use the same structure without `[input] functional`:
+[`examples/TDHF/H2O_TDHF_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDHF/H2O_TDHF_ENERGY.inp).
+
+## Gradient
+
+TDDFT gradients use `runtype=grad` and `[properties] grad` for the target
+excited state. In ordinary TDHF/TDDFT, state `1` means the first excited state.
+
+Input style:
+
+```ini
+[input]
+runtype=grad
+method=tdhf
+functional=b3lyp5
+basis=6-31g*
+
+[scf]
+type=rhf
+multiplicity=1
+
+[tdhf]
+nstate=3
+
+[properties]
+grad=3
+```
+
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_tddft_grad", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.workflow.input(method="tdhf", functional="b3lyp5", basis="6-31g*")
+job.workflow.scf(type="rhf", multiplicity=1)
+job.workflow.tdhf(nstate=3)
+job.workflow.gradient(state=3)
+
+mol = job.run()
+gradient = mol.get_grad()
+```
+
+Runnable input:
+[`examples/TDDFT/H2O_B3LYP5-TDDFT_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDDFT/H2O_B3LYP5-TDDFT_GRADIENT.inp).
+
+TDHF gradient example:
+[`examples/TDHF/H2O_TDHF_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDHF/H2O_TDHF_GRADIENT.inp).
+
+## Notes
+
+- `[tdhf] nstate` must include the highest state requested by gradients or
+  follow-up analysis.
+- Ordinary TDHF/TDDFT state numbering is excited-state numbering: `state=1`
+  in Python, or `grad=1` in `[properties]`, means the first excited state.
+- SF-TDDFT and MRSF-TDDFT use a different target-state ordering: state `1` is
+  the lowest spin-flip/MRSF target state, which can be the multiconfigurational
+  ground state.
+- Use `[tdhf] type=rpa` or omit `type` for the default response model. Use
+  `[tdhf] type=tda` when a TDA calculation is desired.

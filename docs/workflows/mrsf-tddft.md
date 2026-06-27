@@ -102,8 +102,8 @@ Runnable input:
   ordinary TDHF/TDDFT, where state `1` means the first excited state.
 - `[tdhf] nstate` must include every state requested by gradients, NACME, SOC,
   or EKT analysis.
-- For ordinary TDDFT, use `[tdhf] type=rpa` or `tda`.
+- For ordinary TDDFT, see [TDDFT and TDHF](tddft.md).
 - For spin-flip TDDFT without mixed-reference correction, use
-  `[tdhf] type=sf`.
+  [SF-TDDFT](sf-tddft.md).
 - UMRSF-TDDFT uses `[tdhf] type=umrsf` with a UHF reference and is currently an
   energy-only workflow.
