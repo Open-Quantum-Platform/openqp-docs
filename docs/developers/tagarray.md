@@ -5,6 +5,10 @@ Fortran, C, and Python. It is the shared storage for matrices, orbital data,
 response vectors, SOC arrays, Hessians, and other intermediate or result data
 that must survive across language boundaries.
 
+The container is provided by
+[Open-Quantum-Platform/tagarray](https://github.com/Open-Quantum-Platform/tagarray)
+(v1.0.0), pinned as an external dependency in `external/CMakeLists.txt`.
+
 ## Naming
 
 Tag names use the `OQP::` prefix. Fortran code usually imports named constants
@@ -23,19 +27,67 @@ from `source/tagarray_driver.F90`, such as:
 
 ## Fortran Pattern
 
-Fortran modules normally reserve data before writing and then recover a typed
-pointer with `tagarray_get_data`:
+### Creating an output record
+
+To create a container-owned array and obtain a writable, correctly typed Fortran
+pointer to it, use the one-call `alloc_or_die`:
 
 ```fortran
-use oqp_tagarray_driver, only: OQP_hf_hessian, TA_TYPE_REAL64, tagarray_get_data
+use oqp_tagarray_driver, only: OQP_hf_hessian, OQP_hf_hessian_comment
 
-call infos%dat%reserve_data(OQP_hf_hessian, TA_TYPE_REAL64, &
-                            ncart*ncart, (/ ncart, ncart /))
-call tagarray_get_data(infos%dat, OQP_hf_hessian, hess_store)
+real(kind=dp), contiguous, pointer :: hess_store(:,:)
+
+! Allocate the record AND bind the pointer in a single call. The TA_TYPE_* id is
+! inferred from the pointer kind, the shape is given as plain integers, an
+! existing record under the tag is replaced, and a failure aborts with a message.
+call infos%dat%alloc_or_die(OQP_hf_hessian, (/ ncart, ncart /), hess_store, &
+                            description=OQP_hf_hessian_comment)
 ```
 
-Use `data_has_tags(...)` when a kernel depends on records produced by an earlier
-stage. Use the typed constants and comments in `tagarray_driver.F90` instead of
+`alloc_or_die` replaces the older three-step ritual (`reserve_data`, then
+`data_has_tags`, then `tagarray_get_data`). A status-returning `alloc` variant is
+available when a module wants to handle the error itself, and a free-function
+spelling `ta_allocate(infos%dat, ...)` exists for those who prefer it:
+
+```fortran
+integer(c_int32_t) :: status
+status = infos%dat%alloc(OQP_hf_hessian, (/ ncart, ncart /), hess_store, &
+                         description=OQP_hf_hessian_comment)
+if (status /= TA_OK) call show_message(get_status_message(status), WITH_ABORT)
+```
+
+Supported element types are real64/real32/int32/int64/complex(real64), pointer
+ranks 1–3.
+
+### Reading an existing record
+
+To consume a record produced by an earlier stage, confirm it exists and bind a
+typed pointer with `tagarray_get_data`:
+
+```fortran
+use oqp_tagarray_driver, only: OQP_SM, data_has_tags, tagarray_get_data
+
+real(kind=dp), contiguous, pointer :: smat(:)
+
+call data_has_tags(infos%dat, [character(len=80) :: OQP_SM], &
+                   module_name, subroutine_name, abort=.true.)
+call tagarray_get_data(infos%dat, OQP_SM, smat)
+```
+
+### Low-level operations
+
+For records that `alloc_or_die` does not cover — an `integer(8)`-sized shape
+(for example the `nbf**4` in-core ERI tensor) or a tag that is filled on the C
+side with no Fortran pointer — use the low-level container methods directly. The
+`create` shape is `integer(c_int64_t)`:
+
+```fortran
+status = infos%dat%create(OQP_ERI_AO, TA_TYPE_REAL64, [nbf4], &
+                          description=OQP_ERI_AO_comment, override=.true.)
+call infos%dat%erase([character(len=80) :: OQP_QMAT])   ! invalidate a stale tag
+```
+
+Use the typed constants and comments in `tagarray_driver.F90` instead of
 hard-coded strings when adding stable records.
 
 ## C Bridge
@@ -69,8 +121,11 @@ soc_eval = mol.data["OQP::soc_eval"]
 When adding a new shared data record:
 
 1. Add a stable `OQP::...` constant and comment in `source/tagarray_driver.F90`.
-2. Reserve the tag with the correct `TA_TYPE_*`, total data length, and shape.
-3. Retrieve it with the matching typed pointer rank.
+2. Create the record and bind its pointer in one call with
+   `infos%dat%alloc_or_die(tag, shape, ptr, description=...)` (or the low-level
+   `create` for `integer(8)` shapes or C-filled tags), passing the shape that
+   matches the pointer rank.
+3. Read upstream records with `data_has_tags` + `tagarray_get_data`.
 4. Add it to Python result handling only if users or workflows need it.
 5. Add tests that check the tag is populated with the expected shape and data
    type.
