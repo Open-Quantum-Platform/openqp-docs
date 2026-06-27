@@ -3,6 +3,8 @@
 NACME calculations use two geometries and an MRSF-TDDFT response calculation.
 The current input style uses `[input] system` and `[input] system2`.
 
+Input style:
+
 ```ini
 [input]
 runtype=nacme
@@ -27,8 +29,34 @@ type=mrsf
 nstate=10
 ```
 
-Runnable reference:
-`examples/other/h2o_nacme_rohf_mrsf-s_6-31g_bhhlyp.inp`.
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+system = """
+O   0.000000000   0.000000000  -0.041061554
+H  -0.533194329   0.533194329  -0.614469223
+H   0.533194329  -0.533194329  -0.614469223
+"""
+
+system2 = """
+O   0.000000000   0.000000000  -0.031061554
+H  -0.543194329   0.543194329  -0.624469223
+H   0.543194329  -0.543194329  -0.624469223
+"""
+
+job = OpenQP("h2o_nacme", silent=1)
+job.molecule(system, basis="6-31g", charge=0)
+job.set(**{"input.system2": system2})
+job.input(functional="bhhlyp")
+job.mrsf(nstate=10, runtype="nacme")
+
+mol = job.run()
+```
+
+Runnable input:
+[`examples/other/h2o_nacme_rohf_mrsf-s_6-31g_bhhlyp.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/other/h2o_nacme_rohf_mrsf-s_6-31g_bhhlyp.inp).
 
 ## Notes
 

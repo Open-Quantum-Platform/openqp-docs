@@ -5,7 +5,8 @@ HF/DFT, TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT, and related workflows for
 multiconfigurational ground and excited states.
 The manual is organized around what users usually need first: install OpenQP,
 prepare an input, run a calculation, then look up keywords when a workflow needs
-more control.
+more control. The lower-level API reference is intentionally placed last, after
+workflows and keywords.
 
 ## Start Here
 
@@ -19,10 +20,10 @@ more control.
   calculations from Python scripts, notebooks, or workflow managers.
 - [Input Files](input-file.md): section layout, geometry input, run types, and
   output files.
-- [API Documentation](api/index.md): Python runner usage, result access, input
-  validation, and developer interface notes.
 - [Examples](examples/index.md): runnable inputs stored in the OpenQP code
   repository.
+- [References](references.md): platform, MRSF-TDDFT, SOC, and PCM/ddX papers
+  cited by the manual.
 
 ## Common Workflows
 
@@ -48,7 +49,8 @@ when OpenQP changes.
 ## API Documentation
 
 The [Run OpenQP from Python](python-scripting.md) chapter shows complete
-script-based calculations. The [API chapter](api/index.md) is the lower-level
+script-based calculations next to ordinary workflow input files. The
+[API chapter](api/index.md) appears last in the manual and is the lower-level
 reference for `oqp.pyoqp.Runner`, in-memory inputs, result extraction through
 `runner.mol`, and the input-checking API used by front ends and automated
 workflows.

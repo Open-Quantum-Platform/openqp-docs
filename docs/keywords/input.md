@@ -228,6 +228,25 @@ Controls whether mean-field two-electron SOC terms are included.
 The option lives in `[input]` because it gates the whole SOC workflow rather
 than a response-solver detail.
 
+Spin-orbit coupling is a relativistic interaction that mixes spin-free states of
+different spin character. OpenQP's documented SOC workflow is an MRSF-TDDFT
+workflow selected with `runtype=soc`; `soc_2e=1` adds the mean-field
+two-electron SOC contribution used in practical molecular SOC calculations. See
+[References](../references.md#spin-orbit-coupling) for the SOC review and
+mean-field SOC operator reference.
+
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("soc_keywords")
+job.molecule(geometry="water", basis="6-31G(2df,p)", charge=0)
+job.input(functional="bhhlyp", soc_2e=1)
+job.mrsf(nstate=12, runtype="soc")
+job.tdhf.multiplicity = 3
+```
+
 ### `omp_threads`
 
 | Field | Value |

@@ -5,7 +5,15 @@ ROHF reference. Although it is configured through the TDHF/TDDFT response
 section, MRSF-TDDFT is used for multiconfigurational ground-state surfaces as
 well as excited-state surfaces.
 
+MRSF-TDDFT combines the two high-spin spin-flip reference components into a
+mixed-reference response problem. This keeps the linear-response workflow close
+to TDDFT while reducing the spin contamination that can obscure ordinary
+spin-flip TDDFT roots. See the [References](../references.md#mrsf-tddft) page
+for the original theory, analytic-gradient implementation, and recent accounts.
+
 ## Energy
+
+Input style:
 
 ```ini
 [input]
@@ -23,13 +31,31 @@ type=mrsf
 nstate=3
 ```
 
-Runnable reference:
-`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp`.
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_mrsf", silent=1)
+job.molecule(geometry="water", basis="6-31g*", charge=0)
+job.input(functional="bhhlyp")
+job.mrsf(nstate=3)
+
+mol = job.run()
+results = mol.get_results()
+print("Ground/reference energy:", results["energy"])
+print("TD energies:", results["td_energies"])
+```
+
+Runnable input:
+[`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp).
 
 ## Gradient
 
 Use `runtype=grad` and select the response state through
 `[properties] grad`.
+
+Input style:
 
 ```ini
 [input]
@@ -50,8 +76,23 @@ nstate=3
 grad=3
 ```
 
-Runnable reference:
-`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_GRADIENT.inp`.
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_mrsf_grad", silent=1)
+job.molecule(geometry="water", basis="6-31g*", charge=0)
+job.input(functional="bhhlyp")
+job.mrsf(nstate=3, runtype="grad")
+job.properties(grad=3)
+
+mol = job.run()
+gradient = mol.get_grad()
+```
+
+Runnable input:
+[`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_GRADIENT.inp).
 
 ## Notes
 

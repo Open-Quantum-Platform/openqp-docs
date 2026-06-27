@@ -4,6 +4,8 @@
 
 Request NMR shielding through `[properties] scf_prop=nmr`.
 
+Input style:
+
 ```ini
 [input]
 runtype=energy
@@ -19,7 +21,21 @@ scf_prop=nmr
 nmr_gauge=cgo
 ```
 
-Runnable reference: `examples/NMR/H2O_RHF-NMR.inp`.
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_nmr", silent=1, usempi=False)
+job.molecule(geometry="water", basis="sto-3g", charge=0)
+job.hf()
+job.properties(scf_prop="nmr", nmr_gauge="cgo")
+
+mol = job.run()
+```
+
+Runnable input:
+[`examples/NMR/H2O_RHF-NMR.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/NMR/H2O_RHF-NMR.inp).
 
 `nmr_gauge` accepts:
 
@@ -33,5 +49,34 @@ Runnable reference: `examples/NMR/H2O_RHF-NMR.inp`.
 IR and Raman intensities are produced from supported Hessian/frequency
 workflows. Start from the Hessian examples:
 
-- `examples/HESS/H2O_RHF-DFT_ANA_HESS.inp`
-- `examples/HESS/H2O_RHF-DFT_NUM_HESS.inp`
+Input style:
+
+```ini
+[input]
+runtype=hess
+method=hf
+functional=bhhlyp
+basis=6-31g*
+
+[hess]
+type=analytical
+state=0
+```
+
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_freq", silent=1, usempi=False)
+job.molecule(geometry="water", basis="6-31g*", charge=0)
+job.dft("bhhlyp", runtype="hess")
+job.hess(type="analytical", state=0)
+
+mol = job.run()
+```
+
+Runnable inputs:
+
+- [`examples/HESS/H2O_RHF-DFT_ANA_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.inp)
+- [`examples/HESS/H2O_RHF-DFT_NUM_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_NUM_HESS.inp)

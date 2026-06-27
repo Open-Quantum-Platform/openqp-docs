@@ -3,6 +3,17 @@
 The `[pcm]` section controls implicit-solvent settings. The current production
 path is an energy-only reference-SCF PCM/ddX workflow for RHF/ROHF references.
 
+## Background
+
+PCM replaces explicit solvent molecules with a dielectric continuum surrounding
+the solute cavity. In OpenQP, the production path uses ddX for
+domain-decomposition continuum models and currently couples that reaction field
+to the reference SCF energy. This page documents the implemented input
+contract; state-specific excited-state PCM, PCM gradients, and PCM
+optimizations are future workflow extensions. See
+[References](../references.md#pcm-and-ddx) for PCM and domain-decomposition
+ddPCM literature.
+
 ## Minimal Example
 
 ```ini
@@ -12,6 +23,24 @@ backend=ddx
 mode=reference_scf
 model=ddpcm
 epsilon=78.3553
+```
+
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("pcm_keywords", usempi=False)
+job.molecule(geometry="water", basis="6-31g*", charge=0)
+job.hf()
+job.input(ispher="true")
+job.pcm(
+    enabled=True,
+    backend="ddx",
+    mode="reference_scf",
+    model="ddpcm",
+    epsilon=78.3553,
+)
 ```
 
 ## Keywords

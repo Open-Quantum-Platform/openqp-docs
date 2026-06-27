@@ -30,6 +30,11 @@ State numbering is workflow dependent. HF/DFT reference-state properties usually
 use state `0`; TDHF, TDDFT, SF-TDDFT, and MRSF-TDDFT excited states use positive
 state indices.
 
+Method background and literature pointers are collected in
+[References](../references.md). The keyword pages link there for MRSF-TDDFT,
+SOC, and PCM/ddX rather than repeating full bibliographies inside each keyword
+entry.
+
 ## Section Index
 
 | Section | Purpose |

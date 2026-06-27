@@ -14,6 +14,8 @@ corresponding run type is implemented.
 
 ## Native Minimum Search
 
+Input style:
+
 ```ini
 [input]
 runtype=optimize
@@ -35,7 +37,22 @@ coordsys=tric
 trust=0.2
 ```
 
-Runnable reference: `examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp`.
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_opt", silent=1, usempi=False)
+job.molecule(geometry="water", basis="6-31g*", charge=0)
+job.dft("bhhlyp", runtype="optimize")
+job.optimize(lib="oqp", istate=0, maxit=10)
+job.oqp(coordsys="tric", trust=0.2)
+
+mol = job.run()
+```
+
+Runnable input:
+[`examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp).
 
 ## geomeTRIC Backend
 
@@ -52,11 +69,16 @@ trust=0.1
 constraints_file=my.constraints
 ```
 
-Runnable references are available in `examples/OPT/*_GEOMETRIC.inp`.
+Runnable geomeTRIC inputs are available in
+[`examples/OPT`](https://github.com/Open-Quantum-Platform/openqp/tree/main/examples/OPT),
+including
+[`H2O_RHF-DFT_OPTIMIZE_GEOMETRIC.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_GEOMETRIC.inp).
 
 ## Crossing Points
 
 MECI and related workflows select the state pair or triplet in `[optimize]`:
+
+Input style:
 
 ```ini
 [input]
@@ -73,4 +95,19 @@ istate=1
 jstate=2
 ```
 
-Runnable references are available in `examples/OPT`.
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("meci_mrsf", silent=1)
+job.molecule("reactant.xyz", basis="6-31g*", charge=0)
+job.input(functional="bhhlyp")
+job.mrsf(nstate=5, runtype="meci")
+job.optimize(lib="oqp", istate=1, jstate=2)
+
+mol = job.run()
+```
+
+Runnable inputs are available in
+[`examples/OPT`](https://github.com/Open-Quantum-Platform/openqp/tree/main/examples/OPT).

@@ -28,15 +28,9 @@ nav:
   - Installation: installation.md
   - Build Options: build-options.md
   - Quickstart: quickstart.md
-  - Run from Python: python-scripting.md
   - Input Files: input-file.md
   - Capabilities: capabilities.md
-  - API:
-      - Overview: api/index.md
-      - Python Runner: api/python-runner.md
-      - Results and Molecule Data: api/results.md
-      - Input Validation: api/input-validation.md
-      - Developer Interface: api/developer-interface.md
+  - Run from Python: python-scripting.md
   - Workflows:
       - HF and DFT: workflows/hf-dft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
@@ -63,5 +57,12 @@ nav:
       - neb: keywords/neb.md
       - pcm: keywords/pcm.md
       - symmetry: keywords/symmetry.md
+  - References: references.md
   - Examples: examples/index.md
   - Troubleshooting: troubleshooting.md
+  - API:
+      - Overview: api/index.md
+      - Python Runner: api/python-runner.md
+      - Results and Molecule Data: api/results.md
+      - Input Validation: api/input-validation.md
+      - Developer Interface: api/developer-interface.md

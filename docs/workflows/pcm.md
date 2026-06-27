@@ -2,6 +2,14 @@
 
 The current PCM production path is an energy-only reference-SCF workflow using
 the ddX backend.
+PCM treats the solvent as a polarizable dielectric continuum around a molecular
+cavity. OpenQP currently exposes the ddX-backed reference-SCF energy path, which
+is the first production solvent route and should be kept separate from future
+state-specific excited-state PCM work. See the
+[References](../references.md#pcm-and-ddx) page for continuum-solvation and
+domain-decomposition ddPCM background.
+
+Input style:
 
 ```ini
 [input]
@@ -22,7 +30,28 @@ model=ddpcm
 epsilon=78.3553
 ```
 
-Runnable reference: `examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.inp`.
+Python style:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_pcm", silent=1, usempi=False)
+job.molecule(geometry="water", basis="6-31g*", charge=0)
+job.hf()
+job.input(ispher="true")
+job.pcm(
+    enabled=True,
+    backend="ddx",
+    mode="reference_scf",
+    model="ddpcm",
+    epsilon=78.3553,
+)
+
+mol = job.run()
+```
+
+Runnable input:
+[`examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.inp).
 
 ## Scope
 

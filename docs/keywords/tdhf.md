@@ -4,6 +4,17 @@ The `[tdhf]` section controls TDHF, TDDFT, spin-flip TDDFT, MRSF-TDDFT, and
 UMRSF-TDDFT response calculations. Use `[input] method=tdhf` to activate these
 workflows.
 
+## Background
+
+MRSF-TDDFT is OpenQP's main multistate response method. It starts from an
+open-shell high-spin reference, builds spin-flip response spaces, and mixes the
+reference density information so target states are less affected by ordinary
+spin-flip spin contamination. In practice this makes the same response
+machinery useful for multiconfigurational ground-state surfaces, excited-state
+surfaces, conical-intersection work, gradients, NACME, SOC, and MRSF-EKT. See
+[References](../references.md#mrsf-tddft) for the original theory papers and
+recent overview articles.
+
 ## Minimal MRSF-TDDFT Example
 
 ```ini
@@ -18,6 +29,18 @@ multiplicity=3
 type=mrsf
 nstate=5
 multiplicity=1
+```
+
+The same setup in Python keeps the native section names visible:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("mrsf_keywords")
+job.molecule(geometry="water", basis="6-31g*", charge=0)
+job.input(functional="bhhlyp")
+job.mrsf(nstate=5)
+job.tdhf.multiplicity = 1
 ```
 
 ## Keywords
