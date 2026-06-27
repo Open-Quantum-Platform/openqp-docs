@@ -38,7 +38,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_dft_hess", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("dft", functional="bhhlyp", basis="6-31g*")
+job.theory.dft(functional="bhhlyp", basis="6-31g*")
 job.workflow.hessian(type="analytical", state=0, clean=True)
 
 mol = job.run()
@@ -75,7 +75,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_dft_num_hess", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("dft", functional="bhhlyp", basis="6-31g*")
+job.theory.dft(functional="bhhlyp", basis="6-31g*")
 job.workflow.hessian(state=0, clean=True)
 mol = job.run()
 ```
@@ -118,7 +118,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf_hess", silent=1)
 job.molecule(geometry="water", charge=0)
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=2)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=2)
 job.workflow.hessian(state=1, clean=True)
 
 mol = job.run()

@@ -21,6 +21,7 @@ soc_2e=1
 [scf]
 type=rohf
 multiplicity=3
+scal_rel=2
 
 [tdhf]
 type=mrsf
@@ -34,8 +35,8 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_soc", silent=1)
 job.molecule(geometry="water", charge=0)
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31G(2df,p)", nstate=12)
-job.workflow.soc(soc_2e=1)
+job.theory.mrsf(functional="bhhlyp", basis="6-31G(2df,p)", nstate=12)
+job.workflow.soc(soc_2e=1, scal_rel=2)
 
 mol = job.run()
 soc = mol.get_soc()
@@ -61,8 +62,10 @@ SOC workflows currently require MRSF-TDDFT: a triplet ROHF reference and
 `[tdhf] type=mrsf`.
 The SOC driver computes both singlet and triplet response roots internally, so
 Python scripts should use `job.workflow.soc(...)` after
-`job.theory("mrsf-tddft", ...)` rather than setting
+`job.theory.mrsf(...)` rather than setting
 `job.tdhf.multiplicity`.
+The Python helper sets `[scf] scal_rel=2` by default for the SOC workflow; pass
+`scal_rel=0`, `1`, or `2` to override it.
 
 ## Scalar Relativistic Correction
 

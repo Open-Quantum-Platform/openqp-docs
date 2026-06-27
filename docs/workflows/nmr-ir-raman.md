@@ -28,7 +28,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_nmr", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("hf", basis="sto-3g")
+job.theory.hf(basis="sto-3g")
 job.workflow.nmr(gauge="cgo")
 
 mol = job.run()
@@ -76,7 +76,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_freq", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("dft", functional="bhhlyp", basis="6-31g*")
+job.theory.dft(functional="bhhlyp", basis="6-31g*")
 job.workflow.hessian(type="analytical", state=0)
 
 mol = job.run()

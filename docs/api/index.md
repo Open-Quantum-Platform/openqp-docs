@@ -1,17 +1,15 @@
 # API Documentation
 
 OpenQP exposes several layers of programmatic access. Most users should start
-with the Python runner API because it follows the same input model as an
-ordinary `openqp input.inp` calculation while also returning Python objects for
-post-processing.
+with the Python API because it covers both compact `OpenQP` scripts and direct
+`Runner` execution of existing input files.
 
 ## API Layers
 
 | Layer | Entry point | Audience | Stability |
 | --- | --- | --- | --- |
 | Command line | `openqp input.inp` | Production runs, shell scripts, workflows | Stable |
-| Python-style API | `oqp.openqp.OpenQP` | Compact OpenQP-native Python scripts | Recommended |
-| Python runner | `oqp.pyoqp.Runner` | Python automation and notebooks | Recommended |
+| Python API | `oqp.openqp.OpenQP`, `oqp.pyoqp.Runner` | Scripts, notebooks, services, and automated workflows | Recommended |
 | Molecule data | `runner.mol` | Result extraction and advanced workflows | Semi-stable |
 | Input checker | `oqp.utils.input_checker.check_input_values` | Input builders, web forms, preflight validation | Recommended |
 | Convenience wrapper | `oqp.openqp.OPENQP` | Compact dotted-key Python inputs | Experimental |
@@ -24,17 +22,14 @@ directory and the installable distribution is named `OpenQP`.
 
 - Use [Run OpenQP from Python](../python-scripting.md) for complete script-based
   calculation examples.
-- Use [Python-Style API Function Reference](python-style-functions.md) for a
-  complete list of high-level `OpenQP` functions, workflow helpers, section
-  proxies, and geometry helpers.
-- Use [Python Runner](python-runner.md) to run calculations from scripts,
-  notebooks, services, or tests.
+- Use [Python API](python-runner.md) for high-level `OpenQP` scripts, direct
+  `Runner` execution, and the supported Python helper functions.
 - Use [Results and Molecule Data](results.md) to retrieve energies, gradients,
   orbitals, TDDFT arrays, SOC data, and serialized result dictionaries.
 - Use [Input Validation](input-validation.md) when building forms, agents, or
   custom front ends that need actionable diagnostics before launching OpenQP.
-- Use [Developer Interface](developer-interface.md) only when working on the
-  native OpenQP bridge or adding kernels.
+- Use the [Developer Guide](../developers/index.md) when contributing new
+  keywords, workflows, native kernels, data tags, or bindings.
 
 ## Generated References
 

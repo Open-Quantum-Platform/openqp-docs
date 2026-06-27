@@ -72,8 +72,11 @@ nav:
   - Troubleshooting: troubleshooting.md
   - API:
       - Overview: api/index.md
-      - Python Runner: api/python-runner.md
-      - Python-Style Function Reference: api/python-style-functions.md
+      - Python API: api/python-runner.md
       - Results and Molecule Data: api/results.md
       - Input Validation: api/input-validation.md
-      - Developer Interface: api/developer-interface.md
+  - Developer Guide:
+      - Overview: developers/index.md
+      - Contributing to OpenQP: developers/contributing.md
+      - Native Interface: developers/native-interface.md
+      - Data Tags and Tagarray: developers/tagarray.md

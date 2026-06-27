@@ -244,9 +244,12 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("soc_keywords")
 job.molecule(geometry="water", charge=0)
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31G(2df,p)", nstate=12)
-job.workflow.soc(soc_2e=1)
+job.theory.mrsf(functional="bhhlyp", basis="6-31G(2df,p)", nstate=12)
+job.workflow.soc(soc_2e=1, scal_rel=2)
 ```
+
+For Python SOC workflows, `job.workflow.soc(...)` sets `[scf] scal_rel=2` by
+default. Override it with `scal_rel=0`, `1`, or `2` when needed.
 
 ### `omp_threads`
 

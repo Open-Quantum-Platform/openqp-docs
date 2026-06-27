@@ -49,7 +49,7 @@ The input checker rejects `type=rhf` with `multiplicity>1`.
 
 Sets the spin multiplicity, `2S+1`. SF/MRSF examples usually use a triplet ROHF
 reference with `multiplicity=3`.
-In the high-level Python API, `job.theory("mrsf-tddft", ...)` supplies this
+In the high-level Python API, `job.theory.mrsf(...)` supplies this
 usual MRSF reference multiplicity implicitly; set `multiplicity` in
 `job.molecule(...)` for ordinary HF/DFT references or when overriding the
 default deliberately.
@@ -375,6 +375,12 @@ This is not the SOC switch. `scal_rel` changes the scalar, spin-free
 Hamiltonian; SOC is selected separately with `[input] runtype=soc` and
 `[input] soc_2e`. See [References](../references.md#scalar-relativistic-correction)
 for the DKH background.
+
+The input-file default is `scal_rel=0`. In the high-level Python API,
+`job.workflow.soc(...)` sets `scal_rel=2` by default for the SOC workflow
+because the documented SOC path uses a DKH2 spin-free Hamiltonian before the
+SOC matrix is formed. Pass `scal_rel=0`, `1`, or `2` to override that helper
+default.
 
 ### `stability`
 

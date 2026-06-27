@@ -38,7 +38,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_tddft", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("tddft", functional="b3lyp5", basis="6-31g*", nstate=3)
+job.theory.tddft(functional="b3lyp5", basis="6-31g*", nstate=3)
 
 mol = job.run()
 print("TD energies:", mol.get_td_energies())
@@ -82,7 +82,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_tddft_grad", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("tddft", functional="b3lyp5", basis="6-31g*", nstate=3)
+job.theory.tddft(functional="b3lyp5", basis="6-31g*", nstate=3)
 job.workflow.gradient(state=3)
 
 mol = job.run()
@@ -106,4 +106,4 @@ TDHF gradient example:
   ground state.
 - Use `[tdhf] type=rpa` or omit `type` for the default response model. Use
   `[tdhf] type=tda` when a TDA calculation is desired.
-- For TDHF in Python, use `job.theory("tdhf", basis=..., nstate=...)`.
+- For TDHF in Python, use `job.theory.tdhf(basis=..., nstate=...)`.

@@ -11,9 +11,9 @@ Both layers use the same OpenQP input schema and the same native calculation
 engine. `OpenQP` builds a sectioned dictionary and passes it to `Runner`.
 
 For a user-level guide with complete scripts, see
-[Run OpenQP from Python](../python-scripting.md). For a compact list of every
-high-level `OpenQP` helper, see
-[Python-Style API Function Reference](python-style-functions.md).
+[Run OpenQP from Python](../python-scripting.md). This page keeps the
+user-facing Python helpers in one place; developer-facing native details are in
+the [Developer Guide](../developers/index.md).
 
 ## High-Level OpenQP Wrapper
 
@@ -22,7 +22,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
 job.molecule(geometry="water", charge=0)
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
 print(mol.get_results()["td_energies"])
@@ -58,7 +58,7 @@ The high-level API is organized around six top-level calls:
 | Call | Role |
 | --- | --- |
 | `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
-| `job.theory(...)` | Quantum theory: method, functional, ordinary basis, reference, and response-state count. |
+| `job.theory.<model>(...)` | Quantum theory: method, functional, ordinary basis, reference, and response-state count. |
 | `job.workflow.*(...)` | Calculation type: energy, gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, and related workflows. |
 | `job.control(...)` | Hardware/runtime controls such as MPI and OpenMP threads. |
 | `job.settings.*(...)` | Specialized detailed settings such as atom-wise basis and direct section overrides. |
@@ -92,17 +92,23 @@ For compatibility with earlier scripts, `molecule(...)` can still accept
 ### Theory, Workflow, and Control
 
 ```python
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
 job.workflow.gradient(state=3)
 job.control(omp_threads=8, usempi=False)
 
-job.theory("dft", functional="pbe0", basis="6-31g*")
+job.theory.dft(functional="pbe0", basis="6-31g*")
 job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 ```
 
 | Method | Returns | Use |
 | --- | --- | --- |
-| `theory(method, functional=None, basis=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Sets the electronic-structure model. Use `method="hf"`, `"dft"`, `"tdhf"`, `"tddft"`, `"sf-tddft"`, or `"mrsf-tddft"`; `basis`, `functional`, and `nstate` belong here. |
+| `theory.hf(basis=None, reference="rhf", multiplicity=None, **scf_keywords)` | `OpenQP` | Selects Hartree-Fock reference-SCF theory. |
+| `theory.dft(functional, basis=None, reference="rhf", multiplicity=None, **scf_keywords)` | `OpenQP` | Selects Kohn-Sham DFT. The functional is part of the theory call. |
+| `theory.tdhf(basis=None, nstate=3, reference="rhf", multiplicity=1, **tdhf_keywords)` | `OpenQP` | Selects TDHF response theory. |
+| `theory.tddft(functional, basis=None, nstate=3, reference="rhf", multiplicity=1, **tdhf_keywords)` | `OpenQP` | Selects TDDFT response theory. |
+| `theory.sf_tddft(functional, basis=None, nstate=3, reference="rohf", multiplicity=3, **tdhf_keywords)` | `OpenQP` | Selects spin-flip TDDFT. `theory.sf(...)` is an alias. |
+| `theory.mrsf(functional=None, basis=None, nstate=3, reference="rohf", **tdhf_keywords)` | `OpenQP` | Selects MRSF-TDDFT and supplies the usual triplet ROHF reference implicitly. `theory.mrsf_tddft(...)` is an alias. |
+| `theory(method, functional=None, basis=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Backward-compatible string dispatcher for existing scripts. Use `"hf"`, `"dft"`, `"tdhf"`, `"tddft"`, `"sf-tddft"`, or `"mrsf-tddft"`. |
 | `control(omp_threads=None, usempi=None, **kwargs)` | `OpenQP` | Sets hardware/runtime controls such as `[input] omp_threads` and the runtime-only MPI flag. |
 | `workflow.gradient(state=None, **kwargs)` | `OpenQP` | Selects `runtype=grad` and stores the gradient state in `[properties] grad`. |
 | `workflow.hessian(**kwargs)` | `OpenQP` | Selects `runtype=hess` and stores Hessian controls in `[hess]`. |
@@ -110,14 +116,15 @@ job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 | `workflow.meci(**kwargs)` | `OpenQP` | Selects `runtype=meci`; the same style is available for `mecp`, `tci`, `mep`, `ts`, `irc`, and `neb`. |
 | `workflow.nacme(**kwargs)` | `OpenQP` | Selects `runtype=nacme` and requires MRSF-TDDFT. |
 | `workflow.ekt(ip=False, ea=False, **kwargs)` | `OpenQP` | Selects `runtype=ekt`, requires MRSF-TDDFT, and requires IP, EA, or both. |
-| `workflow.soc(soc_2e=1, **tdhf_keywords)` | `OpenQP` | Selects `runtype=soc` for an already configured MRSF-TDDFT theory and rejects non-MRSF theories. |
+| `workflow.soc(soc_2e=1, scal_rel=2, **tdhf_keywords)` | `OpenQP` | Selects `runtype=soc` for an already configured MRSF-TDDFT theory, sets DKH2 scalar relativity by default, and rejects non-MRSF theories. |
 | `workflow.pcm(**kwargs)` | `OpenQP` | Selects the current energy-only PCM/ddX path and requires HF/DFT reference-SCF, RHF/ROHF, `backend="ddx"`, and `mode="reference_scf"`. |
 | `workflow.nmr(gauge="cgo", **kwargs)` | `OpenQP` | Requests NMR shielding and requires HF/DFT reference-SCF. CGO is RHF-only; use GIAO for open-shell references. |
 
 Plain energy calculations do not need a workflow call. Use `job.workflow.<name>(...)`
 only when selecting a non-energy workflow or setting workflow-specific controls.
-`job.control(...)` and the older compact `hf`, `dft`, `mrsf`, and `soc` helpers
-remain available for existing scripts.
+`job.control(...)`, the string form `job.theory("mrsf-tddft", ...)`, and the
+older compact `job.hf(...)`, `job.dft(...)`, `job.mrsf(...)`, and `job.soc(...)`
+helpers remain available for existing scripts.
 
 The Python gradient helper uses `state=...` because users choose a molecular
 state, even though the input-file keyword remains `[properties] grad`. For
@@ -168,7 +175,7 @@ object, translates them into OpenQP sections, and returns an `OpenQP` job.
 
 ```python
 job = OpenQP.from_pyscf(pyscf_mol, project="mixed_workflow")
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
 mol = job.run()
 ```
 

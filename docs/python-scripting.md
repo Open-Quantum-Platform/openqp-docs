@@ -14,7 +14,7 @@ scripts organized around six top-level ideas.
 | Top-level call | Purpose |
 | --- | --- |
 | `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
-| `job.theory(...)` | Quantum theory: HF, DFT, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
+| `job.theory.<model>(...)` | Quantum theory: HF, DFT, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
 | `job.workflow.*(...)` | Calculation type: gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, and related job workflows. Plain energy calculations need no workflow call. |
 | `job.control(...)` | Hardware and runtime controls such as `usempi` and `omp_threads`. |
 | `job.settings.*(...)` | Specialized detailed settings that are not part of ordinary molecule/theory/workflow setup, such as atom-wise basis assignment. |
@@ -31,7 +31,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("h2o_mrsf", silent=1)
 
 job.molecule(geometry="water", charge=0)
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
 results = mol.get_results()
@@ -56,7 +56,7 @@ H   0.533194329  -0.533194329  -0.614469223
     charge=0,
     multiplicity=1,
 )
-job.theory("hf", basis="6-31g*")
+job.theory.hf(basis="6-31g*")
 
 mol = job.run()
 print("SCF energy:", mol.get_scf_energy())
@@ -73,7 +73,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_pbe", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("dft", functional="pbe", basis="6-31g*")
+job.theory.dft(functional="pbe", basis="6-31g*")
 
 mol = job.run()
 print("DFT energy:", mol.get_scf_energy())
@@ -89,8 +89,7 @@ low-level details.
 job = OpenQP("custom_mrsf")
 
 job.molecule("H 0 0 0; H 0 0 0.74", charge=0)
-job.theory(
-    "mrsf-tddft",
+job.theory.mrsf(
     functional="bhhlyp",
     basis="6-31g*",
     nstate=5,
@@ -104,10 +103,14 @@ mol = job.run()
 Ordinary basis selection belongs with the theory:
 
 ```python
-job.theory("dft", functional="pbe0", basis="def2-svp")
-job.theory("tddft", functional="b3lyp5", basis="6-31g*", nstate=3)
-job.theory("sf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
+job.theory.dft(functional="pbe0", basis="def2-svp")
+job.theory.tddft(functional="b3lyp5", basis="6-31g*", nstate=3)
+job.theory.sf_tddft(functional="bhhlyp", basis="6-31g*", nstate=3)
 ```
+
+For existing scripts, `job.theory("mrsf-tddft", ...)` and related string
+dispatch calls remain supported. New examples prefer `job.theory.mrsf(...)`,
+`job.theory.dft(...)`, and the other model-specific helpers.
 
 For gradients, Python uses `state=...` even though the input-file keyword is
 `[properties] grad`. HF/DFT reference gradients use `state=0`. Ordinary
@@ -119,7 +122,7 @@ Specialized atom-wise basis assignment belongs in `settings`:
 
 ```python
 job.molecule("Br 0 0 0; H 0 0 1.4", charge=0, multiplicity=1)
-job.theory("dft", functional="bhhlyp")
+job.theory.dft(functional="bhhlyp")
 job.settings.basis(["LANL2DZ", "6-31g*"])
 ```
 
@@ -134,7 +137,7 @@ H  1.0  0.0  0.0  h1
 """,
     charge=0,
 )
-job.theory("mrsf-tddft", functional="bhhlyp", nstate=5)
+job.theory.mrsf(functional="bhhlyp", nstate=5)
 job.settings.basis(c1="cc-pvdz", h1="6-31g*")
 ```
 
@@ -156,7 +159,7 @@ job.update({
 
 `job.molecule(...)` accepts named geometries, inline coordinates, atom lists,
 file paths, and an optional second geometry for two-structure workflows such as
-NACME. Keep method, functional, and basis setup in `job.theory(...)`.
+NACME. Keep method, functional, and basis setup in `job.theory.<model>(...)`.
 
 Named geometries keep small setup scripts short:
 
@@ -219,7 +222,7 @@ language. For mixed workflows, use the explicit conversion bridge:
 from oqp.openqp import OpenQP
 
 job = OpenQP.from_pyscf(pyscf_mol, project="mixed_workflow")
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
 
 mol = job.run()
 ```
@@ -270,7 +273,7 @@ threads can be set in the same call:
 ```python
 job = OpenQP("h2")
 job.molecule("H 0 0 0; H 0 0 0.74", charge=0, multiplicity=1)
-job.theory("hf", basis="6-31g*")
+job.theory.hf(basis="6-31g*")
 job.control(usempi=False, omp_threads=8)
 job.run()
 ```

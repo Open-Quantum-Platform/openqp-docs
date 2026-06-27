@@ -36,7 +36,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_sf", silent=1)
 job.molecule(geometry="water", charge=0)
-job.theory("sf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
+job.theory.sf_tddft(functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
 print("SF-TDDFT energies:", mol.get_td_energies())
@@ -79,7 +79,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_sf_grad", silent=1)
 job.molecule(geometry="water", charge=0)
-job.theory("sf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
+job.theory.sf_tddft(functional="bhhlyp", basis="6-31g*", nstate=3)
 job.workflow.gradient(state=3)
 
 mol = job.run()

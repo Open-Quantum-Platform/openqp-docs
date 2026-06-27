@@ -38,7 +38,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf", silent=1)
 job.molecule(geometry="water", charge=0)
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
 
 mol = job.run()
 results = mol.get_results()
@@ -81,7 +81,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_mrsf_grad", silent=1)
 job.molecule(geometry="water", charge=0)
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=3)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
 job.workflow.gradient(state=3)
 
 mol = job.run()
@@ -93,7 +93,7 @@ Runnable input:
 
 ## Notes
 
-- In Python, `job.theory("mrsf-tddft", ...)` supplies the usual ROHF triplet
+- In Python, `job.theory.mrsf(...)` supplies the usual ROHF triplet
   reference for MRSF-TDDFT. Raw input files still show `[scf] multiplicity=3`
   explicitly because they are the direct OpenQP keyword form.
 - MRSF state numbering follows the spin-flip/MRSF target-state list. `state=1`

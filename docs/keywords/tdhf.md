@@ -37,7 +37,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("mrsf_keywords")
 job.molecule(geometry="water", charge=0)
-job.theory("mrsf-tddft", functional="bhhlyp", basis="6-31g*", nstate=5)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
 ```
 
 ## Keywords

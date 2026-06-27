@@ -36,7 +36,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_pcm", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("hf", basis="6-31g*")
+job.theory.hf(basis="6-31g*")
 job.workflow.pcm(
     enabled=True,
     backend="ddx",

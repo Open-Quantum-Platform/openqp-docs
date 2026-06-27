@@ -33,7 +33,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_hf", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("hf", basis="6-31g*")
+job.theory.hf(basis="6-31g*")
 
 mol = job.run()
 print("SCF energy:", mol.get_scf_energy())
@@ -68,7 +68,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("h2o_dft_grad", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory("dft", functional="bhhlyp", basis="6-31g*")
+job.theory.dft(functional="bhhlyp", basis="6-31g*")
 job.workflow.gradient(state=0)
 
 mol = job.run()
