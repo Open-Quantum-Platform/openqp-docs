@@ -220,3 +220,40 @@ Threshold for reporting or using response configurations.
 
 Core-orbital selector for core-level response calculations such as X-ray
 absorption workflows.
+
+### `resp_cutoff`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `auto` (follows `perf`; `1e-8` baseline) |
+| Used by | MRSF-TDDFT — response 2e-integral cutoff |
+
+2e-integral cutoff for the MRSF response build. `1e-8` is exact to ≪ µeV;
+looser values (e.g. `1e-6`) trade a few µeV for speed. Never tighter than the
+SCF integral cutoff. See [Performance](../performance.md).
+
+### `fp32`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `auto` (follows `perf`; no preset enables it) |
+| Values | `on`, `off`, `auto` |
+| Used by | MRSF-TDDFT — single-precision response digestion |
+
+Single-precision MRSF response Fock digestion. Non-reproducible and can flip
+near-degenerate states; net-slower than FP64 on CPU. Opt-in only.
+
+### `zv_warmstart`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `auto` (follows `perf`; on at `perf` ≥ 1) |
+| Values | `on`, `off`, `auto` |
+| Used by | MRSF-TDDFT gradients — z-vector (CPHF) warm-start |
+
+Reuse the previous geometry step's z-vector as the CG/GMRES initial guess
+(exact; the solve still converges to the same tolerance). Most effective across
+many nearby geometries (optimization, MD).
