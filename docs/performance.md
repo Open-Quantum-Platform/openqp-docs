@@ -5,7 +5,7 @@ behind a single opt-in preset, `[input] perf`, that acts as one accuracy↔speed
 
 ```ini
 [input]
-perf = 1        # 0, 1, 2, or 3 (omit for the legacy default)
+perf = 1        # 0, 1, 2, or 3 (default 1; perf=-1 disables the preset)
 ```
 
 ## The four levels
@@ -15,13 +15,15 @@ perf = 1        # 0, 1, 2, or 3 (omit for the legacy default)
 | **0** | strict reference / reproducibility | every accelerator off, every cutoff tightest | bit-reference (fixed thread count) |
 | **1** | **recommended production** | exact, proven-helpful only: MRSF response cutoff `1e-8`, z-vector warm-start (+ always-on Fock digestion) | ≈ reference (≤ µEh) |
 | **2** | faster, tiny degradation | `perf=1` + coarse-to-fine XC grid + gradient Schwarz cutoff `1e-8` | gradients within ~5×10⁻⁷ a.u.; SCF exact at convergence |
-| **3** | aggressive, degradation allowed | looser cutoffs traded for speed: gradient `1e-7`, response `1e-6`, progressive screening | small, controlled (~few µeV on excitation energies) |
+| **3** | aggressive, degradation allowed | looser cutoffs traded for speed: gradient `1e-7`, response `1e-6` | small, controlled (~few µeV on excitation energies) |
 
-`perf` **unset** keeps the historic default behaviour unchanged. The levels were calibrated on a
+**`perf=1` is the default** (recommended production, exact). Set `perf=-1` to disable the preset
+entirely (every knob at its control default). The levels were calibrated on a
 CPU benchmark (MKL and Apple Accelerate) over HF/DFT/TDDFT/MRSF energies and MRSF gradients.
 
 !!! note "Why some accelerators are not in any preset"
-    On the CPU builds benchmarked, the XC Φ-cache, IncDFT and MRSF FP32 were performance-neutral
+    On the CPU builds benchmarked, the XC Φ-cache, IncDFT, MRSF FP32 and progressive screening
+    (`pscreen`) were performance-neutral
     to *negative* (FP32 was ~2× slower under MKL). No preset enables them; they remain available
     as explicit input keys (`xc_phi_cache`, `xc_incdft`, `fp32`) for regimes the CPU benchmark
     does not cover, e.g. GPU XC. Start at `perf=1` and raise it only if your own timing shows a gain.
