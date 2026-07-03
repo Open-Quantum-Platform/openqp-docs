@@ -13,7 +13,7 @@ MP2 is currently an energy-only post-SCF workflow:
 
 ## Energy
 
-Input style:
+### Input File Style
 
 ```ini
 [input]
@@ -39,7 +39,7 @@ conv=1.0e-10
 variant=mp2
 ```
 
-Python style:
+### Pythonic Style
 
 ```python
 from oqp.openqp import OpenQP
