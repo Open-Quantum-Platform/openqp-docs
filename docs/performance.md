@@ -25,20 +25,24 @@ CPU benchmark (MKL and Apple Accelerate) over HF/DFT/TDDFT/MRSF energies and MRS
     On the CPU builds benchmarked, the XC Φ-cache, IncDFT, MRSF FP32 and progressive screening
     (`pscreen`) were performance-neutral
     to *negative* (FP32 was ~2× slower under MKL). No preset enables them; they remain available
-    as explicit input keys (`xc_phi_cache`, `xc_incdft`, `fp32`) for regimes the CPU benchmark
-    does not cover, e.g. GPU XC. Start at `perf=1` and raise it only if your own timing shows a gain.
+    as explicit input keys (`xc_phi_cache`, `xc_incdft`, `fp32`, and `pscreen`/`pscreen_cap`)
+    for regimes the CPU benchmark does not cover, e.g. GPU XC. Start at `perf=1` and raise it
+    only if your own timing shows a gain.
 
 ## Individual input keys
 
-Every knob is also a direct input key. Each defaults to `auto` (defer to the preset); an explicit
-value **overrides** the preset.
+Every knob is also a direct input key. Most keys below default to `auto` (defer to the preset);
+an explicit value **overrides** the preset. Progressive screening is the exception:
+`pscreen` is an existing boolean key (`False` by default; use `on`/`off` or true/false), and
+`pscreen_cap` is numeric (`1.0e-8` by default). No current preset enables `pscreen`, so set it
+explicitly only when you want to test progressive screening.
 
 | Section | Key | Meaning |
 | --- | --- | --- |
 | `[scf]` | `xc_c2f` | coarse-to-fine XC grid during the SCF descent (`on`/`off`/`auto`) |
 | `[scf]` | `xc_phi_cache` | cache collocation Φ across SCF iterations — exact, opt-in (`on`/`off`/`auto`) |
 | `[scf]` | `xc_incdft` | incremental DFT — experimental, opt-in (`on`/`off`/`auto`) |
-| `[scf]` | `pscreen` | progressive integral/grid screening (+ `pscreen_cap`) |
+| `[scf]` | `pscreen`, `pscreen_cap` | progressive integral/grid screening (`pscreen` is `on`/`off`; `pscreen_cap` is numeric) |
 | `[scf]` | `grad_cutoff` | Schwarz cutoff for the 2e-derivative gradient build (number or `auto`) |
 | `[tdhf]` | `resp_cutoff` | 2e cutoff for the MRSF response build (number or `auto`) |
 | `[tdhf]` | `fp32` | single-precision MRSF response digestion — opt-in (`on`/`off`/`auto`) |
