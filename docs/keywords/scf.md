@@ -517,3 +517,50 @@ Global reduction factor for the TRAH microproblem.
 | Used by | TRAH local reduction |
 
 Local reduction factor for the TRAH microproblem.
+
+### `xc_c2f`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `auto` (follows `perf`) |
+| Values | `on`, `off`, `auto` |
+| Used by | DFT SCF — coarse-to-fine XC grid during descent |
+
+Use a coarse XC grid during the SCF descent and the full grid in the convergence
+tail. Exact at convergence. See [Performance](../performance.md).
+
+### `xc_phi_cache`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `auto` (follows `perf`; no preset enables it) |
+| Values | `on`, `off`, `auto` |
+| Used by | DFT SCF — collocation-Φ cache |
+
+Cache the collocation Φ across SCF iterations (exact). Opt-in; on the CPU
+benchmark it was net-negative, so no preset enables it.
+
+### `xc_incdft`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `auto` (follows `perf`; no preset enables it) |
+| Values | `on`, `off`, `auto` |
+| Used by | DFT SCF — incremental DFT (experimental) |
+
+Incremental XC from density differences. Experimental; typically slows SCF
+convergence. Opt-in only.
+
+### `grad_cutoff`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `auto` (follows `perf`; `1.0d-10` baseline) |
+| Used by | gradients — 2e-derivative Schwarz cutoff |
+
+Schwarz block cutoff for the 2e-derivative gradient build. Looser values trade a
+small gradient error for speed (`1.0d-8` ≈ 5×10⁻⁷ a.u.).

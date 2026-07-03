@@ -37,6 +37,7 @@ nav:
   - Quickstart: quickstart.md
   - Input File Format: input-file.md
   - Capabilities: capabilities.md
+  - Performance: performance.md
   - Run from Python: python-scripting.md
   - Workflows:
       - HF and DFT: workflows/hf-dft.md
