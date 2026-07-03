@@ -275,3 +275,17 @@ Example:
 [input]
 omp_threads=16
 ```
+
+### `perf`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `1` (recommended production) |
+| Values | `0`, `1`, `2`, `3` |
+| Used by | the performance preset (see [Performance](../performance.md)) |
+
+Opt-in performance preset that bundles the performance input keys into one
+accuracy↔speed dial: `0` strict reference, `1` recommended production (exact),
+`2` faster (tiny degradation), `3` aggressive (small degradation allowed).
+Explicit performance input keys override the preset. `perf=-1` disables the preset.
