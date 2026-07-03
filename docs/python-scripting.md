@@ -14,7 +14,7 @@ scripts organized around six top-level ideas.
 | Top-level call | Purpose |
 | --- | --- |
 | `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
-| `job.theory.<model>(...)` | Quantum theory: HF, DFT, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
+| `job.theory.<model>(...)` | Quantum theory: HF, DFT, MP2, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
 | `job.workflow.*(...)` | Calculation type: gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, NAMD, and related job workflows. Plain energy calculations need no workflow call. |
 | `job.qmmm(...)` | Enable ESPF QM/MM embedding: sets `[input] qmmm_flag=true` and the `[qmmm]` section (PDB, force field, QM atoms, cutoff, embedding). |
 | `job.control(...)` | Hardware and runtime controls such as `usempi` and `omp_threads`. |
@@ -40,6 +40,23 @@ results = mol.get_results()
 print("Ground/reference energy:", results["energy"])
 print("TD energies:", results["td_energies"])
 ```
+
+After an MRSF energy run, the same Python script can continue into excited-state
+analysis and export through `oqp.interop`.
+
+```python
+from oqp.interop import MRSFExcitedStates, nto_excitation
+
+states = MRSFExcitedStates(mol)
+nto = nto_excitation(states, 1)
+
+print("S0 -> S1 oscillator strength:", states.oscillator_strength(0, 1))
+print("Leading NTO weight:", nto["weights"][0])
+```
+
+See [MRSF Analysis and Interoperability](workflows/mrsf-analysis.md) for NTOs,
+attachment/detachment densities, cube export, QCSchema, FCIDUMP, and
+external-code comparisons.
 
 ## Minimal HF Script
 
@@ -80,6 +97,22 @@ mol = job.run()
 print("DFT energy:", mol.get_scf_energy())
 ```
 
+## Minimal MP2 Script
+
+MP2 uses an HF reference and is selected with `job.theory.mp2(...)`. It is
+currently an energy-only workflow.
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_mp2", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2", conv=1.0e-10)
+
+mol = job.run()
+print("MP2 total energy:", mol.get_results()["energy"])
+```
+
 ## Theory, Workflow, And Settings
 
 The distinction is intentional: `theory` chooses the quantum model, `workflow`
@@ -105,13 +138,15 @@ Ordinary basis selection belongs with the theory:
 
 ```python
 job.theory.dft(functional="pbe0", basis="def2-svp")
+job.theory.mp2(basis="6-31g", reference="uhf", variant="sos-mp2")
 job.theory.tddft(functional="b3lyp5", basis="6-31g*", nstate=3)
 job.theory.sf_tddft(functional="bhhlyp", basis="6-31g*", nstate=3)
 ```
 
 For existing scripts, `job.theory("mrsf-tddft", ...)` and related string
 dispatch calls remain supported. New examples prefer `job.theory.mrsf(...)`,
-`job.theory.dft(...)`, and the other model-specific helpers.
+`job.theory.dft(...)`, `job.theory.mp2(...)`, and the other model-specific
+helpers.
 
 For gradients, Python uses `state=...` even though the input-file keyword is
 `[properties] grad`. HF/DFT reference gradients use `state=0`. Ordinary

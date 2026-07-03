@@ -33,8 +33,8 @@ be the multiconfigurational ground state.
 
 Method background and literature pointers are collected in
 [References](../references.md). The keyword pages link there for MRSF-TDDFT,
-SOC, scalar relativistic correction, and PCM/ddX rather than repeating full
-bibliographies inside each keyword entry.
+MP2, SOC, scalar relativistic correction, and PCM/ddX rather than repeating
+full bibliographies inside each keyword entry.
 
 ## Section Index
 
@@ -43,6 +43,7 @@ bibliographies inside each keyword entry.
 | [`[input]`](input.md) | Global calculation setup, geometry, run type, AO convention, threading. |
 | [`[guess]`](guess.md) | Initial orbitals, restart files, and MO swaps. |
 | [`[scf]`](scf.md) | Reference type, convergence controls, pFON, TRAH, fallback manager. |
+| [`[mp2]`](mp2.md) | Standalone MP2 spin-scaling controls. |
 | [`[dftgrid]`](dftgrid.md) | DFT quadrature and hybrid/range-separated functional controls. |
 | [`[tdhf]`](tdhf.md) | TDHF/TDDFT/SF/MRSF/UMRSF response settings. |
 | [`[md]`](md.md) | Nonadiabatic surface-hopping molecular dynamics (`runtype=namd`), including SOC-NAMD. |

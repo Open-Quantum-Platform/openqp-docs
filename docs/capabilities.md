@@ -10,6 +10,7 @@ specific input contract.
 | Area | Status |
 | --- | --- |
 | HF and DFT | RHF, ROHF, and UHF references. |
+| MP2 | Energy-only standalone MP2 on RHF, UHF, and ROHF references, with spin-scaled variants. |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
 | SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
 | UMRSF-TDDFT | Energy-only UHF-reference workflow. |
@@ -24,6 +25,7 @@ specific input contract.
 | Numerical Hessians | Available through the Hessian workflow. |
 | NACME | MRSF-TDDFT state-coupling workflow. |
 | SOC | MRSF-TDDFT one-electron and mean-field two-electron SOC. |
+| MRSF excited-state analysis | NTOs, attachment/detachment densities, state-to-state transition densities, cube export, QCSchema export, FCIDUMP export, and external-code comparisons through `oqp.interop`. |
 | Nonadiabatic MD (NAMD) | Development preview in OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205), not OpenQP 1.2.0. Covers Tully surface hopping, SOC-NAMD, and ESPF QM/MM embedding. See [SOC-NAMD-QMMM](workflows/soc-namd-qmmm.md). |
 | QM/MM | Development preview in OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205), not OpenQP 1.2.0. Covers ESPF electrostatic embedding for single-point energies, ground-state MD, and nonadiabatic dynamics. See [`[qmmm]`](keywords/qmmm.md). |
 | Scalar relativistic correction | Spin-free DKH correction through `[scf] scal_rel=1` or `2`. |
@@ -44,5 +46,7 @@ SciPy remain optional backends for the workflows wired to them.
   QM/MM boundaries (link atoms) in dynamics are not yet available.
 - PCM gradients, PCM optimizations, and state-specific excited-state PCM are not
   part of the first ddX energy path.
+- MP2 gradients, Hessians, RI/Laplace/local MP2 kernels, and periodic MP2 are
+  not part of the documented standalone MP2 path.
 - UMRSF-TDDFT gradients and Hessians are not part of the documented production
   surface yet.

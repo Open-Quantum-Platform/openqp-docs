@@ -97,6 +97,7 @@ job.workflow.gradient(state=3)
 job.control(omp_threads=8, usempi=False)
 
 job.theory.dft(functional="pbe0", basis="6-31g*")
+job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2")
 job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 ```
 
@@ -104,11 +105,12 @@ job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 | --- | --- | --- |
 | `theory.hf(basis=None, reference="rhf", multiplicity=None, **scf_keywords)` | `OpenQP` | Selects Hartree-Fock reference-SCF theory. |
 | `theory.dft(functional, basis=None, reference="rhf", multiplicity=None, **scf_keywords)` | `OpenQP` | Selects Kohn-Sham DFT. The functional is part of the theory call. |
+| `theory.mp2(reference="rhf", runtype=None, multiplicity=None, basis=None, variant=None, same_spin_scale=None, opposite_spin_scale=None, **scf_keywords)` | `OpenQP` | Selects energy-only MP2 with an HF reference. Use `variant` for named spin scaling, or `variant="custom"` with explicit same- and opposite-spin scales. |
 | `theory.tdhf(basis=None, nstate=3, reference="rhf", multiplicity=1, **tdhf_keywords)` | `OpenQP` | Selects TDHF response theory. |
 | `theory.tddft(functional, basis=None, nstate=3, reference="rhf", multiplicity=1, **tdhf_keywords)` | `OpenQP` | Selects TDDFT response theory. |
 | `theory.sf_tddft(functional, basis=None, nstate=3, reference="rohf", multiplicity=3, **tdhf_keywords)` | `OpenQP` | Selects spin-flip TDDFT. `theory.sf(...)` is an alias. |
 | `theory.mrsf(functional=None, basis=None, nstate=3, reference="rohf", **tdhf_keywords)` | `OpenQP` | Selects MRSF-TDDFT and supplies the usual triplet ROHF reference implicitly. `theory.mrsf_tddft(...)` is an alias. |
-| `theory(method, functional=None, basis=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Backward-compatible string dispatcher for existing scripts. Use `"hf"`, `"dft"`, `"tdhf"`, `"tddft"`, `"sf-tddft"`, or `"mrsf-tddft"`. |
+| `theory(method, functional=None, basis=None, nstate=3, reference=None, **keywords)` | `OpenQP` | Backward-compatible string dispatcher for existing scripts. Use `"hf"`, `"dft"`, `"mp2"`, `"tdhf"`, `"tddft"`, `"sf-tddft"`, or `"mrsf-tddft"`. |
 | `control(omp_threads=None, usempi=None, **kwargs)` | `OpenQP` | Sets hardware/runtime controls such as `[input] omp_threads` and the runtime-only MPI flag. |
 | `workflow.gradient(state=None, **kwargs)` | `OpenQP` | Selects `runtype=grad` and stores the gradient state in `[properties] grad`. |
 | `workflow.hessian(**kwargs)` | `OpenQP` | Selects `runtype=hess` and stores Hessian controls in `[hess]`. |
@@ -125,6 +127,15 @@ only when selecting a non-energy workflow or setting workflow-specific controls.
 `job.control(...)`, the string form `job.theory("mrsf-tddft", ...)`, and the
 older compact `job.hf(...)`, `job.dft(...)`, `job.mrsf(...)`, and `job.soc(...)`
 helpers remain available for existing scripts.
+
+MP2 clears any DFT functional, forces `runtype=energy`, and accepts named or
+custom spin-scaling variants:
+
+```python
+job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2", conv=1.0e-10)
+job.theory("mp2", basis="6-31g", variant="custom",
+           same_spin_scale=0.5, opposite_spin_scale=1.1)
+```
 
 The Python gradient helper uses `state=...` because users choose a molecular
 state, even though the input-file keyword remains `[properties] grad`. For
