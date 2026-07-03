@@ -45,6 +45,8 @@ bibliographies inside each keyword entry.
 | [`[scf]`](scf.md) | Reference type, convergence controls, pFON, TRAH, fallback manager. |
 | [`[dftgrid]`](dftgrid.md) | DFT quadrature and hybrid/range-separated functional controls. |
 | [`[tdhf]`](tdhf.md) | TDHF/TDDFT/SF/MRSF/UMRSF response settings. |
+| [`[md]`](md.md) | Nonadiabatic surface-hopping molecular dynamics (`runtype=namd`), including SOC-NAMD. |
+| [`[qmmm]`](qmmm.md) | Hybrid QM/MM setup: QM region, force field, ESPF embedding, and link atoms. |
 | [`[properties]`](properties.md) | Gradients, NMR, export, and property requests. |
 | [`[hess]`](hess.md) | Hessian, frequency, and thermochemistry controls. |
 | [`[nac]`](nac.md) | NAC and NACME state-pair controls. |

@@ -24,6 +24,8 @@ specific input contract.
 | Numerical Hessians | Available through the Hessian workflow. |
 | NACME | MRSF-TDDFT state-coupling workflow. |
 | SOC | MRSF-TDDFT one-electron and mean-field two-electron SOC. |
+| Nonadiabatic MD (NAMD) | Tully fewest-switches surface hopping on MRSF-TDDFT states (`runtype=namd`), with SOC-NAMD (intersystem crossing) and ESPF QM/MM embedding. See [SOC-NAMD-QMMM](workflows/soc-namd-qmmm.md). |
+| QM/MM | ESPF electrostatic embedding for single-point energies, ground-state MD, and nonadiabatic dynamics. See [`[qmmm]`](keywords/qmmm.md). |
 | Scalar relativistic correction | Spin-free DKH correction through `[scf] scal_rel=1` or `2`. |
 | PCM/ddX | Energy-only reference-SCF path for RHF/ROHF. |
 | NMR | Nuclear magnetic shielding via `[properties] scf_prop=nmr`. |
@@ -37,7 +39,9 @@ SciPy remain optional backends for the workflows wired to them.
 
 ## Upcoming or Limited Areas
 
-- Production electrostatic embedding QM/MM is an active development direction.
+- Electrostatic embedding QM/MM is an active development direction. Nonadiabatic
+  QM/MM dynamics currently supports whole-molecule QM regions only; covalent
+  QM/MM boundaries (link atoms) in dynamics are not yet available.
 - PCM gradients, PCM optimizations, and state-specific excited-state PCM are not
   part of the first ddX energy path.
 - UMRSF-TDDFT gradients and Hessians are not part of the documented production
