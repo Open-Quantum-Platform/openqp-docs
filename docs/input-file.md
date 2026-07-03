@@ -44,6 +44,7 @@ previous geometry.
 | `[input]` | Charge, basis, method, run type, geometry, AO convention, threading. |
 | `[guess]` | Initial orbitals and restart data. |
 | `[scf]` | RHF/ROHF/UHF reference and SCF convergence controls. |
+| `[mp2]` | Standalone MP2 spin-scaling controls. |
 | `[dftgrid]` | DFT functional/grid controls. |
 | `[tdhf]` | TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, and UMRSF settings. |
 | `[properties]` | Gradients, NAC, NMR, export, and property requests. |
@@ -76,3 +77,7 @@ Common `[input] runtype` values:
 
 `md` is recognized by validation code but is not the current production
 workflow in this repository.
+
+Standalone MP2 is selected with `[input] method=mp2`, uses only
+`runtype=energy`, and requires an empty `[input] functional`. Spin-scaled MP2
+variants are controlled by the optional `[mp2]` section.

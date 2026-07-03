@@ -41,6 +41,7 @@ nav:
   - Run from Python: python-scripting.md
   - Workflows:
       - HF and DFT: workflows/hf-dft.md
+      - MP2: workflows/mp2.md
       - TDDFT and TDHF: workflows/tddft.md
       - SF-TDDFT: workflows/sf-tddft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
@@ -56,6 +57,7 @@ nav:
       - input: keywords/input.md
       - guess: keywords/guess.md
       - scf: keywords/scf.md
+      - mp2: keywords/mp2.md
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md
       - properties: keywords/properties.md

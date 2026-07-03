@@ -10,6 +10,7 @@ specific input contract.
 | Area | Status |
 | --- | --- |
 | HF and DFT | RHF, ROHF, and UHF references. |
+| MP2 | Energy-only standalone MP2 on RHF, UHF, and ROHF references, with spin-scaled variants. |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
 | SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
 | UMRSF-TDDFT | Energy-only UHF-reference workflow. |
@@ -40,5 +41,7 @@ SciPy remain optional backends for the workflows wired to them.
 - Production electrostatic embedding QM/MM is an active development direction.
 - PCM gradients, PCM optimizations, and state-specific excited-state PCM are not
   part of the first ddX energy path.
+- MP2 gradients, Hessians, RI/Laplace/local MP2 kernels, and periodic MP2 are
+  not part of the documented standalone MP2 path.
 - UMRSF-TDDFT gradients and Hessians are not part of the documented production
   surface yet.

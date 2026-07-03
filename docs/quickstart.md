@@ -71,6 +71,7 @@ Use these input files as nearby templates:
 | --- | --- |
 | MRSF-TDDFT energy | [`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp) |
 | RHF energy | [`examples/HF/H2O_RHF-HF_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HF/H2O_RHF-HF_ENERGY.inp) |
+| MP2 energy | [`examples/MP2/h2o_ump2_6-31g.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MP2/h2o_ump2_6-31g.inp) |
 | DFT gradient | [`examples/DFT/H2O_RHF-DFT_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/DFT/H2O_RHF-DFT_GRADIENT.inp) |
 | Analytic HF/DFT Hessian | [`examples/HESS/H2O_RHF-DFT_ANA_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.inp) |
 | Native geometry optimization | [`examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp) |
