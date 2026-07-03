@@ -77,6 +77,46 @@ cutoff           = PME
 embedding        = electrostatic
 ```
 
+## Python API
+
+In the compact `OpenQP` Python API, `job.qmmm(...)` enables QM/MM: it sets
+[`[input] qmmm_flag=true`](input.md#qmmm_flag) and the `[qmmm]` section in one
+call. `forcefield` is an alias for [`forcefield_files`](#forcefield_files); a
+list is joined into the comma-separated string OpenQP expects, and `qm_atoms`
+accepts a string (`"0-2"`) or a list of indices. Any other `[qmmm]` keyword can
+be passed through as a keyword argument.
+
+```python
+from oqp.openqp import OpenQP
+
+# Single-point QM/MM energy (QM selection inline in job.molecule)
+job = OpenQP("ala_qmmm", silent=1)
+job.molecule("ala.pdb 9 10 17 18 19", basis="6-31g*", charge=0)
+job.theory("hf", functional="bhhlyp")
+job.qmmm(embedding="electrostatic")
+mol = job.run()
+```
+
+```python
+# QM/MM molecular dynamics: PDB, force field, and QM atoms in job.qmmm(...)
+job = OpenQP("water_box_qmmm", silent=1)
+job.molecule("water_box.pdb 0 1 2", basis="6-31g")
+job.theory.mrsf(functional="bhhlyp", nstate=5)
+job.qmmm(
+    pdb_file="water_box.pdb",
+    forcefield=["amber14-all.xml", "amber14/tip3p.xml"],
+    qm_atoms="0-2",
+    cutoff="PME",
+    embedding="electrostatic",
+)
+job.workflow.namd(nstep=200, dt=0.5)   # add soc=True for SOC-NAMD-QMMM
+mol = job.run()
+```
+
+See the [SOC-NAMD-QMMM workflow](../workflows/soc-namd-qmmm.md) and
+[Run from Python](../python-scripting.md#qmmm-and-nonadiabatic-dynamics) for the
+full nonadiabatic QM/MM setup.
+
 ## Keywords
 
 ### `pdb_file`

@@ -371,3 +371,26 @@ Only used when `dt_adaptive=True`.
 - **QM/MM dynamics.** Combine `[md]` with [`[qmmm]`](qmmm.md) and
   `[input] qmmm_flag=true` for embedded dynamics; see the
   [SOC-NAMD-QMMM workflow](../workflows/soc-namd-qmmm.md).
+
+## Python API
+
+In the compact `OpenQP` Python API,
+[`job.workflow.namd(...)`](../python-scripting.md#qmmm-and-nonadiabatic-dynamics)
+selects the surface-hopping run (`runtype=namd`) and sets `[md]` keywords; it
+requires an MRSF-TDDFT theory. Pass `soc=True` (with an optional `soc_basis`) for
+SOC-NAMD, and combine with [`job.qmmm(...)`](qmmm.md#python-api) for QM/MM
+dynamics.
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("gas_socnamd", silent=1)
+job.molecule(geometry="water", charge=0)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
+
+# SOC-NAMD (intersystem crossing); drop soc=... for internal-conversion FSSH
+job.workflow.namd(soc=True, soc_basis="mch", nstep=200, dt=0.5,
+                  init_state="S1", thrshe=0.1, init_temp=300.0)
+
+mol = job.run()
+```

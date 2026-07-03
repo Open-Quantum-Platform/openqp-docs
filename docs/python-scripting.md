@@ -15,7 +15,8 @@ scripts organized around six top-level ideas.
 | --- | --- |
 | `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
 | `job.theory.<model>(...)` | Quantum theory: HF, DFT, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
-| `job.workflow.*(...)` | Calculation type: gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, and related job workflows. Plain energy calculations need no workflow call. |
+| `job.workflow.*(...)` | Calculation type: gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, NAMD, and related job workflows. Plain energy calculations need no workflow call. |
+| `job.qmmm(...)` | Enable ESPF QM/MM embedding: sets `[input] qmmm_flag=true` and the `[qmmm]` section (PDB, force field, QM atoms, cutoff, embedding). |
 | `job.control(...)` | Hardware and runtime controls such as `usempi` and `omp_threads`. |
 | `job.settings.*(...)` | Specialized detailed settings that are not part of ordinary molecule/theory/workflow setup, such as atom-wise basis assignment. |
 | `job.run()` | Execute the calculation and return the OpenQP `Molecule` result object. |
@@ -154,6 +155,72 @@ job.update({
     "tdhf": {"type": "mrsf", "nstate": 3},
 })
 ```
+
+## QM/MM and Nonadiabatic Dynamics
+
+!!! warning "Development preview"
+    `job.qmmm(...)` and `job.workflow.namd(...)` target the NAMD/QM/MM branch in
+    OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205)
+    and are not part of OpenQP 1.2.0.
+
+`job.qmmm(...)` enables ESPF QM/MM embedding, and `job.workflow.namd(...)` runs
+nonadiabatic (surface-hopping) molecular dynamics. They compose with the usual
+`job.molecule(...)` / `job.theory.*(...)` calls, so QM/MM, SOC-NAMD, and
+SOC-NAMD-QMMM are all built the same way.
+
+`job.qmmm(...)` sets `[input] qmmm_flag=true` and the `[qmmm]` section. The QM
+region and atom selection come from `job.molecule("file.pdb <indices>")`; QM/MM
+molecular dynamics additionally reads the PDB, force field, and QM atoms from
+`job.qmmm(...)`. `forcefield` is an alias for the `[qmmm] forcefield_files`
+list — a Python list is joined into the comma-separated string OpenQP expects,
+and `qm_atoms` accepts a string (`"0-2"`) or a list of indices.
+
+```python
+# Single-point QM/MM energy
+from oqp.openqp import OpenQP
+
+job = OpenQP("ala_qmmm", silent=1)
+job.molecule("ala.pdb 9 10 17 18 19", basis="6-31g*", charge=0)
+job.theory("hf", functional="bhhlyp")
+job.qmmm(embedding="electrostatic")
+mol = job.run()
+```
+
+`job.workflow.namd(...)` selects `runtype=namd` and sets the `[md]` section. Like
+the other MRSF workflows it requires an MRSF-TDDFT theory. Pass `soc=True` (with
+an optional `soc_basis`) for SOC-NAMD, and add `job.qmmm(...)` for QM/MM.
+
+```python
+# SOC-NAMD-QMMM in a periodic water box
+job = OpenQP("chromophore", silent=1)
+job.molecule("system.pdb 0-14", basis="6-31g*")
+job.theory.mrsf(functional="bhhlyp", nstate=3)
+job.qmmm(
+    pdb_file="system.pdb",
+    forcefield=["amber14-all.xml", "amber14/tip3p.xml"],
+    qm_atoms="0-14",
+    cutoff="PME",
+    embedding="electrostatic",
+    rigidwater=True,
+)
+job.workflow.namd(soc=True, soc_basis="mch", nstep=200, dt=0.5, init_state="S1")
+mol = job.run()
+```
+
+Dropping `job.qmmm(...)` gives gas-phase dynamics, and dropping `soc=True` gives
+internal-conversion FSSH:
+
+```python
+job = OpenQP("gas_namd", silent=1)
+job.molecule(geometry="water", charge=0)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=2)
+job.workflow.namd(nstep=100, dt=0.5, active=1)
+mol = job.run()
+```
+
+Nonadiabatic QM/MM dynamics currently supports whole-molecule QM regions; see the
+[SOC-NAMD-QMMM workflow](workflows/soc-namd-qmmm.md), the [`[md]`](keywords/md.md)
+section, and the [`[qmmm]`](keywords/qmmm.md) section for the full contract.
 
 ## Molecular Geometry
 
