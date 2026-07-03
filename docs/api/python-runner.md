@@ -97,6 +97,7 @@ job.workflow.gradient(state=3)
 job.control(omp_threads=8, usempi=False)
 
 job.theory.dft(functional="pbe0", basis="6-31g*")
+job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2")
 job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 ```
 
@@ -104,7 +105,7 @@ job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 | --- | --- | --- |
 | `theory.hf(basis=None, reference="rhf", multiplicity=None, **scf_keywords)` | `OpenQP` | Selects Hartree-Fock reference-SCF theory. |
 | `theory.dft(functional, basis=None, reference="rhf", multiplicity=None, **scf_keywords)` | `OpenQP` | Selects Kohn-Sham DFT. The functional is part of the theory call. |
-| `theory.mp2(basis=None, reference="rhf", multiplicity=None, variant=None, same_spin_scale=None, opposite_spin_scale=None, **scf_keywords)` | `OpenQP` | Selects standalone energy-only MP2 on an HF reference and routes spin-scaling options to `[mp2]`. |
+| `theory.mp2(reference="rhf", runtype=None, multiplicity=None, basis=None, variant=None, same_spin_scale=None, opposite_spin_scale=None, **scf_keywords)` | `OpenQP` | Selects energy-only MP2 with an HF reference. Use `variant` for named spin scaling, or `variant="custom"` with explicit same- and opposite-spin scales. |
 | `theory.tdhf(basis=None, nstate=3, reference="rhf", multiplicity=1, **tdhf_keywords)` | `OpenQP` | Selects TDHF response theory. |
 | `theory.tddft(functional, basis=None, nstate=3, reference="rhf", multiplicity=1, **tdhf_keywords)` | `OpenQP` | Selects TDDFT response theory. |
 | `theory.sf_tddft(functional, basis=None, nstate=3, reference="rohf", multiplicity=3, **tdhf_keywords)` | `OpenQP` | Selects spin-flip TDDFT. `theory.sf(...)` is an alias. |
@@ -127,8 +128,8 @@ only when selecting a non-energy workflow or setting workflow-specific controls.
 older compact `job.hf(...)`, `job.dft(...)`, `job.mrsf(...)`, and `job.soc(...)`
 helpers remain available for existing scripts.
 
-Standalone MP2 clears any DFT functional, forces `runtype=energy`, and accepts
-named or custom spin-scaling variants:
+MP2 clears any DFT functional, forces `runtype=energy`, and accepts named or
+custom spin-scaling variants:
 
 ```python
 job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2", conv=1.0e-10)

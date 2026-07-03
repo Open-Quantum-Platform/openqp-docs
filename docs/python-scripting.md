@@ -81,8 +81,8 @@ print("DFT energy:", mol.get_scf_energy())
 
 ## Minimal MP2 Script
 
-Standalone MP2 uses an HF reference and is selected with `job.theory.mp2(...)`.
-It is currently an energy-only workflow.
+MP2 uses an HF reference and is selected with `job.theory.mp2(...)`. It is
+currently an energy-only workflow.
 
 ```python
 from oqp.openqp import OpenQP
@@ -127,7 +127,8 @@ job.theory.sf_tddft(functional="bhhlyp", basis="6-31g*", nstate=3)
 
 For existing scripts, `job.theory("mrsf-tddft", ...)` and related string
 dispatch calls remain supported. New examples prefer `job.theory.mrsf(...)`,
-`job.theory.dft(...)`, and the other model-specific helpers.
+`job.theory.dft(...)`, `job.theory.mp2(...)`, and the other model-specific
+helpers.
 
 For gradients, Python uses `state=...` even though the input-file keyword is
 `[properties] grad`. HF/DFT reference gradients use `state=0`. Ordinary
