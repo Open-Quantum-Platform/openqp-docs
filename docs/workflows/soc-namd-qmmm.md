@@ -34,12 +34,11 @@ diagonalizes the spin-orbit Hamiltonian
 H = diag(E_MCH) + H_SOC
 ```
 
-whose eigenvectors define the **spin-adiabatic** states (the SHARC
-representation). Here the *MCH* (molecular Coulomb Hamiltonian) basis is the set
-of spin-pure MRSF singlet and triplet states, and `H_SOC` are the spin-orbit
-matrix elements that couple them. For `[tdhf] nstate` singlets and the same
-number of triplets, the manifold has `ns + 3*nt` spin-adiabatic states (each
-triplet contributes three `Ms` sublevels).
+whose eigenvectors define the **spin-adiabatic** states. Here the *MCH*
+(molecular Coulomb Hamiltonian) basis is the set of spin-pure MRSF singlet and
+triplet states, and `H_SOC` are the spin-orbit matrix elements that couple them.
+For `[tdhf] nstate` singlets and the same number of triplets, the manifold has
+`ns + 3*nt` SOC states (each triplet contributes three `Ms` sublevels).
 
 Surface hopping is carried out on this spin-mixed manifold, so a hop between a
 predominantly singlet and a predominantly triplet spin-adiabatic state *is* an
@@ -47,24 +46,19 @@ intersystem-crossing event. Continuity of the eigenvectors from step to step is
 maintained by **U-phase tracking** (the phase/ordering of the eigenvector matrix
 `U`), and the electronic amplitudes are propagated with local diabatization.
 
-**Active-surface force.** The current release computes the active-surface force
-as the **SHARC weighted-MCH diagonal gradient**: each contributing spin-pure
-(MCH) component carries its own gradient, weighted by its population in the
-active spin-adiabatic state, with components below [`grad_wthr`](../keywords/md.md#grad_wthr)
-dropped so the force stays continuous through strong spin mixing. At an ISC hop,
-velocities are rescaled to conserve the total energy (including the ESPF
-embedding energy change).
+**Active-surface force.** [`soc_basis`](../keywords/md.md#soc_basis) selects the
+force basis. The default `soc_basis=adiabatic` propagates on spin-adiabatic SOC
+eigenstates and uses the **weighted-MCH diagonal gradient**: each contributing
+spin-pure (MCH) component carries its own gradient, weighted by its population in
+the active spin-adiabatic state, with components below
+[`grad_wthr`](../keywords/md.md#grad_wthr) dropped so the force stays continuous
+through strong spin mixing. The `soc_du_dt_corr` and `soc_tdc_grad_corr` flags
+are optional approximate corrections for this adiabatic force path.
 
-!!! note "Planned: spin-pure (MCH) force basis"
-    A `soc_basis` keyword is planned to select between the SHARC spin-adiabatic
-    weighted-MCH diagonal gradient (`adiabatic`, current behavior) and a
-    spin-pure, exact active-root gradient (`mch`). The `mch` variant avoids the
-    approximate weighted gradient and is expected to be the recommended
-    production choice for energy conservation once released; adiabatic-basis
-    force corrections (`soc_du_dt_corr`, `soc_tdc_grad_corr`) are planned
-    alongside it. Until then, dynamics use the weighted-MCH diagonal gradient and
-    [`grad_wthr`](../keywords/md.md#grad_wthr); [`econs`](../keywords/md.md#econs)
-    is available as a temporary energy-conservation stabilizer.
+For production trajectories, `soc_basis=mch` propagates in the spin-pure MCH
+basis and uses exact active-root MCH gradients; with QM/MM this selects the
+`NAMD_SOC_MCH_QMMM` driver. At an ISC hop, velocities are rescaled to conserve
+the total energy (including the ESPF embedding energy change).
 
 ### ESPF QM/MM embedding
 
@@ -93,14 +87,17 @@ periodic (PME) water box, with the whole chromophore in the QM region.
 
 ## How the driver is selected
 
-`runfunc.compute_namd` picks the surface-hopping class from two flags:
+`runfunc.compute_namd` picks the surface-hopping class from `qmmm_flag`, `soc`,
+and `soc_basis`:
 
-| [`[input] qmmm_flag`](../keywords/input.md#qmmm_flag) | [`[md] soc`](../keywords/md.md#soc) | Class |
-| --- | --- | --- |
-| `false` | `false` | `NAMD` (gas-phase FSSH) |
-| `false` | `true`  | `NAMD_SOC` (gas-phase SOC-NAMD) |
-| `true`  | `false` | `NAMD_QMMM` (FSSH + ESPF QM/MM) |
-| **`true`** | **`true`** | **`NAMD_SOC_QMMM`** (SOC-NAMD + ESPF QM/MM) |
+| [`[input] qmmm_flag`](../keywords/input.md#qmmm_flag) | [`[md] soc`](../keywords/md.md#soc) | [`[md] soc_basis`](../keywords/md.md#soc_basis) | Class |
+| --- | --- | --- | --- |
+| `false` | `false` | ignored | `NAMD` (gas-phase FSSH) |
+| `false` | `true`  | `adiabatic` | `NAMD_SOC` (gas-phase spin-adiabatic SOC-NAMD) |
+| `false` | `true`  | `mch` | `NAMD_SOC_MCH` (gas-phase MCH-basis SOC-NAMD) |
+| `true`  | `false` | ignored | `NAMD_QMMM` (FSSH + ESPF QM/MM) |
+| **`true`** | **`true`** | `adiabatic` | **`NAMD_SOC_QMMM`** (spin-adiabatic SOC-NAMD + ESPF QM/MM) |
+| **`true`** | **`true`** | **`mch`** | **`NAMD_SOC_MCH_QMMM`** (MCH-basis SOC-NAMD + ESPF QM/MM) |
 
 ## Example deck: SOC-NAMD-QMMM in a periodic water box
 
@@ -125,7 +122,8 @@ nstate = 3                ; 3 singlets + 3 triplets -> ns+3*nt = 12 spin-adiabat
 
 [md]
 soc        = true         ; SOC-NAMD (intersystem crossing)
-active     = 1            ; initial spin-adiabatic surface (overridden by init_state)
+soc_basis  = mch          ; recommended production force basis
+active     = 1            ; initial SOC state (overridden by init_state)
 init_state = S1           ; start on the state with dominant S1 character
 nstep      = 200
 dt         = 0.5
@@ -149,7 +147,11 @@ Notes on the deck:
   `[tdhf] nstate=3` the spin-adiabatic manifold has `ns + 3*nt = 3 + 9 = 12`
   states, so `[md] active` may range `1..12`.
 - **Initial surface.** [`init_state=S1`](../keywords/md.md#init_state) starts on
-  the spin-adiabatic state of dominant S1 character and overrides `active`.
+  the state of dominant S1 character and overrides `active`.
+- **Force basis.** [`soc_basis=mch`](../keywords/md.md#soc_basis) uses exact
+  active-root MCH gradients and selects `NAMD_SOC_MCH_QMMM`. Use
+  `soc_basis=adiabatic` to test the spin-adiabatic weighted-gradient path and
+  its optional correction flags.
 - **Gap gate.** [`thrshe=0.1`](../keywords/md.md#thrshe) is the recommended
   SOC-NAMD value; the large default would allow spurious S0 hops at the
   Franck-Condon geometry.
@@ -170,18 +172,18 @@ Under NVE dynamics with the default full-ESPF electrostatics, `E_tot` should be
 physically meaningful. To verify, plot `E_tot` versus time from the trajectory
 log and confirm it fluctuates around a constant with no trend.
 
-If the spin-adiabatic weighted-MCH diagonal gradient produces a slow drift,
+If a SOC force path produces a slow drift,
 [`econs=true`](../keywords/md.md#econs) rescales velocities each step to conserve
-`E_tot` as a temporary stabilizer. The planned spin-pure `mch` force basis (with
-exact active-root gradients) is expected to conserve energy without this
-band-aid; see the [force-basis note](#soc-namd-intersystem-crossing) above.
+`E_tot` as a temporary stabilizer. Prefer `soc_basis=mch` for production
+SOC-NAMD-QMMM trajectories because it uses exact active-root MCH gradients; see
+the [force-basis note](#soc-namd-intersystem-crossing) above.
 
 ## References
 
 - MRSF-TDDFT — see [References: MRSF-TDDFT](../references.md#mrsf-tddft).
 - Relativistic MRSF-TDDFT spin-orbit coupling — see
   [References: Spin-Orbit Coupling](../references.md#spin-orbit-coupling).
-- Tully FSSH and the SHARC spin-adiabatic representation — see
+- Tully FSSH and spin-adiabatic surface hopping — see
   [References: Nonadiabatic dynamics](../references.md#nonadiabatic-dynamics).
 - ESPF QM/MM embedding and its periodic (PME) extension — see
   [References: QM/MM (ESPF) embedding](../references.md#qmmm-espf-embedding).

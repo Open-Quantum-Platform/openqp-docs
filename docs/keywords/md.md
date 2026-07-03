@@ -226,9 +226,55 @@ Enable SOC-NAMD: surface hopping on the **spin-adiabatic** manifold so
 intersystem crossing between MRSF singlet and triplet states is described. When
 `soc=true`, the manifold has `ns + 3*nt` states (`ns` singlets and `nt` triplets,
 each triplet contributing three `Ms` sublevels, with `ns = nt = [tdhf] nstate`).
-Combined with [`[input] qmmm_flag=true`](input.md#qmmm_flag) this selects the
-`NAMD_SOC_QMMM` driver (see the
+Combined with [`[input] qmmm_flag=true`](input.md#qmmm_flag), this selects an
+SOC-QM/MM driver; [`soc_basis`](#soc_basis) chooses between the spin-adiabatic
+and MCH-basis variants (see the
 [dispatch table](../workflows/soc-namd-qmmm.md#how-the-driver-is-selected)).
+
+### `soc_basis`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `adiabatic` |
+| Values | `adiabatic`, `mch` |
+| Used by | SOC-NAMD propagation and force basis |
+
+Selects the SOC-NAMD representation.
+
+| Value | Meaning |
+| --- | --- |
+| `adiabatic` | Propagate on spin-adiabatic SOC eigenstates and use the weighted-MCH diagonal gradient controlled by [`grad_wthr`](#grad_wthr). |
+| `mch` | Propagate in the spin-pure MCH basis with exact active-root MCH gradients. With QM/MM, this selects `NAMD_SOC_MCH_QMMM`. |
+
+The `mch` basis is the recommended production mode from the current validation
+work because it avoids the approximate weighted-gradient force used by the
+spin-adiabatic path.
+
+### `soc_du_dt_corr`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | spin-adiabatic SOC-NAMD force correction |
+
+For `soc_basis=adiabatic`, add a finite-difference `dU/dt` force correction to
+the weighted-MCH diagonal gradient. This is a diagnostic/validation option for
+the spin-adiabatic force path and is ignored by the MCH-basis driver.
+
+### `soc_tdc_grad_corr`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | spin-adiabatic SOC-NAMD force correction |
+
+For `soc_basis=adiabatic`, add an approximate MCH time-derivative-coupling
+projected gradient correction. It can be combined with
+[`soc_du_dt_corr`](#soc_du_dt_corr) for force-basis testing, and is ignored by
+the MCH-basis driver.
 
 ### `grad_wthr`
 
@@ -238,8 +284,8 @@ Combined with [`[input] qmmm_flag=true`](input.md#qmmm_flag) this selects the
 | Default | `0.001` |
 | Used by | SOC-NAMD active-surface force |
 
-Weight threshold for the SHARC weighted-MCH diagonal gradient. Only the
-spin-pure (MCH) components whose weight in the active spin-adiabatic state
+Weight threshold for the spin-adiabatic weighted-MCH diagonal gradient. Only
+the spin-pure (MCH) components whose weight in the active spin-adiabatic state
 exceeds `grad_wthr` contribute to the active-surface force (the three `Ms`
 sublevels of a triplet share a summed weight). A small value keeps the force
 continuous across regions of strong spin mixing.
@@ -311,17 +357,11 @@ Only used when `dt_adaptive=True`.
 - **Active-state range.** For plain FSSH, `1 <= active <= [tdhf] nstate`. For
   SOC-NAMD (`soc=true`), the spin-adiabatic manifold has `ns + 3*nt` states, so
   `1 <= active <= ns + 3*nt` (with `ns = nt = [tdhf] nstate`).
-- **SOC-only keywords.** [`grad_wthr`](#grad_wthr), [`init_state`](#init_state),
-  and [`econs`](#econs) apply only when `soc=true`. `init_state` overrides
-  `active`; `econs` is a temporary stabilizer.
+- **SOC-only keywords.** [`soc_basis`](#soc_basis), [`soc_du_dt_corr`](#soc_du_dt_corr),
+  [`soc_tdc_grad_corr`](#soc_tdc_grad_corr), [`grad_wthr`](#grad_wthr),
+  [`init_state`](#init_state), and [`econs`](#econs) apply only when
+  `soc=true`. `init_state` overrides `active`; `econs` is a temporary
+  stabilizer.
 - **QM/MM dynamics.** Combine `[md]` with [`[qmmm]`](qmmm.md) and
   `[input] qmmm_flag=true` for embedded dynamics; see the
   [SOC-NAMD-QMMM workflow](../workflows/soc-namd-qmmm.md).
-
-!!! note "Planned SOC force-variant keywords"
-    A spin-pure, exact active-root gradient (`soc_basis=mch`) and adiabatic-basis
-    force corrections (`soc_du_dt_corr`, `soc_tdc_grad_corr`) are planned
-    additions to the SOC-NAMD force. The current release uses the SHARC
-    spin-adiabatic weighted-MCH diagonal gradient controlled by
-    [`grad_wthr`](#grad_wthr). This page will list `soc_basis` and the associated
-    corrections once they are exposed in `oqpdata.py`.
