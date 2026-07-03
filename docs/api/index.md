@@ -11,6 +11,7 @@ with the Python API because it covers both compact `OpenQP` scripts and direct
 | Command line | `openqp input.inp` | Production runs, shell scripts, workflows | Stable |
 | Python API | `oqp.openqp.OpenQP`, `oqp.pyoqp.Runner` | Scripts, notebooks, services, and automated workflows | Recommended |
 | Molecule data | `runner.mol` | Result extraction and advanced workflows | Semi-stable |
+| MRSF analysis and interoperability | `oqp.interop` | NTOs, attachment/detachment densities, cubes, QCSchema, FCIDUMP, and external comparisons | Recommended |
 | Input checker | `oqp.utils.input_checker.check_input_values` | Input builders, web forms, preflight validation | Recommended |
 | Convenience wrapper | `oqp.openqp.OPENQP` | Compact dotted-key Python inputs | Experimental |
 | C/Fortran handle | `include/oqp.h`, `oqp_handle_t` | OpenQP developers and native extensions | Internal |
@@ -26,6 +27,8 @@ directory and the installable distribution is named `OpenQP`.
   `Runner` execution, and the supported Python helper functions.
 - Use [Results and Molecule Data](results.md) to retrieve energies, gradients,
   orbitals, TDDFT arrays, SOC data, and serialized result dictionaries.
+- Use [MRSF Analysis and Interoperability](../workflows/mrsf-analysis.md) for
+  post-run MRSF excited-state analysis, exports, and external-code comparisons.
 - Use [Input Validation](input-validation.md) when building forms, agents, or
   custom front ends that need actionable diagnostics before launching OpenQP.
 - Use the [Developer Guide](../developers/index.md) when contributing new

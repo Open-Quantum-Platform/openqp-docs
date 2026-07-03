@@ -40,6 +40,23 @@ print("Ground/reference energy:", results["energy"])
 print("TD energies:", results["td_energies"])
 ```
 
+After an MRSF energy run, the same Python script can continue into excited-state
+analysis and export through `oqp.interop`.
+
+```python
+from oqp.interop import MRSFExcitedStates, nto_excitation
+
+states = MRSFExcitedStates(mol)
+nto = nto_excitation(states, 1)
+
+print("S0 -> S1 oscillator strength:", states.oscillator_strength(0, 1))
+print("Leading NTO weight:", nto["weights"][0])
+```
+
+See [MRSF Analysis and Interoperability](workflows/mrsf-analysis.md) for NTOs,
+attachment/detachment densities, cube export, QCSchema, FCIDUMP, and
+external-code comparisons.
+
 ## Minimal HF Script
 
 ```python
