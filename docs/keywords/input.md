@@ -155,7 +155,7 @@ a mapping.
 | --- | --- |
 | Type | string |
 | Default | `energy` |
-| Values | `energy`, `grad`, `hess`, `nac`, `nacme`, `bp`, `optimize`, `meci`, `mecp`, `tci`, `mep`, `ts`, `irc`, `neb`, `prop`, `data`, `ekt`, `soc`, `namd` |
+| Values | `energy`, `grad`, `hess`, `nac`, `nacme`, `bp`, `optimize`, `meci`, `mecp`, `tci`, `mep`, `ts`, `irc`, `neb`, `prop`, `data`, `ekt`, `soc` |
 | Used by | top-level workflow dispatch |
 
 Selects the calculation workflow.
@@ -169,15 +169,18 @@ Common values:
 | `hess` | Hessian and frequency workflow. |
 | `nacme` | Nonadiabatic coupling matrix element workflow. |
 | `soc` | Spin-orbit coupling workflow. |
-| `namd` | Nonadiabatic surface-hopping molecular dynamics (see [`[md]`](md.md) and [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md)). |
 | `ekt` | MRSF-EKT ionization/electron-affinity workflow. |
 | `optimize` | Geometry optimization. |
 | `meci`, `mecp`, `tci` | Crossing-point searches. |
 | `ts`, `irc`, `neb`, `mep` | Reaction-path workflows. |
 | `prop`, `data` | Multi-state property/data workflows for downstream drivers. |
 
-Use `runtype=namd` for surface-hopping molecular dynamics; it is configured by
-the [`[md]`](md.md) section and requires an MRSF-TDDFT setup.
+!!! warning "Development preview"
+    `runtype=namd` is added by OpenQP PR
+    [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205). It is not
+    available in OpenQP 1.2.0. In that implementation branch, `namd` selects
+    surface-hopping molecular dynamics configured by the [`[md]`](md.md)
+    section and requires an MRSF-TDDFT setup.
 
 ### `ispher`
 
@@ -266,6 +269,11 @@ classical (OpenMM) MM environment through the ESPF operator, configured by the
 ground-state QM/MM molecular dynamics, and nonadiabatic
 [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md) dynamics (`runtype=namd` with
 `[md] soc=true`). Without `qmmm_flag=true` the `[qmmm]` section is ignored.
+
+!!! warning "Development preview"
+    `qmmm_flag` and the `[qmmm]` schema documented here are from OpenQP PR
+    [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205), not
+    OpenQP 1.2.0.
 
 ### `omp_threads`
 

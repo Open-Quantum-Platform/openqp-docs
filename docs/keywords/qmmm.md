@@ -8,6 +8,12 @@ MRSF-TDDFT) is embedded in a classical force-field environment handled by
 ground-state QM/MM molecular dynamics, and nonadiabatic
 [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md) dynamics.
 
+!!! warning "Development preview"
+    This section documents the QM/MM implementation branch in
+    OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205).
+    It is not part of OpenQP 1.2.0; use that source branch or a later release
+    that includes the `[qmmm]` schema.
+
 ## Background
 
 The QM subsystem is polarized by the MM electrostatic potential through the
@@ -39,7 +45,7 @@ runtype    = energy
 method     = hf
 functional = bhhlyp
 basis      = 6-31g*
-system     = ala.pdb 9 10 17 18 19   ; PDB path + 0-based QM atom indices
+system     = ala.pdb 9 10 17 18 19
 
 [scf]
 type = rhf

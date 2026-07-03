@@ -24,8 +24,8 @@ specific input contract.
 | Numerical Hessians | Available through the Hessian workflow. |
 | NACME | MRSF-TDDFT state-coupling workflow. |
 | SOC | MRSF-TDDFT one-electron and mean-field two-electron SOC. |
-| Nonadiabatic MD (NAMD) | Tully fewest-switches surface hopping on MRSF-TDDFT states (`runtype=namd`), with SOC-NAMD (intersystem crossing) and ESPF QM/MM embedding. See [SOC-NAMD-QMMM](workflows/soc-namd-qmmm.md). |
-| QM/MM | ESPF electrostatic embedding for single-point energies, ground-state MD, and nonadiabatic dynamics. See [`[qmmm]`](keywords/qmmm.md). |
+| Nonadiabatic MD (NAMD) | Development preview in OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205), not OpenQP 1.2.0. Covers Tully surface hopping, SOC-NAMD, and ESPF QM/MM embedding. See [SOC-NAMD-QMMM](workflows/soc-namd-qmmm.md). |
+| QM/MM | Development preview in OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205), not OpenQP 1.2.0. Covers ESPF electrostatic embedding for single-point energies, ground-state MD, and nonadiabatic dynamics. See [`[qmmm]`](keywords/qmmm.md). |
 | Scalar relativistic correction | Spin-free DKH correction through `[scf] scal_rel=1` or `2`. |
 | PCM/ddX | Energy-only reference-SCF path for RHF/ROHF. |
 | NMR | Nuclear magnetic shielding via `[properties] scf_prop=nmr`. |

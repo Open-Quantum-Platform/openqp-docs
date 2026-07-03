@@ -14,6 +14,12 @@ It is dispatched by `runtype=namd` with `[md] soc=true` and
 and [`[qmmm]`](../keywords/qmmm.md) sections. This page introduces the method and
 gives a complete, runnable input deck.
 
+!!! warning "Development preview"
+    This workflow documents the implementation branch in
+    OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205).
+    It is not part of OpenQP 1.2.0; use that source branch or a later release
+    that includes `runtype=namd`.
+
 ## Overview and theory
 
 ### FSSH nonadiabatic dynamics
@@ -114,29 +120,29 @@ basis      = 6-31g*
 
 [scf]
 type         = rohf
-multiplicity = 3          ; MRSF high-spin (triplet) reference
+multiplicity = 3
 
 [tdhf]
 type   = mrsf
-nstate = 3                ; 3 singlets + 3 triplets -> ns+3*nt = 12 spin-adiabatic states
+nstate = 3
 
 [md]
-soc        = true         ; SOC-NAMD (intersystem crossing)
-soc_basis  = mch          ; recommended production force basis
-active     = 1            ; initial SOC state (overridden by init_state)
-init_state = S1           ; start on the state with dominant S1 character
+soc        = true
+soc_basis  = mch
+active     = 1
+init_state = S1
 nstep      = 200
 dt         = 0.5
-thrshe     = 0.1          ; SOC-NAMD recommended gap gate (blocks large-gap S0 hops at FC)
+thrshe     = 0.1
 init_temp  = 300.0
 grad_wthr  = 0.001
 
 [qmmm]
 pdb_file         = chromophore_water.pdb
 forcefield_files = amber14-all.xml,amber14/tip3p.xml
-qm_atoms         = 0-14   ; whole-molecule QM region (0-based indices)
-cutoff           = PME    ; periodic water box (ESPF-PME)
-embedding        = electrostatic   ; full-ESPF (default)
+qm_atoms         = 0-14
+cutoff           = PME
+embedding        = electrostatic
 rigidwater       = True
 ```
 

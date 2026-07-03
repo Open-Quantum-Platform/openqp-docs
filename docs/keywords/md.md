@@ -9,6 +9,12 @@ an MRSF-TDDFT theory block, and — for embedded dynamics — the
 [SOC-NAMD-QMMM workflow](../workflows/soc-namd-qmmm.md) for complete decks and
 theory.
 
+!!! warning "Development preview"
+    This section documents the NAMD implementation branch in
+    OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205).
+    It is not part of OpenQP 1.2.0; `runtype=namd` requires that source branch
+    or a later release.
+
 ## Background
 
 Surface-hopping dynamics propagates classical nuclei on one active
