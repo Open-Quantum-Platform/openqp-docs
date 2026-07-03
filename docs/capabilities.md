@@ -25,6 +25,7 @@ specific input contract.
 | Numerical Hessians | Available through the Hessian workflow. |
 | NACME | MRSF-TDDFT state-coupling workflow. |
 | SOC | MRSF-TDDFT one-electron and mean-field two-electron SOC. |
+| MRSF excited-state analysis | NTOs, attachment/detachment densities, state-to-state transition densities, cube export, QCSchema export, FCIDUMP export, and external-code comparisons through `oqp.interop`. |
 | Scalar relativistic correction | Spin-free DKH correction through `[scf] scal_rel=1` or `2`. |
 | PCM/ddX | Energy-only reference-SCF path for RHF/ROHF. |
 | NMR | Nuclear magnetic shielding via `[properties] scf_prop=nmr`. |

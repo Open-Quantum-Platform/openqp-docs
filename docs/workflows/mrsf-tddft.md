@@ -49,6 +49,10 @@ print("TD energies:", results["td_energies"])
 Runnable input:
 [`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp).
 
+For post-run NTOs, attachment/detachment densities, transition densities,
+cube files, QCSchema export, FCIDUMP export, and external-code comparisons, see
+[MRSF Analysis and Interoperability](mrsf-analysis.md).
+
 ## Gradient
 
 Use `runtype=grad` and select the state through `[properties] grad`.

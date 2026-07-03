@@ -45,6 +45,7 @@ nav:
       - TDDFT and TDHF: workflows/tddft.md
       - SF-TDDFT: workflows/sf-tddft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
+      - MRSF Analysis and Interoperability: workflows/mrsf-analysis.md
       - Hessian and Frequencies: workflows/hessian.md
       - Optimization: workflows/optimization.md
       - Spin-Orbit Coupling: workflows/soc.md
