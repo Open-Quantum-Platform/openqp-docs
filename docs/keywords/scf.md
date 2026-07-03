@@ -1,8 +1,8 @@
 # `[scf]`
 
 The `[scf]` section controls the reference wavefunction and SCF convergence
-strategy. It is required for HF, DFT, TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT, SOC,
-NACME, and EKT workflows.
+strategy. It is required for HF, DFT, MP2, TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT,
+SOC, NACME, and EKT workflows.
 
 ## Minimal Examples
 
@@ -35,7 +35,8 @@ multiplicity=3
 
 Selects the SCF reference. Use `rhf` for closed-shell singlets, `rohf` for the
 high-spin reference commonly used by SF/MRSF workflows, and `uhf` for
-unrestricted references including UMRSF-TDDFT.
+unrestricted references including UMRSF-TDDFT. Standalone MP2 supports RHF,
+UHF, and ROHF references.
 
 The input checker rejects `type=rhf` with `multiplicity>1`.
 

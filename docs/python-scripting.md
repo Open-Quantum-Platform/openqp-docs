@@ -14,7 +14,7 @@ scripts organized around six top-level ideas.
 | Top-level call | Purpose |
 | --- | --- |
 | `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
-| `job.theory.<model>(...)` | Quantum theory: HF, DFT, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
+| `job.theory.<model>(...)` | Quantum theory: HF, DFT, MP2, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
 | `job.workflow.*(...)` | Calculation type: gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, and related job workflows. Plain energy calculations need no workflow call. |
 | `job.control(...)` | Hardware and runtime controls such as `usempi` and `omp_threads`. |
 | `job.settings.*(...)` | Specialized detailed settings that are not part of ordinary molecule/theory/workflow setup, such as atom-wise basis assignment. |
@@ -79,6 +79,22 @@ mol = job.run()
 print("DFT energy:", mol.get_scf_energy())
 ```
 
+## Minimal MP2 Script
+
+Standalone MP2 uses an HF reference and is selected with `job.theory.mp2(...)`.
+It is currently an energy-only workflow.
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_mp2", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2", conv=1.0e-10)
+
+mol = job.run()
+print("MP2 total energy:", mol.get_results()["energy"])
+```
+
 ## Theory, Workflow, And Settings
 
 The distinction is intentional: `theory` chooses the quantum model, `workflow`
@@ -104,6 +120,7 @@ Ordinary basis selection belongs with the theory:
 
 ```python
 job.theory.dft(functional="pbe0", basis="def2-svp")
+job.theory.mp2(basis="6-31g", reference="uhf", variant="sos-mp2")
 job.theory.tddft(functional="b3lyp5", basis="6-31g*", nstate=3)
 job.theory.sf_tddft(functional="bhhlyp", basis="6-31g*", nstate=3)
 ```

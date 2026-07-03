@@ -76,15 +76,16 @@ chosen reference type physically consistent.
 | --- | --- |
 | Type | string |
 | Default | `hf` |
-| Values | `hf`, `tdhf` |
+| Values | `hf`, `tdhf`, `mp2` |
 | Used by | workflow dispatch |
 
 Selects the electronic-structure driver. Use `method=hf` for HF and DFT
-reference calculations. Use `method=tdhf` for TDHF, TDDFT, SF-TDDFT,
-MRSF-TDDFT, SOC, NACME, and MRSF-EKT workflows.
+reference calculations. Use `method=mp2` for standalone ground-state MP2
+correlation. Use `method=tdhf` for TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, SOC,
+NACME, and MRSF-EKT workflows.
 
 DFT calculations still use `method=hf`; the functional is selected separately
-with `functional`.
+with `functional`. MP2 calculations require `functional` to be empty.
 
 ### `functional`
 
@@ -100,6 +101,9 @@ values such as `bhhlyp`, `pbe0`, and DTCAM-series functionals where supported.
 Some property implementations have functional restrictions. For example, NMR
 shielding does not support range-separated or meta-GGA functionals in the
 current checker.
+
+Standalone MP2 uses an HF reference. With `method=mp2`, leave `functional`
+empty; non-empty values are rejected before the calculation starts.
 
 ### `basis`
 
@@ -177,6 +181,9 @@ Common values:
 
 `md` is recognized by validation code but is not implemented as a production
 workflow in this repository.
+
+When `method=mp2`, `runtype` must be `energy`. MP2 gradients, Hessians, and
+optimization workflows are not wired in this release.
 
 ### `ispher`
 

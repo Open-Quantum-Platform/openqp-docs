@@ -3,7 +3,7 @@
 **Manual version:** 1.2.0; **OpenQP version:** 1.2.0
 
 Open Quantum Platform (OpenQP) is a quantum chemistry package centered on
-HF/DFT, TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT, and related workflows for
+HF/DFT, MP2, TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT, and related workflows for
 multiconfigurational ground and excited states.
 The manual is organized around what users usually need first: install OpenQP,
 prepare an input, run a calculation, then look up keywords when a workflow needs
@@ -24,13 +24,14 @@ workflows and keywords.
   output files.
 - [Examples](examples/index.md): runnable inputs stored in the OpenQP code
   repository.
-- [References](references.md): platform, MRSF-TDDFT, SOC, scalar relativistic,
-  and PCM/ddX papers
+- [References](references.md): platform, MP2, MRSF-TDDFT, SOC, scalar
+  relativistic, and PCM/ddX papers
   cited by the manual.
 
 ## Common Workflows
 
 - Ground-state [HF and DFT](workflows/hf-dft.md)
+- Energy-only [MP2](workflows/mp2.md) and spin-scaled MP2 variants
 - [TDDFT and TDHF](workflows/tddft.md) energies and gradients
 - [SF-TDDFT](workflows/sf-tddft.md) spin-flip energies and gradients
 - [MRSF-TDDFT](workflows/mrsf-tddft.md) energies and gradients
@@ -46,7 +47,7 @@ workflows and keywords.
 
 The [keyword reference](keywords/index.md) is the code-aligned lookup layer for
 high-drift input sections such as `[input]`, `[scf]`, `[optimize]`, `[oqp]`,
-`[pcm]`, and `[symmetry]`. It should be checked against
+`[mp2]`, `[pcm]`, and `[symmetry]`. It should be checked against
 [`pyoqp/oqp/molecule/oqpdata.py`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyoqp/oqp/molecule/oqpdata.py)
 and
 [`pyoqp/oqp/utils/input_checker.py`](https://github.com/Open-Quantum-Platform/openqp/blob/main/pyoqp/oqp/utils/input_checker.py)

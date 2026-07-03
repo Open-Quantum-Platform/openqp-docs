@@ -2,8 +2,8 @@
 
 This page collects the paper references cited by the manual. Use the OpenQP
 platform paper when citing the code itself, and add method-specific references
-when a paper uses MRSF-TDDFT, SOC, scalar relativistic correction, PCM/ddX, or
-related workflows.
+when a paper uses MP2, spin-scaled MP2, MRSF-TDDFT, SOC, scalar relativistic
+correction, PCM/ddX, or related workflows.
 
 ## OpenQP
 
@@ -12,6 +12,23 @@ related workflows.
   "OpenQP: A Quantum Chemical Platform Featuring MRSF-TDDFT with an Emphasis on
   Open-Source Ecosystem." Journal of Chemical Theory and Computation 20,
   9464-9477 (2024). [doi:10.1021/acs.jctc.4c01117](https://doi.org/10.1021/acs.jctc.4c01117)
+
+## MP2 and Spin-Scaled MP2
+
+- Moller C and Plesset MS. "Note on an Approximation Treatment for
+  Many-Electron Systems." Physical Review 46, 618-622 (1934).
+  [doi:10.1103/PhysRev.46.618](https://doi.org/10.1103/PhysRev.46.618)
+- Grimme S. "Improved Second-Order Moller-Plesset Perturbation Theory by
+  Separate Scaling of Parallel- and Antiparallel-Spin Pair Correlation
+  Energies." Journal of Chemical Physics 118, 9095-9102 (2003).
+  [doi:10.1063/1.1569242](https://doi.org/10.1063/1.1569242)
+- Jung Y, Lochan RC, Dutoi AD, and Head-Gordon M. "Scaled Opposite-Spin
+  Second Order Moller-Plesset Correlation Energy." Journal of Chemical Physics
+  121, 9793-9802 (2004). [doi:10.1063/1.1809602](https://doi.org/10.1063/1.1809602)
+- DiStasio RA Jr. and Head-Gordon M. "Optimized Spin-Component Scaled
+  Second-Order Moller-Plesset Perturbation Theory for Intermolecular
+  Interaction Energies." Molecular Physics 105, 1073-1083 (2007).
+  [doi:10.1080/00268970701283781](https://doi.org/10.1080/00268970701283781)
 
 ## MRSF-TDDFT
 

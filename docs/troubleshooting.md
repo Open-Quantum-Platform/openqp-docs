@@ -75,6 +75,13 @@ model=ddpcm
 
 and keep the run type at `energy` for the current production PCM path.
 
+## MP2 Stops at the Build Guard
+
+Standalone MP2 uses direct per-occupied-MO-pair Coulomb builds. Large systems
+can abort before the correlation step if the number of pair builds exceeds the
+`OQP_MP2_MAX_JBUILDS` guard. Reduce the basis/problem size first; raise the
+guard only when you have checked the expected runtime and memory cost.
+
 ## Documentation Looks Stale
 
 The keyword reference should be checked against the OpenQP source schema:

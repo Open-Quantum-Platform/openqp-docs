@@ -31,8 +31,12 @@ communication:
 
 For file-style result export, use `runner.mol.get_results()`. It returns a JSON
 friendly dictionary with atoms, coordinates, total energy, symmetry metadata,
-TDDFT energies, gradients, NAC, SOC, Hessian data, and MRSF-EKT records when
-present.
+TDDFT energies, gradients, NAC, SOC, Hessian data, MP2 correlated totals, and
+MRSF-EKT records when present.
+
+For `method=mp2`, the exported energy is the correlated MP2 total after the
+SCF reference energy and MP2 correlation are combined. The run log also prints
+the reference SCF energy plus same-spin and opposite-spin MP2 components.
 
 When the corresponding property is requested via `[properties] scf_prop`,
 `get_results()` also includes the following (identically for file-based and

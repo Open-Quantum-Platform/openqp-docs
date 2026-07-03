@@ -12,8 +12,8 @@ for OpenQP developers and native extension authors, not ordinary user scripts.
 ## Handle Model
 
 The central object is `oqp_handle_t`. It stores pointers to molecular data,
-runtime controls, DFT and TDDFT parameters, MPI metadata, shell data, and result
-records.
+runtime controls, DFT/MP2 and TDDFT parameters, MPI metadata, shell data, and
+result records.
 
 ```c
 typedef struct oqp_handle_t {
@@ -63,6 +63,7 @@ explicitly.
 | Integrals | `int1e`, `int2e` |
 | Initial guesses | `guess_hcore`, `guess_huckel`, `guess_modhuckel`, `guess_json`, `guess_sap`, `guess_minao` |
 | HF/DFT | `hf_energy`, `hf_gradient`, `hf_hessian` |
+| MP2 | `mp2_energy` |
 | TDHF/SF/MRSF | `tdhf_energy`, `tdhf_gradient`, `tdhf_sf_energy`, `tdhf_mrsf_energy`, `tdhf_mrsf_gradient` |
 | MRSF-EKT | `tdhf_mrsf_ekt_ip`, `tdhf_mrsf_ekt_ea` |
 | Properties | `electric_moments`, `mulliken`, `lowdin`, `nmr_shielding` |
