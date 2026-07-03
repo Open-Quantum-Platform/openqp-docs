@@ -109,8 +109,10 @@ Number of electronic sub-steps integrated per nuclear step.
 | Values | `edc`, `off` |
 | Used by | electronic propagation |
 
-Decoherence correction. `edc` applies energy-based decoherence; `off` disables
-it. Energy-based decoherence is recommended for surface hopping.
+Decoherence correction. `edc` applies the energy-based decoherence correction
+(EDC) of Granucci & Persico (see
+[References](../references.md#nonadiabatic-dynamics)), the SHARC default; `off`
+disables it. Energy-based decoherence is recommended for surface hopping.
 
 ### `edc_c`
 

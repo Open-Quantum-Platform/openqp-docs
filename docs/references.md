@@ -93,6 +93,10 @@ related workflows.
 - Mai S, Marquetand P, and Gonzalez L. "Nonadiabatic dynamics: The SHARC
   approach." WIREs Computational Molecular Science 8, e1370 (2018).
   [doi:10.1002/wcms.1370](https://doi.org/10.1002/wcms.1370)
+- Granucci G and Persico M. "Critical appraisal of the fewest switches algorithm
+  for surface hopping." Journal of Chemical Physics 126, 134114 (2007).
+  [doi:10.1063/1.2715585](https://doi.org/10.1063/1.2715585) — the energy-based
+  decoherence correction (EDC) used by the `[md] decoherence=edc` default.
 - Granucci G, Persico M, and Zoccante A. "Including quantum decoherence in
   surface hopping." Journal of Chemical Physics 133, 134111 (2010).
   [doi:10.1063/1.3489004](https://doi.org/10.1063/1.3489004)
