@@ -50,6 +50,7 @@ nav:
       - Optimization: workflows/optimization.md
       - Spin-Orbit Coupling: workflows/soc.md
       - NACME: workflows/nacme.md
+      - SOC-NAMD-QMMM: workflows/soc-namd-qmmm.md
       - PCM/ddX: workflows/pcm.md
       - MRSF-EKT: workflows/ekt.md
       - NMR, IR, and Raman: workflows/nmr-ir-raman.md
@@ -61,6 +62,8 @@ nav:
       - mp2: keywords/mp2.md
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md
+      - md: keywords/md.md
+      - qmmm: keywords/qmmm.md
       - properties: keywords/properties.md
       - hess: keywords/hess.md
       - nac: keywords/nac.md

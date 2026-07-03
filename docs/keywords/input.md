@@ -179,8 +179,12 @@ Common values:
 | `ts`, `irc`, `neb`, `mep` | Reaction-path workflows. |
 | `prop`, `data` | Multi-state property/data workflows for downstream drivers. |
 
-`md` is recognized by validation code but is not implemented as a production
-workflow in this repository.
+!!! warning "Development preview"
+    `runtype=namd` is added by OpenQP PR
+    [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205). It is not
+    available in OpenQP 1.2.0. In that implementation branch, `namd` selects
+    surface-hopping molecular dynamics configured by the [`[md]`](md.md)
+    section and requires an MRSF-TDDFT setup.
 
 When `method=mp2`, `runtype` must be `energy`. MP2 gradients, Hessians, and
 optimization workflows are not wired in this release.
@@ -257,6 +261,26 @@ job.workflow.soc(soc_2e=1, scal_rel=2)
 
 For Python SOC workflows, `job.workflow.soc(...)` sets `[scf] scal_rel=2` by
 default. Override it with `scal_rel=0`, `1`, or `2` when needed.
+
+### `qmmm_flag`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | QM/MM dispatch |
+
+Enables hybrid QM/MM calculations. When `true`, the QM region is embedded in a
+classical (OpenMM) MM environment through the ESPF operator, configured by the
+[`[qmmm]`](qmmm.md) section. It applies to single-point QM/MM energies,
+ground-state QM/MM molecular dynamics, and nonadiabatic
+[SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md) dynamics (`runtype=namd` with
+`[md] soc=true`). Without `qmmm_flag=true` the `[qmmm]` section is ignored.
+
+!!! warning "Development preview"
+    `qmmm_flag` and the `[qmmm]` schema documented here are from OpenQP PR
+    [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205), not
+    OpenQP 1.2.0.
 
 ### `omp_threads`
 
