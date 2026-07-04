@@ -312,6 +312,73 @@ uses [`[md] nstep`](md.md#nstep).
 
 Electronic state index for the ground-state QM/MM path (`0` = reference state).
 
+## Covalent QM/MM boundaries
+
+Most QM/MM calculations put a whole molecule (or a set of whole molecules) in the
+QM region — a chromophore in a solvent box, a substrate in a binding pocket. When
+the QM/MM partition instead **cuts through a covalent bond** (e.g. carving a side
+chain out of a protein backbone), two problems appear at the frontier, and OpenQP
+handles each automatically.
+
+### 1. The dangling bond → hydrogen link atom
+
+Cutting a bond leaves the QM frontier atom with an unsatisfied valence. OpenQP
+caps it with a **hydrogen link atom** on the broken QM–MM bond at the scaled
+(IMOMM) position `R_L = R_QM + g·(R_MM − R_QM)`, with `g = (r_H + r_QM)/(r_QM +
+r_MM)` from covalent radii. Because the cap position is a fixed linear function of
+its two real host atoms, the force computed on the link atom is redistributed
+onto them by the chain rule — no extra degrees of freedom, and the analytic
+gradient stays exact. Details in [Link atoms](#link-atoms).
+
+### 2. The frontier MM charge → ESPF is robust; `frontier_scheme` refines it
+
+The MM host atom (`M1`, the MM end of the severed bond) sits only ~1.5 Å from the
+QM density. In a **density-based** electrostatic embedding, embedding `M1`'s full
+point charge that close over-polarizes the QM density (electron spill-out), which
+is why such methods delete or shift the frontier charge.
+
+OpenQP's embedding is **ESPF**, which is structurally more robust here: the MM
+potential couples to the QM *atomic-charge operators*, `h += Σ_A φ_A Q̂_A`
+(Huix-Rotllant & Ferré; see [Background](#background)), **not** to the raw density
+via `1/|r−R_M|` integrals. Because the coupling runs through bounded atomic-charge
+operators evaluated at the QM nuclei, the spill-out that plagues density-based
+embedding is suppressed — so the full MM charges can be used "with no scaling"
+even at a covalent boundary. That is the default,
+[`frontier_scheme = none`](#frontier_scheme).
+
+For a still-more-faithful boundary field, the optional redistributions delete the
+raw `M1` charge and spread it over **virtual point charges** at the `M1–M2` bond
+midpoints (`M2` = the MM neighbours of `M1`):
+
+- **`rcd`** — `2·q₁/N` at each of the `N` midpoints plus `−q₁/N` on each `M2`,
+  conserving both the total charge **and** the dipole about `M1`.
+- **`rc`** — `q₁/N` at each midpoint (total charge only).
+- **`z1`** — delete `M1` (conserves neither; for comparison).
+
+Each virtual charge sits at a bond midpoint — a linear function of the real
+`M1`/`M2` positions — so the electrostatic force on it redistributes onto its
+hosts by the chain rule, exactly like the link-atom cap, keeping the analytic
+gradient exact.
+
+### Gradient accuracy
+
+The full analytic QM/MM gradient (link-atom projection + ESPF density response +
+frontier redistribution) matches a finite-difference of the self-consistent QM/MM
+energy to ~1e-3 au — the ESPF grid-derivative floor, a property of the embedding
+independent of the boundary treatment. The redistribution does not degrade this;
+at the deleted host `M1` the redistributed schemes are in fact *more* accurate
+than full-field, because they remove the raw close-range point charge.
+
+### Which path supports it
+
+Covalent-boundary QM/MM is available in the **single-point** and **ground-state
+QM/MM MD** (`runtype=md`) paths. The nonadiabatic (`runtype=namd`,
+[SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md)) path builds its QM molecule from
+`qm_atoms` only and **raises on a covalent cut** — use the ground-state MD path.
+A runnable deck is `examples/QMMM/ala-dipeptide_BHHLYP-QMMM-MD-RCD.inp` (alanine
+dipeptide, QM = the C-terminal amide cutting the `ALA C–CA` bond,
+`frontier_scheme=rcd`); see [QM/MM examples](../examples/index.md#qmmm-examples).
+
 ## Link atoms
 
 When the QM region defined through `[input] system = file.pdb <indices>` cuts a
