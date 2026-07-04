@@ -138,3 +138,9 @@ correction, PCM/ddX, or related workflows.
   Particle-Mesh Ewald Sums and Electrostatic Potential Fitted Charge Operators."
   Journal of Chemical Theory and Computation 20, 4338-4349 (2024).
   [doi:10.1021/acs.jctc.4c00201](https://doi.org/10.1021/acs.jctc.4c00201)
+- Lin H and Truhlar DG. "Redistributed Charge and Dipole Schemes for Combined
+  Quantum Mechanical and Molecular Mechanical Calculations." Journal of Physical
+  Chemistry A 109, 3991-4004 (2005) — the RC / RCD frontier-charge redistribution
+  used by [`[qmmm] frontier_scheme`](keywords/qmmm.md#frontier_scheme) at a
+  covalent boundary.
+  [doi:10.1021/jp0446332](https://doi.org/10.1021/jp0446332)
