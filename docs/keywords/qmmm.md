@@ -11,8 +11,12 @@ ground-state QM/MM molecular dynamics, and nonadiabatic
 !!! warning "Development preview"
     This section documents the QM/MM implementation branch in
     OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205).
-    It is not part of OpenQP 1.2.0; use that source branch or a later release
-    that includes the `[qmmm]` schema.
+    The covalent-boundary [`frontier_scheme`](#frontier_scheme) keyword and the
+    [Covalent QM/MM boundaries](#covalent-qmmm-boundaries) treatment are added
+    separately by PR
+    [#258](https://github.com/Open-Quantum-Platform/openqp/pull/258) — a checkout
+    of PR #205 alone will not have `frontier_scheme`. Neither is part of OpenQP
+    1.2.0; use a source branch (or later release) that includes them.
 
 ## Background
 
