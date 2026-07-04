@@ -166,10 +166,11 @@ explicit `forcefield_files` value. New QM/MM-MD decks should set
 Zero-based indices of the atoms placed in the QM region, as individual indices
 and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. Give the indices in
 **ascending order**. Whole-molecule QM selections (e.g. a solute in a solvent
-box) are the common case. When the selection cuts a covalent bond the dangling
-QM bond is capped with a hydrogen [link atom](#link-atoms) and the MM frontier
-charge is treated per [`frontier_scheme`](#frontier_scheme) (development
-preview); see the
+box) are the common case, and the only case supported by the nonadiabatic
+(`runtype=namd`) path. In the single-point and ground-state QM/MM MD paths a
+selection that cuts a covalent bond is capped with a hydrogen
+[link atom](#link-atoms) and the MM frontier charge is treated per
+[`frontier_scheme`](#frontier_scheme); see the
 [SOC-NAMD-QMMM scope note](../workflows/soc-namd-qmmm.md#scope-and-limitations).
 
 ### `cutoff`
@@ -212,12 +213,15 @@ should use `electrostatic`.
 | Type | string |
 | Default | `none` |
 | Values | `none`, `rcd`, `rc`, `z1` |
-| Used by | ESPF electrostatics at a covalent QM/MM boundary (`runtype=namd`) |
+| Used by | ESPF electrostatics at a covalent QM/MM boundary (ground-state QM/MM MD) |
 
 When the QM/MM partition cuts a covalent bond, the MM host atom (`M1`, the MM end
 of the severed bond) sits ~1.5 Å from the QM density. `frontier_scheme` selects
 how that frontier charge is treated in the ESPF embedding. It is a **no-op for
-whole-molecule QM regions** (no cut bond).
+whole-molecule QM regions** (no cut bond). Covalent QM/MM boundaries are handled
+by the single-point and ground-state QM/MM MD paths; the nonadiabatic
+(`runtype=namd`) path builds its QM molecule from `qm_atoms` only and does not
+support a covalent cut.
 
 | Value | Meaning |
 | --- | --- |
@@ -328,12 +332,13 @@ chain rule of this scaled position, so no extra degrees of freedom are added.
 Across a covalent boundary the MM frontier-host charge is treated per
 [`frontier_scheme`](#frontier_scheme) (default `none` = full-field ESPF).
 
-!!! note "Covalent boundaries in dynamics are a development preview"
+!!! note "Covalent boundaries are not supported in nonadiabatic dynamics"
     Automatic link-atom capping applies to the single-point and ground-state
-    QM/MM paths and to the nonadiabatic (`runtype=namd`,
-    [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md)) path. Whole-molecule QM
-    regions are the well-tested case; covalent QM/MM boundaries in dynamics are a
-    development preview.
+    QM/MM MD paths. The nonadiabatic (`runtype=namd`,
+    [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md)) path builds the QM molecule
+    from `qm_atoms` only, so it supports **whole-molecule** QM regions and raises
+    on a covalent cut; use the ground-state QM/MM MD path for covalent-boundary
+    QM/MM.
 
 ## Notes
 
