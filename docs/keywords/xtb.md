@@ -18,9 +18,13 @@ job. The backend is an external library (`libopenqp_xtb_c`); when it is not
 installed, `method=xtb` inputs are parsed and validated but cannot execute.
 
 Parameters are read from a converter-generated `.opxtb` file supplied through
-`parameter_path`. Model options default to the full LC-GFN1 Hamiltonian
-(`model=gfn1`, dispersion/halogen-bond/third-order terms on, `spin_scale=1.0`,
-`lc_gamma=ok` with `omega=0.3`).
+`parameter_path`. Model options default to the GFN1 Hamiltonian with the
+long-range correction active in the **response kernel** (`model=gfn1`,
+dispersion/halogen-bond/third-order terms on, `spin_scale=1.0`, `lc_gamma=ok`
+with `omega=0.3`). The **ground-state** SCC uses the LC kernel only when the
+opt-in flag `lc_ground_state=true` is set; that opt-in selects the production
+LC-GFN1 reference described below, and omitting it gives a response-only LC
+setup on a plain GFN1 ground state.
 
 ## Minimal Example
 
@@ -53,6 +57,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP("xtb_keywords")
 job.molecule(geometry="water", charge=0, multiplicity=3)
+job.scf(type="rohf")   # MRSF needs the ROHF high-spin reference
 job.xtb(
     response_type="mrsf",
     nstate=3,
@@ -74,12 +79,13 @@ for MRSF-TDDFT(B).
 | --- | --- |
 | Type | string |
 | Default | `native` |
-| Values | `native` |
+| Values | `native`, `auto` |
 | Used by | xTB backend selection |
 
-Selects the backend driver. Only the `native` in-process library is supported;
-the DFTB-only `probe` executable is rejected for `[xtb]` because it cannot
-publish the MO/response-vector tags the OpenQP drivers consume.
+Selects the backend driver. Both `native` and `auto` resolve to the in-process
+native library (`auto` is accepted for configs carried over from `[dftb]`); the
+DFTB-only `probe` executable is rejected for `[xtb]` because it cannot publish
+the MO/response-vector tags the OpenQP drivers consume.
 
 ### `type`
 
@@ -87,13 +93,18 @@ publish the MO/response-vector tags the OpenQP drivers consume.
 | --- | --- |
 | Type | string |
 | Default | `auto` |
-| Values | `auto`, `ground`, `tddftb`, `sf`, `mrsf` |
+| Values | canonical: `auto`, `ground`, `tddftb`, `sf`, `mrsf`; accepted aliases: `dftb`, `dftb0`, `noscc`, `ground_noscc` (ground variants), `tda`, `td-dftb` (TDDFTB), `sftddftb`, `sf-tddftb` (SF), `mrsftddftb`, `mrsf-tddftb` (MRSF) |
 | Used by | response method selection |
 
-Response method the backend evaluates. `auto` derives the response from
-`[tdhf] type`; set it explicitly to force a ground-state (`ground`), TDDFTB
-(`tddftb`), spin-flip (`sf`), or MRSF (`mrsf`) run. The compact Python helper
-canonicalizes the `tda`/`td-dftb` aliases onto `tddftb`.
+Response method the backend evaluates. Set it explicitly to force a
+ground-state (`ground`), TDDFTB (`tddftb`), spin-flip (`sf`), or MRSF (`mrsf`)
+run; the aliases above are canonicalized by the adapter.
+
+`auto` derives the response from the run, with one important exception: for
+plain `runtype=energy`/`grad` jobs with `[tdhf] type=rpa`/`tda` and no positive
+excited-state gradient target, `auto` resolves to a **ground-state** run, not a
+TD-xTB one. To compute TD-xTB excitation energies in an energy run, set
+`type=tddftb` explicitly. SF/MRSF `[tdhf]` types are always honored.
 
 ### `parameter_path`
 
@@ -242,7 +253,8 @@ The SCC solver and the excited-state response reader accept the same tuning
 keys as `[dftb]`: `scc_tolerance`, `scc_mixer`, `scc_mixing`, `scc_history`,
 `scc_max_step`, `max_scc_iterations` for the ground-state SCC, and
 `response_tolerance`, `response_max_iterations`, `response_max_subspace`,
-`response_solver` for the Davidson/GMRES response. The MRSF spin-pairing and
+`response_solver` for the response eigensolver (`response_solver` accepts
+`auto`, `dense`, or `davidson`). The MRSF spin-pairing and
 shift controls `spc`, `spc_coco`, `spc_ovov`, `spc_coov`,
 `mrsf_shift_oo`/`_co`/`_ov`/`_cv`, `spin_complete`, `reference_multiplicity`,
 and `target_multiplicity` mirror the `[tdhf]` MRSF options, and `timeout`
