@@ -26,10 +26,12 @@ Each keyword entry uses the same structure:
 Boolean keywords accept ordinary true/false spellings such as `true`, `false`,
 `yes`, `no`, `1`, and `0` unless a keyword documents a narrower set.
 
-State numbering is workflow dependent. HF/DFT reference-state properties use
-state `0`. Ordinary TDHF/TDDFT state `1` means the first excited state. SF-TDDFT
-and MRSF-TDDFT state `1` means the lowest spin-flip/MRSF target state, which can
-be the multiconfigurational ground state.
+Numeric state indices in traditional sectioned input are workflow dependent.
+HF/DFT reference-state properties use state `0`. Ordinary TDHF/TDDFT state `1`
+means the first excited state. SF-TDDFT and MRSF-TDDFT internal state `1` means
+the lowest response target. The one-line format hides that offset: MRSF uses
+physical `S0`, `T0`, and `Q0`, while SF uses `root=1`. See
+[One-line `.oqp` input](../oqp-input.md#physical-states-and-reserved-internal-keys).
 
 Method background and literature pointers are collected in
 [References](../references.md). The keyword pages link there for MRSF-TDDFT,
@@ -44,6 +46,7 @@ full bibliographies inside each keyword entry.
 | [`[guess]`](guess.md) | Initial orbitals, restart files, and MO swaps. |
 | [`[scf]`](scf.md) | Reference type, convergence controls, pFON, TRAH, fallback manager. |
 | [`[mp2]`](mp2.md) | Standalone MP2 spin-scaling controls. |
+| [`[dftb]`](dftb.md) | DFTB backend, SCC, response, spin, and MRSF-TDDFTB controls. |
 | [`[dftgrid]`](dftgrid.md) | DFT quadrature and hybrid/range-separated functional controls. |
 | [`[tdhf]`](tdhf.md) | TDHF/TDDFT/SF/MRSF/UMRSF response settings. |
 | [`[md]`](md.md) | Nonadiabatic surface-hopping molecular dynamics (`runtype=namd`), including SOC-NAMD. |
@@ -58,6 +61,8 @@ full bibliographies inside each keyword entry.
 | [`[neb]`](neb.md) | NEB product endpoint and image count. |
 | [`[pcm]`](pcm.md) | Reference-SCF PCM/ddX settings. |
 | [`[symmetry]`](symmetry.md) | Point-group metadata and optional symmetry reductions. |
+| [`[json]`](json.md) | Advanced JSON/restart metadata used by internal interfaces. |
+| [`[tests]`](tests.md) | Regression-test expectation controls. |
 
 ## Documentation Rule
 

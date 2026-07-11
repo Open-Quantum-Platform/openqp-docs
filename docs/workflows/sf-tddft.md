@@ -9,6 +9,18 @@ ground-state surfaces.
 In Python scripts, SF-TDDFT is a theory choice. Select the calculation type
 separately with `job.workflow.*` only when you need a non-energy workflow.
 
+!!! note "One-line `.oqp` uses response roots"
+
+    The spin character of an SF root is not known before diagonalization.
+    State-specific `.oqp` input must therefore use `root=N`, for example:
+
+    ```text
+    sf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" grad(root=1)
+    ```
+
+    Do not write an `S`/`T` label or omit the root on an SF state-specific
+    driver.
+
 ## Energy
 
 Input style:

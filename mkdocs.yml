@@ -35,7 +35,9 @@ nav:
   - Installation: installation.md
   - Build Options: build-options.md
   - Quickstart: quickstart.md
-  - Input File Format: input-file.md
+  - Input Styles:
+      - One-line .oqp: oqp-input.md
+      - Legacy .inp: input-file.md
   - Capabilities: capabilities.md
   - Performance: performance.md
   - Run from Python: python-scripting.md
@@ -60,6 +62,7 @@ nav:
       - guess: keywords/guess.md
       - scf: keywords/scf.md
       - mp2: keywords/mp2.md
+      - dftb: keywords/dftb.md
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md
       - md: keywords/md.md
@@ -74,6 +77,8 @@ nav:
       - neb: keywords/neb.md
       - pcm: keywords/pcm.md
       - symmetry: keywords/symmetry.md
+      - json: keywords/json.md
+      - tests: keywords/tests.md
   - References: references.md
   - Examples: examples/index.md
   - Troubleshooting: troubleshooting.md

@@ -565,3 +565,24 @@ convergence. Opt-in only.
 
 Schwarz block cutoff for the 2e-derivative gradient build. Looser values trade a
 small gradient error for speed (`1.0d-8` ≈ 5×10⁻⁷ a.u.).
+
+## Progressive Screening Keywords
+
+Progressive screening is an opt-in SCF acceleration path. During the early
+descent it may use looser integral and XC-grid thresholds; once the DIIS error
+falls below `pscreen_tight`, it returns to the normal converged thresholds. No
+performance preset enables it automatically.
+
+| Keyword | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `pscreen` | boolean | `False` | Enable progressive integral/grid screening. |
+| `pscreen_k` | float | `1.0e-2` | Safety factor in the iteration-dependent cutoff, approximately `pscreen_k * DIIS error`. |
+| `pscreen_cap` | float | `1.0e-8` | Loosest permitted integral cutoff. Values looser than `1e-8` can risk changing the SCF state. |
+| `pscreen_tight` | float | `1.0e-4` | DIIS-error threshold at which the calculation pins to the normal tight cutoff. |
+| `pscreen_xc_dcut` | float | `0.0` | Loose XC density cutoff during descent; zero disables this ramp. |
+| `pscreen_xc_aocut` | float | `0.0` | Loose XC AO-pruning threshold during descent; zero disables it. |
+| `pscreen_grid_rad` | integer | `0` | Coarse radial-grid size during descent; zero keeps the normal grid. |
+| `pscreen_grid_ang` | integer | `0` | Coarse angular-grid size during descent; zero keeps the normal grid. |
+
+Keep `pscreen_tight` safely above the final SCF convergence threshold so the
+calculation reaches the normal integral and grid accuracy before convergence.
