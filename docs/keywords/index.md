@@ -46,6 +46,7 @@ full bibliographies inside each keyword entry.
 | [`[mp2]`](mp2.md) | Standalone MP2 spin-scaling controls. |
 | [`[dftgrid]`](dftgrid.md) | DFT quadrature and hybrid/range-separated functional controls. |
 | [`[tdhf]`](tdhf.md) | TDHF/TDDFT/SF/MRSF/UMRSF response settings. |
+| [`[xtb]`](xtb.md) | Optional LC-GFN1-xTB tight-binding backend (`method=xtb`). |
 | [`[md]`](md.md) | Nonadiabatic surface-hopping molecular dynamics (`runtype=namd`), including SOC-NAMD. |
 | [`[qmmm]`](qmmm.md) | Hybrid QM/MM setup: QM region, force field, ESPF embedding, and link atoms. |
 | [`[properties]`](properties.md) | Gradients, NMR, export, and property requests. |
