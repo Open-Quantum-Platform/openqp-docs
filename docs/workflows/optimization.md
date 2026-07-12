@@ -9,9 +9,10 @@ dft/pbe0/def2-svp geom="h2o.xyz" opt(S0,maxit=50)
 mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,maxit=100)
 ```
 
-The native engine supports minima, transition states, MECI, MECP, TCI, MEP,
-IRC, and NEB. It uses redundant internal, DLC, TRIC, or Cartesian coordinates
-as appropriate, with restricted-step RFO/P-RFO optimization.
+The native engine supports minima, transition states, two-state and BaekA
+multistate MECI, MECP, MEP, IRC, and NEB. It uses redundant internal, DLC,
+TRIC, or Cartesian coordinates as appropriate, with restricted-step RFO/P-RFO
+optimization.
 
 ## Native Minimum Search
 
@@ -130,18 +131,57 @@ Physical state labels replace internal state indices in `.oqp`:
 ```text
 mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,maxit=100)
 mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" mecp(S0,T0,maxit=100)
-mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" tci(S0,S1,S2,maxit=100)
+mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,algorithm=baeka,maxit=100)
+mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,S2,algorithm=baeka,maxit=100)
+mrsf(nstate=6)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,S2,S3,algorithm=baeka,maxit=100)
 ```
+
+`algorithm=baeka` selects the Baek adaptive penalty-function method within the
+ordinary MECI driver. It accepts two or more states from one spin manifold,
+uses the independent adjacent energy gaps, and updates the penalty strength
+additively. Existing `tci(S0,S1,S2,...)` routes remain supported as an
+independent legacy three-state workflow; they are not aliases for BaekA and
+retain their established multiplicative update. See
+[BaekA Multistate MECI](baeka-multistate-meci.md) for the
+method, production controls, and regression-example scope.
 
 Traditional `.inp` and Python scripts may continue to use the internal
 `istate`, `jstate`, `kstate`, `imult`, and `jmult` fields documented under
 [`[optimize]`](../keywords/optimize.md).
 
-## Optional Legacy geomeTRIC Escape Hatch
+## Native Frozen-Distance Constraints
+
+Native minimum searches can freeze one or more initial atom-pair distances.
+Atom indices are one-based, and multiple constraints are separated by
+semicolons:
+
+```text
+dft/bhhlyp/3-21g geom="hcn.xyz" opt(S0,freeze="distance(1,2)",coordsys=dlc,trust=0.05,trust_max=0.05)
+```
+
+The distance is fixed at its value in the input geometry. The native optimizer
+projects the gradient into the constraint tangent space and corrects every
+trial geometry back to the requested distance. The traditional equivalent is:
+
+```ini
+[optimize]
+lib=oqp
+
+[oqp]
+coordsys=dlc
+trust=0.05
+trust_max=0.05
+freeze=distance(1,2)
+```
+
+Runnable regression:
+[`HCN_RHF-DFT_CONSTRAINED_OQP.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/HCN_RHF-DFT_CONSTRAINED_OQP.inp).
+
+## Optional Legacy geomeTRIC Compatibility
 
 geomeTRIC is not part of the concise `.oqp` geometry grammar. It remains
-available to traditional sectioned `.inp` files and the Python API, primarily
-for constrained optimization that has not yet moved to the native engine.
+available to traditional sectioned `.inp` files and the Python API for advanced
+constraint types beyond the native frozen-distance control.
 Install the optional dependency first:
 
 ```bash
@@ -184,7 +224,6 @@ job.workflow.optimize(
 )
 ```
 
-The sole shipped geomeTRIC compatibility deck is the
-[`HCN_RHF-DFT_CONSTRAINED_GEOMETRIC.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/HCN_RHF-DFT_CONSTRAINED_GEOMETRIC.inp)
-constrained optimization. General minimum, crossing-point, TS, IRC, MEP, and
-NEB examples use the native engine.
+No standard shipped regression now depends on geomeTRIC. General minimum,
+frozen-distance, crossing-point, TS, IRC, MEP, and NEB examples use the native
+engine.

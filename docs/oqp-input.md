@@ -93,6 +93,10 @@ mrsf(nstate=3)/bhhlyp/6-31g* geom="guess.xyz" meci(S1,S2)
    a new `.oqp` file. Keep the traditional sectioned syntax in `.inp`; do not
    mix the two formats in one file.
 
+The repository's `examples` tree provides a same-stem `.oqp` companion for
+every `.inp`, covering the full legacy example inventory rather than only a
+small hand-written subset.
+
 ### SOC state counts
 
 One count requests the same number of singlets and triplets:
@@ -134,7 +138,7 @@ roots.
 | Explicit HF reference | `rhf/BASIS`, `uhf/BASIS`, or `rohf/BASIS` |
 | Kohn--Sham DFT with automatic restricted/unrestricted reference | `dft/FUNCTIONAL/BASIS` |
 | Explicit KS reference | `rks/FUNCTIONAL/BASIS`, `uks/FUNCTIONAL/BASIS`, or `roks/FUNCTIONAL/BASIS` |
-| MP2 | `mp2(variant=...,same_spin_scale=...,opposite_spin_scale=...)/BASIS` |
+| MP2 | <code>mp2(reference=rhf&#124;rohf&#124;uhf,variant=...,same_spin_scale=...,opposite_spin_scale=...)/BASIS</code> |
 | TDHF | `tdhf(nstate=N)/BASIS` |
 | TDDFT | `tddft(nstate=N)/FUNCTIONAL/BASIS` |
 | TDA-TDDFT | `tda(nstate=N)/FUNCTIONAL/BASIS` |
@@ -197,9 +201,11 @@ example:
 mrsf(nstate=5)/bhhlyp/6-31g* geom="h2o.xyz" energy(S0) tdhf(nvdav=30)
 ```
 
-MP2 route parentheses likewise accept only `variant`, `same_spin_scale`, and
-`opposite_spin_scale`; other MP2 settings use `mp2(...)` as an exact section
-call. Use physical state labels in the driver for state-specific work.
+MP2 route parentheses likewise accept only `reference`, `variant`,
+`same_spin_scale`, and `opposite_spin_scale`; other MP2 settings use
+`mp2(...)` as an exact section call. `reference=uhf`, for example, preserves a
+deliberate UMP2 reference even when `mult=1`. Use physical state labels in the
+driver for state-specific work.
 `mrsf(...) energy` defaults to the singlet target manifold. `energy(T0)`
 selects the triplet manifold, and `energy(Q0)` selects the quintet manifold for
 all-electron MRSF. MRSF-TDDFTB supports singlet and triplet manifolds only. The
@@ -237,9 +243,19 @@ OpenQP inserts `energy`. Square brackets below mean an optional argument;
 `STATE` is a physical label such as `S0`, `S1`, `T0`, or `Q0`.
 
 In the signatures, `OPT` means the common native controls `maxit`, `rmsd_grad`,
-`rmsd_step`, `max_grad`, `max_step`, `energy_shift`, `energy_gap`,
-`meci_search`, `pen_sigma`, `pen_alpha`, `pen_incre`, `gap_weight`, and
-`init_scf`. `ENGINE` means `coordsys`, `trust`, and `trust_max`; these apply to
+`rmsd_step`, `max_grad`, `max_step`, `energy_shift`, `energy_gap`, and
+`init_scf` used by the established optimizers. `BAEKA_OPT` is the narrower
+BaekA convergence set `maxit`, `rmsd_grad`, `energy_shift`, and `init_scf`;
+BaekA does not terminate on `rmsd_step`, `max_step`, or `max_grad`. `BAEKA`
+means the public adaptive-penalty controls `sigma`,
+`alpha`, `delta_beta`, `beta_schedule`, and `gap`. The MECI `algorithm` option
+lowers to the traditional
+[`meci_search`](keywords/optimize.md#meci_search) selector. The BaekA controls
+lower respectively to `pen_sigma`, `pen_alpha`, `pen_delta`, `pen_jump`, and
+`energy_gap`; the historical multiplicative `pen_incre` key is not a BaekA
+control. `TCI` means the established legacy three-state controls `pen_sigma`,
+`pen_alpha`, `pen_incre`, and `gap_weight`. `ENGINE` means
+`coordsys`, `trust`, and `trust_max`; these apply to
 the native minimum, crossing-point, and transition-state optimizers. `NAMD`
 means the current `[md]` controls `nstep`,
 `dt`, `active`, `substep`, `decoherence`, `edc_c`, `thrshe`, `tdc`, `trivial`,
@@ -254,10 +270,10 @@ means the current `[md]` controls `nstep`,
 | --- | --- |
 | <code>energy([S0&#124;T0&#124;Q0])</code> | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet. |
 | `grad([STATE],td_prop=...,export=...,title=...)` | Gradient target plus concise `[properties]` controls. Default target is `S0`, except that SF routes require `root=N`. |
-| `opt([STATE],OPT...,ENGINE...)` | Native minimum optimization. Default target is `S0`, except that SF routes require `root=N`. |
-| `meci(STATE1,STATE2,OPT...,ENGINE...)` | Native two-state intersection search for distinct states of the same multiplicity. State order is normalized. |
+| `opt([STATE],OPT...,ENGINE...,freeze="distance(i,j)")` | Native minimum optimization. Default target is `S0`, except that SF routes require `root=N`. `freeze` holds one or more semicolon-separated atom-pair distances at their initial values. |
+| <code>meci(STATE1,STATE2,[algorithm=penalty&#124;ubp&#124;hybrid],OPT...,ENGINE...)</code><br><code>meci(STATE1,STATE2[,STATE3...],algorithm=baeka,BAEKA_OPT...,BAEKA...,ENGINE...)</code> | Native intersection search for states of the same multiplicity. A two-state call defaults to `penalty`; a call with three or more states selects `baeka`, the only N-state algorithm. Writing `algorithm=baeka` explicitly is recommended and also selects BaekA for two states. State order is normalized. Use public `gap` rather than the internal `energy_gap` spelling in a BaekA call, and do not supply both. See [BaekA Multistate MECI](workflows/baeka-multistate-meci.md). |
+| `tci(STATE1,STATE2,STATE3,OPT...,TCI...,ENGINE...)` | Backward-compatible three-state adaptive-penalty driver. It preserves the established `pen_sigma`/`pen_alpha`/multiplicative `pen_incre` behavior and is not an alias for BaekA. New work should select the intended MECI algorithm explicitly. |
 | `mecp(STATE1,STATE2,OPT...,ENGINE...)` | Native crossing search for two states of different multiplicity. |
-| `tci(STATE1,STATE2,STATE3,OPT...,ENGINE...)` | Native three-state intersection search for distinct states of the same multiplicity. |
 | <code>mep([STATE],maxit=...&#124;points=...,step=...,gtol=...)</code> | Native minimum-energy path with a path limit, step size, and gradient stopping threshold. |
 | <code>ts([STATE],OPT...,ENGINE...,follow=N,hessian=model&#124;numerical&#124;analytical)</code> | Native P-RFO transition-state search. `follow` chooses the initial mode and `hessian` chooses the initial Hessian policy. |
 | <code>irc([STATE],maxit=...,direction=forward&#124;backward,step=...,hessian=numerical&#124;analytical,gtol=...)</code> | Native IRC with an explicit branch, step size, Hessian type, and gradient stopping threshold. |
@@ -276,6 +292,10 @@ means the current `[md]` controls `nstep`,
 
 Aliases such as `sp`, `gradient`, `optimize`, `optimization`, and `hessian` are
 accepted, but the spellings in the table are the canonical generated forms.
+The older `tci(STATE1,STATE2,STATE3,...)` command remains available with its
+established behavior. It is deliberately separate from
+`meci(STATE1,STATE2,STATE3,algorithm=baeka,...)`, so existing inputs do not
+silently change algorithms.
 Method and workflow availability, together with option values, remain subject
 to the existing OpenQP validator.
 
@@ -332,6 +352,9 @@ choices calculate a real Cartesian initial Hessian. `follow=N` selects a
 non-negative initial P-RFO mode index. Native IRC accepts only numerical or
 analytical Hessians and lowers its branch, step, and `gtol` controls to the
 native IRC engine.
+Native minima also accept `freeze="distance(1,2);distance(2,3)"`; atom indices
+are one-based and the current constraint surface is limited to frozen
+distances.
 
 Native NEB keeps backend details out of the command:
 
@@ -462,7 +485,7 @@ physical state syntax:
 | `scf.type`, `scf.multiplicity` | Route-selected reference for every model; MRSF/SF/UMRSF choose their high-spin reference automatically |
 | `tdhf.type`, `tdhf.multiplicity`, `tdhf.nstate`, `tdhf.target` | Response route `nstate` and physical state labels |
 | `properties.grad` | `grad(STATE)`, `prop(STATE)`, or `data(STATE)` |
-| `optimize.istate/jstate/kstate`, `optimize.imult/jmult` | `opt`, `meci`, `mecp`, `tci`, and reaction-path state labels |
+| `optimize.states`, `optimize.istate/jstate/kstate`, `optimize.imult/jmult` | `opt`, `meci`, `mecp`, the legacy `tci` driver, and reaction-path state labels |
 | `hess.state`, `nac.states`, `md.active/init_state` | Corresponding state-aware driver |
 | `qmmm.istate` | No canonical equivalent; obsolete disconnected-path selector |
 | `tdhf.nstate_s/nstate_t`, `input.soc_2e` | `soc(ns=...,nt=...,soc_2e=...)`; do not combine the two sources |
@@ -502,10 +525,10 @@ where a state-aware canonical workflow supports them.
     mrsf(nstate=5)/bhhlyp/6-31g* geom="h2o.xyz" charge=0 opt(S0,maxit=100)
     ```
 
-5. MRSF conical-intersection search:
+5. BaekA multistate MRSF conical-intersection search:
 
     ```text
-    mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" charge=0 meci(S2,S1,maxit=100)
+    mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" charge=0 meci(S0,S1,S2,algorithm=baeka,maxit=100)
     ```
 
 6. Ground-state QM/MM molecular dynamics:

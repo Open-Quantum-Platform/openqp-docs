@@ -175,7 +175,8 @@ Common values:
 | `soc` | Spin-orbit coupling workflow. |
 | `ekt` | MRSF-EKT ionization/electron-affinity workflow. |
 | `optimize` | Geometry optimization. |
-| `meci`, `mecp`, `tci` | Crossing-point searches. |
+| `meci`, `mecp` | Crossing-point searches. `[optimize] meci_search=baeka` makes MECI a two-or-more-state adaptive search. |
+| `tci` | Legacy three-state adaptive-penalty runtype, retained unchanged for existing inputs. New BaekA calculations use `runtype=meci` with `meci_search=baeka`. |
 | `ts`, `irc`, `neb`, `mep` | Reaction-path workflows. |
 | `prop`, `data` | Multi-state property/data workflows for downstream drivers. |
 

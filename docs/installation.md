@@ -33,7 +33,7 @@ files, and data files together. Normal command-line use does not require
 geomeTRIC is optional. Concise `.oqp` geometry drivers use the native OpenQP
 optimizer and do not require it. Install the extra only for traditional `.inp`
 or Python workflows that explicitly select the legacy geomeTRIC backend, such
-as constrained optimization:
+as advanced constraint types beyond native frozen distances:
 
 ```bash
 pip install "openqp[geometric]"

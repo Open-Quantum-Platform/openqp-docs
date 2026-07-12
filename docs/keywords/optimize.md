@@ -31,8 +31,9 @@ remains available for existing scripts.
 Traditional `.inp` and Python API backend selector. The native `oqp` backend
 supports `optimize`, `ts`, `meci`, `mecp`, `tci`, `neb`, `irc`, and `mep`.
 geomeTRIC supports `optimize`, `meci`, `mecp`, `ts`, `irc`, and `neb`; it is
-retained chiefly as an optional constrained-optimization escape hatch. SciPy is
-a legacy backend for `optimize`, `meci`, `mecp`, and `mep`.
+retained as an optional compatibility path for advanced constraints beyond
+native frozen distances. SciPy is a legacy backend for `optimize`, `meci`,
+`mecp`, and `mep`.
 
 DL-FIND is not a current user-facing optimizer backend.
 
@@ -55,7 +56,22 @@ Selects the SciPy optimizer when `lib=scipy`.
 | Default | `30` |
 | Used by | optimization iterations |
 
-Maximum number of geometry steps.
+Maximum number of geometry steps. The shipped multistate MECI regression uses
+`maxit=1` only as a short continuous-integration smoke; production searches
+normally require a substantially larger limit.
+
+### `states`
+
+| Field | Value |
+| --- | --- |
+| Type | integer array |
+| Default | empty |
+| Used by | BaekA multistate MECI |
+
+Ordered internal response roots for `[optimize] meci_search=baeka`. Supply at
+least two distinct, ascending, consecutive values. In concise `.oqp`, users
+write physical labels directly, for example
+`meci(S0,S1,S2,S3,algorithm=baeka)`; OpenQP creates this internal list.
 
 ### `istate`, `jstate`, `kstate`
 
@@ -67,8 +83,9 @@ Maximum number of geometry steps.
 
 Target state indices. HF/DFT ground-state optimization uses `istate=0`.
 TDHF/MRSF state-specific workflows use positive state indices. MECI uses
-`istate` and `jstate`; TCI uses all three and requires `istate < jstate <
-kstate`.
+`istate` and `jstate` for the established two-state algorithms. The legacy TCI
+compatibility route uses all three and requires `istate < jstate < kstate`;
+new multistate inputs use [`states`](#states) with `meci_search=baeka`.
 
 ### `imult`, `jmult`
 
@@ -89,7 +106,10 @@ values.
 | Default | `1.0e-6` |
 | Used by | optimization convergence |
 
-Energy-change convergence threshold.
+Energy-change convergence threshold. BaekA evaluates this as a same-current-
+`sigma` objective change: the previous geometry's mean-energy and penalty
+terms are recombined using the current penalty weight before `delta_F` is
+formed.
 
 ### `energy_gap`
 
@@ -99,7 +119,12 @@ Energy-change convergence threshold.
 | Default | `1.0e-5` |
 | Used by | crossing-point convergence |
 
-Target energy-gap threshold for crossing searches.
+Target energy-gap threshold for crossing searches. For BaekA, OpenQP tests the
+outer span `E_last - E_first`, not the largest individual adjacent gap. The
+canonical `algorithm=baeka` default is `1.0e-4` Hartree. Traditional sectioned
+inputs retain the longstanding global `1.0e-5` default unless they explicitly
+set `energy_gap=1.0e-4`. See the
+[BaekA multistate MECI workflow](../workflows/baeka-multistate-meci.md).
 
 ### `meci_search`
 
@@ -107,20 +132,70 @@ Target energy-gap threshold for crossing searches.
 | --- | --- |
 | Type | string |
 | Default | `penalty` |
-| Values | `penalty`, `ubp`, `hybrid` |
+| Values | `penalty`, `ubp`, `hybrid`, `baeka` |
 | Used by | MECI search algorithm |
 
-Selects the MECI search strategy.
+Selects the MECI search strategy. `penalty`, `ubp`, and `hybrid` use the
+traditional `istate`/`jstate` pair. `baeka` accepts the two-or-more-root
+[`states`](#states) list and selects the additive BaekA independent-gap
+objective. The concise equivalent is `algorithm=baeka` inside `meci(...)`.
 
-### `pen_sigma`, `pen_alpha`, `pen_incre`
+### `pen_sigma`, `pen_alpha`
 
 | Field | Value |
 | --- | --- |
 | Type | float |
-| Defaults | `1.0`, `0.0`, `1.0` |
+| Global schema defaults | `1.0`, `0.0` |
+| BaekA method defaults | `1.0`, `0.02` Hartree |
 | Used by | penalty-function crossing searches |
 
-Penalty-function parameters for MECI and related crossing workflows.
+For `meci_search=baeka`, `pen_sigma` is the initial current dimensionless
+penalty weight and `pen_alpha` is a positive energy-valued smoothing parameter.
+Canonical `algorithm=baeka` injects `alpha=0.02` Hartree and rejects explicit
+`alpha=0`. A traditional BaekA input inherits the global `pen_alpha=0.0`
+sentinel when the key is omitted; BaekA interprets that sentinel as the fixed
+`0.02` Hartree method default. It does not derive `alpha` from a gradient RMS,
+whose units are incompatible.
+
+### `pen_incre`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `1.0` |
+| Used by | legacy penalty-function multiplier update |
+
+Historical multiplicative update control used by the established `tci`
+workflow and older penalty implementation:
+
+```text
+sigma_next = sigma_current * pen_incre
+```
+
+BaekA does not use this key. Its additive controls are `pen_delta` and
+`pen_jump`.
+
+### `pen_delta`, `pen_jump`
+
+| Field | Value |
+| --- | --- |
+| Types | float; float array |
+| Defaults | `0.025`; `10,10,25,25,100,100,1000,1000,3000` |
+| Used by | BaekA adaptive sigma updates |
+
+`pen_delta` is the small dimensionless additive increment after an ordinary
+nonstationary BaekA macro-step:
+
+```text
+sigma_next = sigma_current + pen_delta
+```
+
+`pen_jump` is an ordered schedule of larger additive increments. OpenQP
+consumes one entry only when the same-sigma projected stationary tests pass but
+the outer energy span remains above `energy_gap`. Schedule entries are neither
+multipliers nor thresholds. In concise `.oqp`, use the public names
+`delta_beta` and `beta_schedule`. See the
+[BaekA workflow](../workflows/baeka-multistate-meci.md).
 
 ### `gap_weight`
 
@@ -130,7 +205,11 @@ Penalty-function parameters for MECI and related crossing workflows.
 | Default | `1.0` |
 | Used by | crossing-search objective |
 
-Weight applied to the energy-gap term.
+Weight applied to a crossing-search penalty objective. The public BaekA route
+uses `sigma`, `alpha`, `delta_beta`, `beta_schedule`, and `gap`; for BaekA this
+lower-level key is fixed at `1.0`, and `sigma` is the published penalty
+multiplier. Other legacy crossing algorithms retain their established use of
+`gap_weight`.
 
 ### `rmsd_grad`, `max_grad`
 
@@ -140,7 +219,13 @@ Weight applied to the energy-gap term.
 | Defaults | `1.0e-4`, `3.0e-4` |
 | Used by | gradient convergence |
 
-RMS and maximum gradient convergence thresholds.
+RMS and maximum gradient convergence thresholds for the established
+optimizers. BaekA reuses the legacy-named `rmsd_grad` value as the threshold
+for the Euclidean norms `||g_parallel||_2 / sigma` and
+`||g_perpendicular||_2`; those BaekA quantities are not RMS values. `max_grad`
+remains a logged generic diagnostic and is not a BaekA termination test.
+Concise BaekA input rejects an explicitly supplied `max_grad` to avoid
+implying otherwise.
 
 ### `rmsd_step`, `max_step`
 
@@ -150,7 +235,9 @@ RMS and maximum gradient convergence thresholds.
 | Defaults | `1.0e-3`, `2.0e-3` |
 | Used by | step convergence |
 
-RMS and maximum geometry-step convergence thresholds.
+RMS and maximum geometry-step convergence thresholds. They remain available
+as generic optimization diagnostics but are not BaekA termination tests;
+concise BaekA input rejects explicit `rmsd_step` and `max_step` controls.
 
 ### `step_size`, `step_tol`
 

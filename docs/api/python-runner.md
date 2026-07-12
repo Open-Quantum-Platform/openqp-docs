@@ -118,7 +118,7 @@ mp2_job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2")
 | `workflow.gradient(state=None, **kwargs)` | `OpenQP` | Selects `runtype=grad` and stores the gradient state in `[properties] grad`. |
 | `workflow.hessian(**kwargs)` | `OpenQP` | Selects `runtype=hess` and stores Hessian controls in `[hess]`. |
 | `workflow.optimize(**kwargs)` | `OpenQP` | Selects `runtype=optimize`; native controls route to `[oqp]` by default, while explicit compatibility backends may route to `[geometric]` or legacy SciPy controls. |
-| `workflow.meci(**kwargs)` | `OpenQP` | Selects `runtype=meci`; the same style is available for `mecp`, `tci`, `mep`, `ts`, `irc`, and `neb`. |
+| `workflow.meci(**kwargs)` | `OpenQP` | Selects `runtype=meci`. Use `states=[...]` and `algorithm="baeka"` for the BaekA two-or-more-state algorithm; public controls also include `sigma`, `alpha`, `delta_beta`, `beta_schedule`, and `gap`. The same workflow style is available for `mecp`, `mep`, `ts`, `irc`, and `neb`; `workflow.tci(...)` remains a compatibility path. |
 | `workflow.nacme(**kwargs)` | `OpenQP` | Selects `runtype=nacme` and requires MRSF-TDDFT. |
 | `workflow.ekt(ip=False, ea=False, **kwargs)` | `OpenQP` | Selects `runtype=ekt`, requires MRSF-TDDFT, and requires IP, EA, or both. |
 | `workflow.soc(soc_2e=1, scal_rel=2, **tdhf_keywords)` | `OpenQP` | Selects `runtype=soc` for an already configured MRSF-TDDFT theory, sets DKH2 scalar relativity by default, and rejects non-MRSF theories. |
@@ -128,7 +128,8 @@ mp2_job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2")
 The Python workflow API retains explicit `lib="geometric"` and `lib="scipy"`
 selection for compatibility. This is intentionally broader than concise
 `.oqp`, whose geometry drivers always use the native engine and reject backend
-selectors. Install `openqp[geometric]` before selecting geomeTRIC.
+selectors. Native `oqp` handles frozen-distance minima; install
+`openqp[geometric]` only before explicitly selecting geomeTRIC.
 
 Plain energy calculations do not need a workflow call. Use `job.workflow.<name>(...)`
 only when selecting a non-energy workflow or setting workflow-specific controls.

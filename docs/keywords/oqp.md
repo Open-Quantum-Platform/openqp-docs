@@ -37,6 +37,27 @@ Initial trust radius.
 
 Maximum trust radius.
 
+### `freeze`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | empty |
+| Used by | native constrained minimum optimization |
+
+Freezes each listed atom-pair distance at its value in the input geometry.
+Indices are one-based. Use `distance(i,j)` or the short `r(i,j)` spelling, and
+separate multiple pairs with semicolons:
+
+```ini
+[oqp]
+freeze=distance(1,2);distance(2,3)
+```
+
+In concise input, place the same expression directly in `opt(...)`, for example
+`opt(S0,freeze="distance(1,2)")`. Current native constraints are limited to
+frozen distances and minimum searches.
+
 ### `follow`
 
 | Field | Value |

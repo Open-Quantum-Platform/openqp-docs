@@ -6,14 +6,16 @@ selected with `[optimize] lib=geometric`.
 !!! warning "Optional legacy `.inp` backend"
 
     This section is retained for traditional sectioned `.inp` files and the
-    compatible Python API, chiefly as a constrained-optimization escape hatch.
+    compatible Python API, chiefly for advanced constraint types beyond the
+    native frozen-distance control.
     It is not accepted in concise `.oqp` input, whose geometry drivers always
     use the native OpenQP engine. Install this optional backend with
     `pip install "openqp[geometric]"` before running a legacy geomeTRIC job.
 
     General optimization, crossing-point, TS, IRC, MEP, and NEB examples use
-    the native engine. The sole shipped geomeTRIC compatibility deck is the
-    [constrained HCN optimization](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/HCN_RHF-DFT_CONSTRAINED_GEOMETRIC.inp).
+    the native engine. The shipped constrained HCN regression now uses the
+    [native optimizer](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/HCN_RHF-DFT_CONSTRAINED_OQP.inp),
+    so no standard example requires this optional backend.
 
 ## Keywords
 

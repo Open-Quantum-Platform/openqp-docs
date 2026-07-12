@@ -26,11 +26,16 @@ resolved one-line command remains the authoritative calculation record.
 OpenQP renders the short positional geometry above as the explicit canonical
 spelling `geom="h2o.xyz"`.
 
+The OpenQP repository ships a same-stem `.oqp` companion for every legacy
+example `.inp`. This makes the complete legacy example inventory available
+in both formats without removing the established input system.
+
 The two formats intentionally expose different optimization detail. Concise
 `.oqp` geometry drivers always use the native OpenQP engine and have no `lib`
 selector. Traditional `.inp` files retain `[optimize] lib=oqp`,
 `lib=geometric`, or `lib=scipy` for compatibility; geomeTRIC is an optional
-legacy dependency used chiefly for constrained optimization.
+legacy dependency used chiefly for advanced constraints beyond native frozen
+distances.
 
 OpenQP inputs are INI-like text files. Options are grouped by section:
 
@@ -111,7 +116,8 @@ Common `[input] runtype` values:
 | `md` | Ground-state QM/MM molecular dynamics. The command-line runner dispatches this OpenMM path specially. |
 | `namd` | Nonadiabatic molecular dynamics using `[md]` controls. |
 | `optimize` | Geometry optimization. |
-| `meci`, `mecp`, `tci` | Crossing-point searches. |
+| `meci`, `mecp` | Crossing-point searches. `meci_search=baeka` selects the two-or-more-state adaptive MECI algorithm. |
+| `tci` | Existing three-state adaptive-penalty workflow, retained for backward compatibility. It is distinct from the new general `meci_search=baeka` option. |
 | `ts`, `irc`, `neb`, `mep` | Reaction-path workflows. |
 | `prop`, `data` | Multi-state property/gradient workflows for downstream drivers. |
 

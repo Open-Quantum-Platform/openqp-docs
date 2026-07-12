@@ -13,6 +13,15 @@ MP2 is currently an energy-only post-SCF workflow:
 
 ## Energy
 
+### One-line `.oqp` Style
+
+```text
+mp2(reference=uhf)/6-31g geom="../geometries/H2O-0381125c86f2.xyz" charge=0 mult=1 energy scf(conv=1e-10)
+```
+
+The `reference` route option accepts `rhf`, `rohf`, or `uhf` and lowers to
+`[scf] type`. It is separate from the `[mp2]` spin-scaling section.
+
 ### Input File Style
 
 ```ini
@@ -66,7 +75,8 @@ job.theory.mp2(
 ```
 
 Runnable input:
-[`examples/MP2/h2o_ump2_6-31g.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MP2/h2o_ump2_6-31g.inp).
+[`examples/MP2/h2o_ump2_6-31g.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MP2/h2o_ump2_6-31g.oqp)
+or its same-stem legacy `.inp` companion.
 
 For the H2O / 6-31G example, the validated installed-package run reports:
 
