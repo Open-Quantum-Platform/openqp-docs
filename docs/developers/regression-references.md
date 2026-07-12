@@ -1,9 +1,9 @@
 # Regression References and the Test Registry
 
 OpenQP's example suite (`openqp --run_tests all`) is also its regression
-harness: each example's committed `.json` is the reference its numbers are
-checked against. What gets checked is defined by a single **registry**, so the
-suite stays honest as features are added.
+harness: each same-stem `.inp`/`.oqp` pair shares one committed `.json`
+reference against which its numbers are checked. What gets checked is defined
+by a single **registry**, so the suite stays honest as features are added.
 
 ## The registry (single source of truth)
 
@@ -54,9 +54,28 @@ it wrote before returning.
 
 - `openqp --validate_examples` — every reference is complete (blocking).
 - `openqp --run_tests all` — the numbers still match (blocking; the step uses
-  `set -o pipefail` so a failing example fails the build).
+  the default `auto` input selection and `set -o pipefail`, so a failing example
+  fails the build). Within the standard suite, `auto` prefers eligible `.oqp`
+  decks and adds a representative legacy `.inp` compatibility set without
+  doubling the entire suite.
 - An agent review flags a new computed value added without a `RegKey`, an
   example added without a reference, and code/manual drift.
+
+Maintainers can select the syntax within a test scope when diagnosing input
+handling:
+
+```bash
+openqp --run_tests all --input-format inp
+openqp --run_tests all --input-format oqp
+openqp --run_tests all --input-format both
+```
+
+With `all`, these selectors retain the standard suite's slow and
+non-self-contained exclusions. Pass an explicit examples directory when every
+matching file below that directory should be included. The runner gives every
+calculation an isolated output directory, and paired legacy jobs also receive
+distinct project and log names, so parallel `.inp`/`.oqp` artifacts cannot
+overwrite one another.
 
 ## Coverage notes
 

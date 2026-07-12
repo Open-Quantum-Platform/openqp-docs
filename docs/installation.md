@@ -140,6 +140,11 @@ the built-in default.
 openqp --run_tests all
 ```
 
+This uses the default mixed regression set. Add `--input-format inp` or
+`--input-format oqp` to select one syntax within that test scope, or
+`--input-format both` to include both. See [Examples](examples/index.md) for the
+standard `all` exclusions and explicit-directory policy.
+
 For a smaller first check:
 
 ```bash

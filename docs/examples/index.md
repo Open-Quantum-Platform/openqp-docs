@@ -48,8 +48,19 @@ openqp examples/MP2/h2o_ump2_6-31g.oqp
 Run the packaged example tests:
 
 ```bash
-openqp --run_tests all
+openqp --run_tests all                         # automatic mixed regression set
+openqp --run_tests all --input-format inp      # standard suite through .inp
+openqp --run_tests all --input-format oqp      # standard suite through .oqp
+openqp --run_tests all --input-format both     # both syntaxes in that suite
 ```
+
+The default `auto` mode prefers `.oqp`, retains any `.inp` without a concise
+companion, and keeps a small representative `.inp` compatibility set. The
+historical `all` scope still excludes unusually slow or non-self-contained
+examples. Supplying an explicit directory instead applies the selected format
+to every matching input below that directory. Each calculation receives an
+isolated output folder, so paired `.inp`/`.oqp` logs and fixed-name optimization
+artifacts cannot overwrite one another.
 
 Geometry and reaction-path examples use the native OpenQP engine, including
 [`HCN_RHF-DFT_CONSTRAINED_OQP.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/HCN_RHF-DFT_CONSTRAINED_OQP.oqp),
