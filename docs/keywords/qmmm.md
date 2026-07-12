@@ -36,9 +36,9 @@ energy-conserving QM/MM gradient. See
 [References](../references.md#qmmm-espf-embedding) for the ESPF operator and its
 periodic (particle-mesh Ewald) extension.
 
-Two ways of defining the QM region are supported, matching the two driver paths:
+Two ways of defining the QM region are supported, matching the driver paths:
 
-- **Single-point / ground-state QM/MM** reads the geometry and QM selection from
+- **Single-point QM/MM energy** reads the geometry and QM selection from
   `[input] system = file.pdb <indices>` (see [`[input] system`](input.md#system)).
   Dangling covalent bonds crossing the QM/MM boundary are capped automatically
   (see [Link atoms](#link-atoms)).
@@ -141,8 +141,9 @@ full nonadiabatic QM/MM setup.
 | Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
 
 Path to the PDB file that defines the full QM+MM system (coordinates and
-topology) for `runtype=namd`. The single-point and ground-state QM/MM paths take
-the PDB path from `[input] system` instead.
+topology) for ground-state `runtype=md` and nonadiabatic `runtype=namd`.
+Single-point QM/MM energy instead takes its PDB path and QM indices together
+from `[input] system = file.pdb <indices>`.
 
 ### `forcefield_files`
 
@@ -178,13 +179,15 @@ explicit `forcefield_files` value. New QM/MM-MD decks should set
 
 Zero-based indices of the atoms placed in the QM region, as individual indices
 and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. Give the indices in
-**ascending order**. Whole-molecule QM selections (e.g. a solute in a solvent
-box) are the common case, and the only case supported by the nonadiabatic
-(`runtype=namd`) path. In the single-point and ground-state QM/MM MD paths a
-selection that cuts a covalent bond is capped with a hydrogen
-[link atom](#link-atoms) and the MM frontier charge is treated per
-[`frontier_scheme`](#frontier_scheme); see the
-[SOC-NAMD-QMMM scope note](../workflows/soc-namd-qmmm.md#scope-and-limitations).
+**ascending order**. This key is required by ground-state QM/MM MD and NAMD;
+single-point energy writes the equivalent selection after its PDB path in
+`[input] system`. Whole-molecule QM selections (e.g. a solute in a solvent box)
+are the common case, and the only case supported by the nonadiabatic
+(`runtype=namd`) path. In single-point energy and ground-state QM/MM MD, a
+selection that cuts a covalent bond is capped with a hydrogen [link
+atom](#link-atoms) and the MM frontier charge is treated per
+[`frontier_scheme`](#frontier_scheme); see the [SOC-NAMD-QMMM scope
+note](../workflows/soc-namd-qmmm.md#scope-and-limitations).
 
 ### `cutoff`
 

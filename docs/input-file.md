@@ -121,10 +121,11 @@ remains available for legacy bookkeeping. Canonical `qmmm(...)` may accompany
 phase. Canonical QM/MM gradients and optimizations are rejected until their
 active backends provide the required assembled gradient.
 
-The ordinary `Runner` validator still classifies bare `runtype=md` as
-unavailable; the command-line runner recognizes `qmmm_flag=true` plus
-`runtype=md` before constructing `Runner` and dispatches the OpenMM driver.
-Use `openqp file.inp --nompi` for this legacy ground-state QM/MM-MD path.
+Bare `runtype=md` without QM/MM remains invalid. With `qmmm_flag=true`, both
+the command-line path and programmatic `Runner` dispatch ground-state MD to the
+OpenMM `QMMM_MD` driver. This applies after a concise `.oqp` request has been
+lowered as well as to a traditional sectioned `.inp`. Run it without MPI, for
+example `openqp file.oqp --nompi` or `openqp file.inp --nompi`.
 
 Standalone MP2 is selected with `[input] method=mp2`, uses only
 `runtype=energy`, and requires an empty `[input] functional`. Spin-scaled MP2

@@ -252,25 +252,25 @@ means the current `[md]` controls `nstep`,
 
 | Driver signature | Lowered option family |
 | --- | --- |
-| `energy([S0|T0|Q0])` | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet. |
+| <code>energy([S0&#124;T0&#124;Q0])</code> | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet. |
 | `grad([STATE],td_prop=...,export=...,title=...)` | Gradient target plus concise `[properties]` controls. Default target is `S0`, except that SF routes require `root=N`. |
 | `opt([STATE],OPT...,ENGINE...)` | Native minimum optimization. Default target is `S0`, except that SF routes require `root=N`. |
 | `meci(STATE1,STATE2,OPT...,ENGINE...)` | Native two-state intersection search for distinct states of the same multiplicity. State order is normalized. |
 | `mecp(STATE1,STATE2,OPT...,ENGINE...)` | Native crossing search for two states of different multiplicity. |
 | `tci(STATE1,STATE2,STATE3,OPT...,ENGINE...)` | Native three-state intersection search for distinct states of the same multiplicity. |
-| `mep([STATE],maxit=...|points=...,step=...,gtol=...)` | Native minimum-energy path with a path limit, step size, and gradient stopping threshold. |
-| `ts([STATE],OPT...,ENGINE...,follow=N,hessian=model|numerical|analytical)` | Native P-RFO transition-state search. `follow` chooses the initial mode and `hessian` chooses the initial Hessian policy. |
-| `irc([STATE],maxit=...,direction=forward|backward,step=...,hessian=numerical|analytical,gtol=...)` | Native IRC with an explicit branch, step size, Hessian type, and gradient stopping threshold. |
+| <code>mep([STATE],maxit=...&#124;points=...,step=...,gtol=...)</code> | Native minimum-energy path with a path limit, step size, and gradient stopping threshold. |
+| <code>ts([STATE],OPT...,ENGINE...,follow=N,hessian=model&#124;numerical&#124;analytical)</code> | Native P-RFO transition-state search. `follow` chooses the initial mode and `hessian` chooses the initial Hessian policy. |
+| <code>irc([STATE],maxit=...,direction=forward&#124;backward,step=...,hessian=numerical&#124;analytical,gtol=...)</code> | Native IRC with an explicit branch, step size, Hessian type, and gradient stopping threshold. |
 | `neb([STATE],maxit=...,NEB...)` | Native NEB; `product="FILE"` is required and the final band is written as a multi-frame XYZ file. |
-| `hess([STATE],type=numerical|analytical,dx=...,nproc=...,read=...,restart=...,temperature=...,clean=...)` | Hessian/frequency calculation. |
+| <code>hess([STATE],type=numerical&#124;analytical,dx=...,nproc=...,read=...,restart=...,temperature=...,clean=...)</code> | Hessian/frequency calculation. |
 | `nac(STATE1,STATE2,type=numerical,dx=...,nproc=...,restart=...,clean=...,align=...)` | Numerical nonadiabatic-coupling vector between two states in the same spin manifold. |
 | `bp(STATE1,STATE2,type=numerical,dx=...,nproc=...,restart=...,clean=...,align=...)` | Numerical branching-plane calculation between two states in the same spin manifold. |
 | `nacme(STATE1,STATE2,dt=...,align=...)` | Coupling matrix element; requires `geom2` or `guess(file2=...)`. |
 | `soc(soc_2e=...,ns=...,nt=...)` | Spin-orbit coupling; accepts no single target state. `ns` and `nt` must be supplied together. |
 | `md([S0]) qmmm(...)` | Ground-state QM/MM molecular dynamics. `qmmm(...)` is mandatory and owns the OpenMM controls. |
 | `namd([STATE],NAMD...)` | MRSF nonadiabatic molecular dynamics using the `[md]` controls listed above; defaults to `S1`. |
-| `ekt([STATE],ip=true|false,ea=true|false)` | MRSF extended Koopmans IP/EA options; the parent state defaults to `S0`. |
-| `thermo([STATE],type=numerical|analytical,dx=...,nproc=...,read=...,restart=...,temperature=...,clean=...)` | Alias that lowers to the supported Hessian path; the state defaults to `S0`. |
+| <code>ekt([STATE],ip=true&#124;false,ea=true&#124;false)</code> | MRSF extended Koopmans IP/EA options; the parent state defaults to `S0`. |
+| <code>thermo([STATE],type=numerical&#124;analytical,dx=...,nproc=...,read=...,restart=...,temperature=...,clean=...)</code> | Alias that lowers to the supported Hessian path; the state defaults to `S0`. |
 | `prop([STATE],scf_prop=...,nmr_gauge=...,td_prop=...,export=...,title=...)` | MRSF-TDDFT/MRSF-TDHF property driver; defaults to `S0`. |
 | `data([STATE],scf_prop=...,nmr_gauge=...,td_prop=...,export=...,title=...)` | Multi-state data/gradient export. A response route defaults to `S1`; an SF route defaults to `root=1`. |
 

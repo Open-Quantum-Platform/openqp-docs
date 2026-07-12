@@ -103,8 +103,11 @@ In canonical input, select the physical state directly; an omitted state
 defaults to `S0`:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" grad(S1)
+mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" grad(S2)
 ```
+
+Here physical `S2` lowers to internal response root `3`, matching the
+traditional and Python examples below.
 
 In traditional input, use `runtype=grad` and select the internal response root
 through `[properties] grad`.

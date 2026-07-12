@@ -39,6 +39,11 @@ as constrained optimization:
 pip install "openqp[geometric]"
 ```
 
+The `geometric` extra is introduced by the companion next-release core change
+in [OpenQP #273](https://github.com/Open-Quantum-Platform/openqp/pull/273).
+OpenQP 1.2.0 still lists geomeTRIC as a normal dependency, so its plain
+`pip install openqp` already includes that backend.
+
 See the [Build Options](build-options.md) reference for the full CMake option
 table, defaults, BLAS/LAPACK choices, external dependency cache behavior, and
 package-build overrides.
