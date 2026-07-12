@@ -15,7 +15,7 @@ writing a new input from scratch.
 | `examples/TDDFT` | TDDFT energy and gradient examples. |
 | `examples/SF-TDDFT` | Spin-flip TDDFT examples. |
 | `examples/MRSF-TDDFT` | MRSF-TDDFT energies, gradients, and optimization data. |
-| `examples/OPT` | Native optimization, MECI, MECP, TCI, TS, IRC, NEB, and MEP, plus optional legacy geomeTRIC compatibility cases. |
+| `examples/OPT` | Native optimization, MECI, MECP, TCI, TS, IRC, NEB, and MEP; one optional legacy geomeTRIC deck is retained only for constrained optimization. |
 | `examples/HESS` | Analytic and numerical Hessian workflows. |
 | `examples/PCM` | ddX reference-SCF PCM energy cases. |
 | `examples/SOC` | MRSF-TDDFT SOC cases. |
@@ -44,6 +44,12 @@ Run the packaged example tests:
 ```bash
 openqp --run_tests all
 ```
+
+Geometry and reaction-path examples use the native OpenQP engine. The only
+geomeTRIC compatibility deck retained in `examples/OPT` is
+[`HCN_RHF-DFT_CONSTRAINED_GEOMETRIC.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/HCN_RHF-DFT_CONSTRAINED_GEOMETRIC.inp),
+because native constraints are not yet available. It requires the optional
+`openqp[geometric]` extra.
 
 ## QM/MM examples
 

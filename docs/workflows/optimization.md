@@ -184,5 +184,7 @@ job.workflow.optimize(
 )
 ```
 
-Legacy examples, including constrained optimization, remain under
-[`examples/OPT`](https://github.com/Open-Quantum-Platform/openqp/tree/main/examples/OPT).
+The sole shipped geomeTRIC compatibility deck is the
+[`HCN_RHF-DFT_CONSTRAINED_GEOMETRIC.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/HCN_RHF-DFT_CONSTRAINED_GEOMETRIC.inp)
+constrained optimization. General minimum, crossing-point, TS, IRC, MEP, and
+NEB examples use the native engine.

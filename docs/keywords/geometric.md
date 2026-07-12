@@ -11,6 +11,10 @@ selected with `[optimize] lib=geometric`.
     use the native OpenQP engine. Install this optional backend with
     `pip install "openqp[geometric]"` before running a legacy geomeTRIC job.
 
+    General optimization, crossing-point, TS, IRC, MEP, and NEB examples use
+    the native engine. The sole shipped geomeTRIC compatibility deck is the
+    [constrained HCN optimization](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/HCN_RHF-DFT_CONSTRAINED_GEOMETRIC.inp).
+
 ## Keywords
 
 ### `coordsys`
