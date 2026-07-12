@@ -1,7 +1,9 @@
 # `[neb]`
 
 The `[neb]` section defines the product endpoint and image count for nudged
-elastic band calculations. Use it with `[input] runtype=neb`.
+elastic band calculations. Use it with `[input] runtype=neb`. All native NEB
+algorithm controls live in [`[oqp]`](oqp.md); concise `.oqp` input routes them
+there automatically.
 
 ## Keywords
 
@@ -34,8 +36,20 @@ nimage=7
 
 Number of NEB images. The input checker requires at least `3`.
 
-The remaining `[neb]` keys belong to the geomeTRIC backend. Native OQP NEB
-controls such as `spring`, boolean `climb`, and `fmax` live in [`[oqp]`](oqp.md).
+For concise input, write the endpoint and native controls together:
+
+```text
+dft/pbe0/def2-svp geom="reactant.xyz" neb(S0,product="product.xyz",images=7,spring=0.05,climb=true,output="path.xyz")
+```
+
+The concise `images` spelling lowers to `nimage`, and `output` lowers to
+[`[oqp] neb_output`](oqp.md#neb_output).
+
+The remaining six keys are retained only for traditional `.inp` geomeTRIC NEB
+compatibility. Concise `.oqp` rejects them and uses native `spring`, `fmax`,
+`frms`, boolean `climb`, `align`, and `opt_ends` instead. The native replacements
+have different semantics or units, so old values should not be copied
+mechanically.
 
 ### `k`
 
@@ -43,7 +57,7 @@ controls such as `spring`, boolean `climb`, and `fmax` live in [`[oqp]`](oqp.md)
 | --- | --- |
 | Type | float |
 | Default | `1.0` |
-| Used by | geomeTRIC NEB spring strength |
+| Used by | legacy geomeTRIC NEB spring strength |
 
 ### `maxg`
 
@@ -51,7 +65,7 @@ controls such as `spring`, boolean `climb`, and `fmax` live in [`[oqp]`](oqp.md)
 | --- | --- |
 | Type | float |
 | Default | `0.1` |
-| Used by | geomeTRIC maximum-gradient convergence |
+| Used by | legacy geomeTRIC NEB maximum-gradient convergence |
 
 ### `avgg`
 
@@ -59,7 +73,7 @@ controls such as `spring`, boolean `climb`, and `fmax` live in [`[oqp]`](oqp.md)
 | --- | --- |
 | Type | float |
 | Default | `0.05` |
-| Used by | geomeTRIC average-gradient convergence |
+| Used by | legacy geomeTRIC NEB average-gradient convergence |
 
 ### `climb`
 
@@ -67,10 +81,10 @@ controls such as `spring`, boolean `climb`, and `fmax` live in [`[oqp]`](oqp.md)
 | --- | --- |
 | Type | float |
 | Default | `0.5` |
-| Used by | geomeTRIC climbing-image threshold |
+| Used by | legacy geomeTRIC NEB climbing threshold |
 
-This is distinct from the boolean [`[oqp] climb`](oqp.md#climb) used by native
-NEB. The one-line driver routes `climb` according to `lib`.
+This float is distinct from the boolean [`[oqp] climb`](oqp.md#climb) used by
+native NEB.
 
 ### `align`
 
@@ -78,7 +92,7 @@ NEB. The one-line driver routes `climb` according to `lib`.
 | --- | --- |
 | Type | boolean |
 | Default | `True` |
-| Used by | geomeTRIC image alignment |
+| Used by | legacy geomeTRIC NEB image alignment |
 
 ### `optep`
 
@@ -86,7 +100,4 @@ NEB. The one-line driver routes `climb` according to `lib`.
 | --- | --- |
 | Type | boolean |
 | Default | `False` |
-| Used by | geomeTRIC endpoint optimization |
-
-In `.oqp`, use `lib=geometric` with these six controls. Mixing them with native
-`[oqp]` NEB controls is rejected.
+| Used by | legacy geomeTRIC NEB endpoint optimization |

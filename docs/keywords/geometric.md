@@ -3,6 +3,14 @@
 The `[geometric]` section controls the external geomeTRIC optimizer backend
 selected with `[optimize] lib=geometric`.
 
+!!! warning "Optional legacy `.inp` backend"
+
+    This section is retained for traditional sectioned `.inp` files and the
+    compatible Python API, chiefly as a constrained-optimization escape hatch.
+    It is not accepted in concise `.oqp` input, whose geometry drivers always
+    use the native OpenQP engine. Install this optional backend with
+    `pip install "openqp[geometric]"` before running a legacy geomeTRIC job.
+
 ## Keywords
 
 ### `coordsys`

@@ -236,33 +236,32 @@ Every `.oqp` calculation has exactly one primary driver. If it is omitted,
 OpenQP inserts `energy`. Square brackets below mean an optional argument;
 `STATE` is a physical label such as `S0`, `S1`, `T0`, or `Q0`.
 
-In the signatures, `OPT` means only `maxit`, `lib`, `optimizer`, `step_size`,
-`step_tol`, `rmsd_grad`, `rmsd_step`, `max_grad`, `max_step`, `energy_shift`,
-`energy_gap`, `meci_search`, `pen_sigma`, `pen_alpha`, `pen_incre`,
-`gap_weight`, and `init_scf`. `NAMD` means the current `[md]` controls `nstep`,
+In the signatures, `OPT` means the common native controls `maxit`, `rmsd_grad`,
+`rmsd_step`, `max_grad`, `max_step`, `energy_shift`, `energy_gap`,
+`meci_search`, `pen_sigma`, `pen_alpha`, `pen_incre`, `gap_weight`, and
+`init_scf`. `ENGINE` means `coordsys`, `trust`, and `trust_max`; these apply to
+the native minimum, crossing-point, and transition-state optimizers. `NAMD`
+means the current `[md]` controls `nstep`,
 `dt`, `active`, `substep`, `decoherence`, `edc_c`, `thrshe`, `tdc`, `trivial`,
 `trivial_thresh`, `init_temp`, `velocity`, `seed`, `restart`, `soc`,
 `soc_basis`, `soc_du_dt_corr`, `soc_tdc_grad_corr`, `grad_wthr`, `init_state`,
 `econs`, `dt_adaptive`, `dt_min`, and `dx_max`.
-For NEB, `product`, `images`/`nimage`, and `climb` are understood by both
-backends and routed to the selected backend. `NEB_OQP` means the remaining
-native options `spring`, `fmax`, `climb_fmax`, `neb_dt`, `maxmove`, `opt_ends`,
-and `end_fmax`. `NEB_GEOMETRIC` means the remaining geomeTRIC options `k`,
-`maxg`, `avgg`, `align`, and `optep`.
+`NEB` means the native options `product`, `images`/`nimage`, `spring`, `climb`,
+`fmax`, `frms`, `climb_fmax`, `dt`/`neb_dt`, `maxmove`, `align`, `opt_ends`,
+`end_fmax`, and `output`.
 
 | Driver signature | Lowered option family |
 | --- | --- |
 | `energy([S0|T0|Q0])` | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet. |
 | `grad([STATE],td_prop=...,export=...,title=...)` | Gradient target plus concise `[properties]` controls. Default target is `S0`, except that SF routes require `root=N`. |
-| `opt([STATE],OPT...)` | Minimum optimization. Default target is `S0`, except that SF routes require `root=N`. |
-| `meci(STATE1,STATE2,OPT...)` | Two distinct states of the same multiplicity. State order is normalized. |
-| `mecp(STATE1,STATE2,OPT...)` | Two states of different multiplicity. |
-| `tci(STATE1,STATE2,STATE3,OPT...)` | Three distinct states of the same multiplicity. |
-| `mep([STATE],OPT...,points=...,step=...)` | Minimum-energy path; `points` and `step` map to the selected backend. `mep_maxit` is SciPy-only. |
-| `ts([STATE],OPT...,hessian=...)` | Transition-state search; the concise `hessian` option is geomeTRIC-only. |
-| `irc([STATE],OPT...,direction=...,step=...,hessian=...)` | IRC controls are routed according to `lib=oqp` or `lib=geometric`. |
-| `neb([STATE],product="FILE",images=N,climb=...,OPT...,NEB_OQP...)` | Native NEB with `lib=oqp`, which is the default; `product` is required. |
-| `neb([STATE],product="FILE",images=N,climb=...,OPT...,NEB_GEOMETRIC...)` | geomeTRIC NEB with `lib=geometric`; `product` is required. |
+| `opt([STATE],OPT...,ENGINE...)` | Native minimum optimization. Default target is `S0`, except that SF routes require `root=N`. |
+| `meci(STATE1,STATE2,OPT...,ENGINE...)` | Native two-state intersection search for distinct states of the same multiplicity. State order is normalized. |
+| `mecp(STATE1,STATE2,OPT...,ENGINE...)` | Native crossing search for two states of different multiplicity. |
+| `tci(STATE1,STATE2,STATE3,OPT...,ENGINE...)` | Native three-state intersection search for distinct states of the same multiplicity. |
+| `mep([STATE],maxit=...|points=...,step=...,gtol=...)` | Native minimum-energy path with a path limit, step size, and gradient stopping threshold. |
+| `ts([STATE],OPT...,ENGINE...,follow=N,hessian=model|numerical|analytical)` | Native P-RFO transition-state search. `follow` chooses the initial mode and `hessian` chooses the initial Hessian policy. |
+| `irc([STATE],maxit=...,direction=forward|backward,step=...,hessian=numerical|analytical,gtol=...)` | Native IRC with an explicit branch, step size, Hessian type, and gradient stopping threshold. |
+| `neb([STATE],maxit=...,NEB...)` | Native NEB; `product="FILE"` is required and the final band is written as a multi-frame XYZ file. |
 | `hess([STATE],type=numerical|analytical,dx=...,nproc=...,read=...,restart=...,temperature=...,clean=...)` | Hessian/frequency calculation. |
 | `nac(STATE1,STATE2,type=numerical,dx=...,nproc=...,restart=...,clean=...,align=...)` | Numerical nonadiabatic-coupling vector between two states in the same spin manifold. |
 | `bp(STATE1,STATE2,type=numerical,dx=...,nproc=...,restart=...,clean=...,align=...)` | Numerical branching-plane calculation between two states in the same spin manifold. |
@@ -277,8 +276,8 @@ and `end_fmax`. `NEB_GEOMETRIC` means the remaining geomeTRIC options `k`,
 
 Aliases such as `sp`, `gradient`, `optimize`, `optimization`, and `hessian` are
 accepted, but the spellings in the table are the canonical generated forms.
-Backend availability and option values remain subject to the existing OpenQP
-validator.
+Method and workflow availability, together with option values, remain subject
+to the existing OpenQP validator.
 
 SF state character is not known before diagonalization. Therefore every
 state-specific SF request must write `root=N`; do not omit the state and do not
@@ -317,36 +316,34 @@ mrsf(nstate=5)/bhhlyp/6-31g* geom="h2o.xyz" grad(S1) opt(S1)
 
 Use separate `.oqp` files for separate calculation steps.
 
-Optimizer libraries are driver-specific:
+### Native Geometry Drivers
 
-| Driver | Supported `lib` values |
-| --- | --- |
-| `opt`, `meci`, `mecp` | `oqp`, `scipy`, `geometric` |
-| `tci` | `oqp` |
-| `mep` | `oqp`, `scipy` |
-| `ts`, `irc`, `neb` | `oqp`, `geometric` |
+Concise `.oqp` geometry and reaction-path drivers always use the native OpenQP
+engine. There is no backend selector in this format, so do not write `lib`,
+`optimizer`, `step_size`, `step_tol`, or `mep_maxit`. Traditional sectioned
+`.inp` files and the Python workflow API retain their existing optional
+geomeTRIC and SciPy backends for compatibility; see
+[Legacy `.inp`](input-file.md) when that escape hatch is required.
 
-The default is `lib=oqp`. The concise `optimizer`, `step_size`, and `step_tol`
-options belong only to `lib=scipy`. For MEP, `points`/`step` map to
-`mep_maxit`/`step_size` with SciPy and to native `maxit`/`mep_step` with OQP;
-do not specify both an alias and its backend-specific equivalent.
+MEP uses `points` as the path limit, `step` as the native path step, and `gtol`
+as its gradient stopping threshold. Native TS accepts `hessian=model`,
+`numerical`, or `analytical`; `model` is the fast default, while the other
+choices calculate a real Cartesian initial Hessian. `follow=N` selects a
+non-negative initial P-RFO mode index. Native IRC accepts only numerical or
+analytical Hessians and lowers its branch, step, and `gtol` controls to the
+native IRC engine.
 
-For native IRC (`lib=oqp`), `hessian=analytical` becomes `[hess]
-type=analytical`, while `direction` and `step` become native `irc_direction`
-and `irc_step`. Native `hessian` accepts only `numerical` or `analytical`, and
-`step` is native-only. For geomeTRIC IRC (`lib=geometric`), `hessian` and
-`direction` are geomeTRIC backend options. Thus the same concise driver does
-not place a geomeTRIC Hessian choice into the native Hessian section.
-
-NEB backend options are also strict and cannot be mixed:
+Native NEB keeps backend details out of the command:
 
 ```text
-dft/pbe0/def2-svp geom="reactant.xyz" neb(S0,product="product.xyz",images=7,lib=oqp,spring=0.08,climb=true)
-dft/pbe0/def2-svp geom="reactant.xyz" neb(S0,product="product.xyz",images=7,lib=geometric,k=0.8,maxg=0.2,climb=0.5,align=true)
+dft/pbe0/def2-svp geom="reactant.xyz" neb(S0,product="product.xyz",images=7,spring=0.08,climb=true,fmax=0.002,frms=0.001,align=true,output="path.xyz")
 ```
 
-For example, `spring` is rejected with `lib=geometric`, and `k` is rejected
-with `lib=oqp`.
+`climb`, `align`, and `opt_ends` are booleans. `fmax` and `frms` are the maximum
+and RMS force thresholds, and `dt` is the concise spelling of the native FIRE
+time step. Unless `output` is supplied, OpenQP writes `<project>_neb.xyz` in the
+log directory. The file is a multi-frame XYZ trajectory containing every final
+image and its energy in Hartree.
 
 ## Modifiers
 
@@ -368,10 +365,11 @@ In canonical `.oqp` input, `nmr` explicitly lowers to the GIAO gauge; use
 `nmr(gauge=cgo)` to request CGO. This canonical default does not alter the
 unchanged defaults of a traditional sectioned `.inp` file.
 
-Use `qmmm(n_steps=N,...)` for the QM/MM MD step count. `qmmm.n_steps` is a
-first-class schema key used by the OpenMM MD engine. The older `qmmm.nsteps`
-key remains accepted for compatibility with the legacy static QM/MM driver,
-but it is not the canonical spelling for `md()`.
+Use `qmmm(n_steps=N,...)` for the QM/MM MD step count. `qmmm.n_steps` is the
+first-class schema key used by the OpenMM MD engine. Concise `.oqp` also accepts
+`qmmm(nsteps=N,...)` as a compatibility alias and lowers it to `n_steps`; do not
+write both spellings. In a traditional sectioned `.inp`, `[qmmm] nsteps` remains
+the separate legacy static-driver key.
 
 `energy qmmm(...)` selects the active QM/MM single-point path. `md` is the
 ground-state QM/MM molecular-dynamics driver and therefore requires
@@ -393,11 +391,16 @@ properties(scf_prop=mulliken)
 tdhf(nvdav=30,zvconv=1e-7)
 ```
 
-The available section families are `input`, `guess`, `scf`, `mp2`, `dftgrid`,
-`tdhf`, `properties`, `optimize`, `oqp`, `geometric`, `pcm`, `symmetry`, `hess`,
-`nac`, `ekt`, `neb`, `md`, `qmmm`, `dftb`, `json`, and `tests`. The established
-schema remains authoritative for keyword spelling, type, allowed values, and
+Advanced exact calls include non-driver sections such as `input`, `guess`,
+`scf`, `mp2`, `dftgrid`, `tdhf`, `properties`, `oqp`, `pcm`, `symmetry`, `qmmm`,
+`dftb`, `json`, and `tests`. When a schema section is represented by a primary
+driver, put its public controls in that driver instead. The established schema
+remains authoritative for keyword spelling, type, allowed values, and
 cross-section constraints.
+
+The backend selectors in `[optimize]` and the entire `[geometric]` section are
+available only in traditional sectioned `.inp` files and the compatible Python
+API. They are deliberately rejected as exact calls in concise `.oqp` input.
 
 This is not a promise that bookkeeping keys can be repeated verbatim. Method,
 state, spin, and workflow selectors are owned by the route and primary driver;
@@ -407,9 +410,9 @@ not combine those two spellings. Likewise, put `soc_2e` in `soc(...)` rather
 than repeating it through `input(soc_2e=...)`.
 
 When a section name is also a primary driver, put its options in that driver.
-For example, write `opt(S0,maxit=100,lib=oqp)`, not
-`opt(S0) optimize(maxit=100)`. Backend-specific controls remain separate calls,
-as in `opt(S0,lib=oqp) oqp(coordsys=tric)`.
+For example, write `opt(S0,maxit=100,coordsys=tric,trust=0.2)`, not
+`opt(S0) optimize(maxit=100)`. An exact `oqp(...)` call remains available for
+advanced native controls, but do not specify the same control in both places.
 
 ## Physical States and Reserved Internal Keys
 
@@ -538,7 +541,7 @@ where a state-aware canonical workflow supports them.
 11. Forward native IRC:
 
     ```text
-    dft/pbe0/def2-svp geom="ts.xyz" charge=0 irc(S0,direction=forward,step=0.1,maxit=30,hessian=analytical,lib=oqp)
+    dft/pbe0/def2-svp geom="ts.xyz" charge=0 irc(S0,direction=forward,step=0.1,maxit=30,hessian=analytical)
     ```
 
 Run any canonical file normally:
@@ -559,6 +562,10 @@ them as prose. Common corrections are:
 | `grad(S1) opt(S1)` | Put the two primary calculations in separate `.oqp` files. |
 | `mrsf/... mult=3` | Remove `mult`; choose the physical target in the driver, such as `opt(T0)`. |
 | `sf/... grad(S1)` | Use an unlabeled response root, for example `grad(root=1)`. |
+| `opt(S0,lib=oqp)` | Remove `lib`; concise geometry drivers select the native engine automatically. |
+| `geometric(...)` or `lib=geometric` | Use a traditional sectioned `.inp` file and install the optional geomeTRIC extra. |
+| `optimizer`, `step_size`, `step_tol`, or `mep_maxit` | These are legacy SciPy controls for traditional `.inp` or Python workflows, not concise `.oqp`. |
+| NEB `k`, `maxg`, `avgg`, or `optep` | Use native `spring`, `fmax`, `frms`, or `opt_ends`; semantics and units differ, so do not copy values mechanically. |
 | route `nstate` together with `soc(ns=...,nt=...)` | Choose equal counts with route `nstate`, or unequal counts with `ns` and `nt`. |
 | `qmmm(istate=...)` | The key belongs to an obsolete disconnected path; use the physical-state driver contract instead. |
 

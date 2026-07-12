@@ -57,8 +57,8 @@ full bibliographies inside each keyword entry.
 | [`[ekt]`](ekt.md) | MRSF-EKT IP/EA channel selection. |
 | [`[optimize]`](optimize.md) | Target state and optimization convergence controls. |
 | [`[oqp]`](oqp.md) | Native optimizer controls. |
-| [`[geometric]`](geometric.md) | geomeTRIC optimizer backend controls. |
-| [`[neb]`](neb.md) | NEB product endpoint and image count. |
+| [`[geometric]`](geometric.md) | Optional legacy geomeTRIC controls for traditional `.inp` and Python workflows. |
+| [`[neb]`](neb.md) | NEB endpoints plus traditional `.inp` geomeTRIC compatibility controls. |
 | [`[pcm]`](pcm.md) | Reference-SCF PCM/ddX settings. |
 | [`[symmetry]`](symmetry.md) | Point-group metadata and optional symmetry reductions. |
 | [`[json]`](json.md) | Advanced JSON/restart metadata used by internal interfaces. |

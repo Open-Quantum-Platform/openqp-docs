@@ -14,19 +14,26 @@ The route owns `type`, `reference_multiplicity`, and `target_multiplicity` in
 
 ## Backend and Parameter Source
 
+### `backend`, `type`, `parameter_path`, `library_path`, `executable`, `timeout`
+
 | Keyword | Type | Default | Meaning |
 | --- | --- | --- | --- |
-| `backend` | string | `native` | Adapter backend: `auto`, `native`, or the developer fallback `probe`. |
+| `backend` | string | `native` | Adapter backend: `native`; `auto` currently selects the same native path, while `probe` is an explicit developer fallback. |
 | `type` | string | `auto` | Ground/response family. Accepted legacy values include `ground`, `ground_noscc`, `tddftb`, `tda`, `sf`, and `mrsf`. |
 | `parameter_path` | path | empty | `.opdftb` file or SKF parameter directory. `OPENQP_DFTB_PARAMETER_PATH` is the environment fallback. |
-| `library_path` | path | empty | Explicit native OpenQP-DFTB shared-library path. |
-| `executable` | path | empty | Explicit probe executable when `backend=probe`. |
-| `timeout` | integer | `300` | Probe/backend timeout in seconds; must be positive. |
+| `library_path` | path | empty | Explicit native shared-library path. `OPENQP_DFTB_LIBRARY` is the environment fallback; otherwise OpenQP checks the installed locator package and staged runtime library. |
+| `executable` | path | empty | Probe executable when `backend=probe`. `OPENQP_DFTB_STATE_GRADIENT_PROBE` and then `PATH` provide fallbacks. |
+| `timeout` | integer | `300` | Probe-subprocess timeout in seconds; must be positive. |
 
 The native backend is required for state overlap, NAC/NACME, NAMD, SOC, and
-controls that the probe executable cannot forward.
+controls that the probe executable cannot forward. The probe also rejects
+nondefault target/reference multiplicities, per-channel `spc_*`, MRSF shifts,
+LC ground-state handling, spin-completeness changes, and response/Z-vector
+controls that its command line cannot represent.
 
 ## SCC Controls
+
+### `scc_tolerance`, `scc_mixer`, `scc_mixing`, `scc_history`, `scc_max_step`, `max_scc_iterations`
 
 | Keyword | Type | Default | Meaning |
 | --- | --- | --- | --- |
@@ -39,6 +46,8 @@ controls that the probe executable cannot forward.
 
 ## Response Controls
 
+### `response_tolerance`, `response_max_iterations`, `response_max_subspace`, `response_solver`, `zvector`
+
 | Keyword | Type | Default | Meaning |
 | --- | --- | --- | --- |
 | `response_tolerance` | float | `1.0e-6` | Response-solver convergence threshold. |
@@ -49,20 +58,37 @@ controls that the probe executable cannot forward.
 
 ## Spin, Range Separation, and MRSF Controls
 
+### `spc`, `spc_coco`, `spc_ovov`, `spc_coov`
+
 | Keyword | Type | Default | Meaning |
 | --- | --- | --- | --- |
 | `spc` | float | `0.5` | MRSF spin-pair coupling. `-1` inherits the CAM exchange fraction. |
-| `spc_coco` | float | `-999.0` | Closed-open/closed-open channel override; sentinel uses the backend default. |
-| `spc_ovov` | float | `-999.0` | Occupied-virtual channel override. |
-| `spc_coov` | float | `-999.0` | Mixed channel override. |
+| `spc_coco` | float | `-999.0` | Closed-open/closed-open channel override; the sentinel inherits global `spc`. |
+| `spc_ovov` | float | `-999.0` | Occupied-virtual channel override; the sentinel inherits global `spc`. |
+| `spc_coov` | float | `-999.0` | Mixed channel override; the sentinel inherits global `spc`. |
+
+### `omega`, `cam_alpha`, `cam_beta`, `lc_gamma`, `lc_ground_state`
+
+| Keyword | Type | Default | Meaning |
+| --- | --- | --- | --- |
 | `omega` | float | `0.3` | Range-separation parameter; must be non-negative. |
 | `cam_alpha` | float | `0.0` | Short-range CAM exchange coefficient. |
 | `cam_beta` | float | `1.0` | Long-range CAM increment. |
 | `lc_gamma` | string | `yukawa` | Long-range gamma kernel: `yukawa` or `erf`. |
 | `lc_ground_state` | boolean | `False` | Apply the long-range correction to the ground-state SCC problem. |
+
+### `spin_complete`, `reference_multiplicity`, `target_multiplicity`
+
+| Keyword | Type | Default | Meaning |
+| --- | --- | --- | --- |
 | `spin_complete` | boolean | `True` | Use the spin-complete response construction where supported. |
-| `reference_multiplicity` | integer | `0` | Legacy DFTB reference multiplicity; the `.oqp` route owns it. |
+| `reference_multiplicity` | integer | `0` | Auto reference multiplicity: `3` for SF/MRSF and `1` otherwise. The `.oqp` route owns it. |
 | `target_multiplicity` | integer | `1` | Legacy response multiplicity, currently singlet `1` or triplet `3`; the `.oqp` state label owns it. |
+
+### `mrsf_shift_oo`, `mrsf_shift_co`, `mrsf_shift_ov`, `mrsf_shift_cv`
+
+| Keyword | Type | Default | Meaning |
+| --- | --- | --- | --- |
 | `mrsf_shift_oo` | float | `0.0` | MRSF occupied-occupied block shift. |
 | `mrsf_shift_co` | float | `0.0` | MRSF closed-open block shift. |
 | `mrsf_shift_ov` | float | `0.0` | MRSF occupied-virtual block shift. |

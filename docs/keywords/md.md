@@ -308,8 +308,11 @@ continuous across regions of strong spin mixing.
 
 Start SOC-NAMD on the spin-adiabatic state whose dominant character matches this
 MCH label (`S0`, `S1`, `T0`, `T1`, ...). MRSF labels are zero-based within
-each spin manifold, so `T0` is the first triplet. When empty, the initial surface is taken from
-the [`active`](#active) index. `init_state` overrides `active` for SOC runs.
+each spin manifold in concise `.oqp`, so `T0` is the first triplet and `T1` is
+the second. Historical sectioned `.inp` and Python configurations used `T1`
+for the first triplet; that spelling remains a compatibility alias there, and
+`T0` is also accepted unambiguously. When empty, the initial surface is taken
+from the [`active`](#active) index. `init_state` overrides `active` for SOC runs.
 
 ### `econs`
 

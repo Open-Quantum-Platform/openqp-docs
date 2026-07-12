@@ -15,7 +15,7 @@ writing a new input from scratch.
 | `examples/TDDFT` | TDDFT energy and gradient examples. |
 | `examples/SF-TDDFT` | Spin-flip TDDFT examples. |
 | `examples/MRSF-TDDFT` | MRSF-TDDFT energies, gradients, and optimization data. |
-| `examples/OPT` | Native and geomeTRIC optimization, MECI, MECP, TCI, TS, IRC, NEB, and MEP. |
+| `examples/OPT` | Native optimization, MECI, MECP, TCI, TS, IRC, NEB, and MEP, plus optional legacy geomeTRIC compatibility cases. |
 | `examples/HESS` | Analytic and numerical Hessian workflows. |
 | `examples/PCM` | ddX reference-SCF PCM energy cases. |
 | `examples/SOC` | MRSF-TDDFT SOC cases. |

@@ -314,7 +314,9 @@ MD timestep for the ground-state QM/MM MD path. The nonadiabatic path uses
 
 Retained for compatibility with the older static-driver configuration. The
 current ground-state OpenMM MD engine uses [`n_steps`](#n_steps); the
-nonadiabatic path uses [`[md] nstep`](md.md#nstep).
+nonadiabatic path uses [`[md] nstep`](md.md#nstep). In concise `.oqp`, however,
+`qmmm(nsteps=N)` is accepted as an alias and lowered to the active `n_steps`
+key; this does not change the meaning of `nsteps` in a sectioned `.inp`.
 
 ### `istate`
 
@@ -342,8 +344,9 @@ command must run without MPI.
 | Default | `1000` |
 | Used by | number of ground-state QM/MM-MD integration steps |
 
-This is the preferred MD spelling. The older `nsteps` key remains separate
-legacy bookkeeping and defaults to one.
+This is the preferred MD spelling. Concise `.oqp` accepts `nsteps` as an alias
+for this key, while a traditional sectioned `.inp` keeps `nsteps` as separate
+legacy bookkeeping with its own default of one.
 
 ### `ensemble`
 

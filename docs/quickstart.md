@@ -78,7 +78,7 @@ Use these input files as nearby templates:
 | MP2 energy | [`examples/MP2/h2o_ump2_6-31g.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MP2/h2o_ump2_6-31g.inp) |
 | DFT gradient | [`examples/DFT/H2O_RHF-DFT_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/DFT/H2O_RHF-DFT_GRADIENT.inp) |
 | Analytic HF/DFT Hessian | [`examples/HESS/H2O_RHF-DFT_ANA_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.inp) |
-| Native geometry optimization | [`examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp) |
+| Concise native geometry optimization | [`examples/OQP_INPUT/H2O_MRSF_S0_OPT.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OQP_INPUT/H2O_MRSF_S0_OPT.oqp) |
 | SOC | [`examples/SOC/H2O_BHHLYP_SOC.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SOC/H2O_BHHLYP_SOC.inp) |
 | PCM/ddX energy | [`examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.inp) |
 | NMR shielding | [`examples/NMR/H2O_RHF-NMR.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/NMR/H2O_RHF-NMR.inp) |

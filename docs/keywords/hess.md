@@ -58,7 +58,11 @@ Worker count for numerical Hessian calculations. Must be at least `1`.
 | Default | `False` |
 | Used by | Hessian restart/input |
 
-Reads an existing Hessian where the workflow supports it.
+Reads an existing `.hess.json` sidecar where the workflow supports it. Current
+sidecars carry a versioned state/model-configuration signature and the atom,
+geometry, and isotopic-mass identity. OpenQP rejects unsigned older files or mismatches rather
+than silently reusing a Hessian or vibrational data from another calculation;
+rerun with `read=False` to generate a current sidecar.
 
 ### `restart`
 
@@ -69,6 +73,10 @@ Reads an existing Hessian where the workflow supports it.
 | Used by | numerical Hessian restart |
 
 Continues an interrupted numerical Hessian workflow.
+
+Native TS/IRC drivers reject `restart=True` while their displaced-gradient
+artifacts lack geometry/model signatures. Use it only for the standalone
+numerical Hessian workflow; native TS/IRC initial Hessians are recomputed.
 
 ### `temperature`
 

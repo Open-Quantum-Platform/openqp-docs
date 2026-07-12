@@ -26,6 +26,12 @@ resolved one-line command remains the authoritative calculation record.
 OpenQP renders the short positional geometry above as the explicit canonical
 spelling `geom="h2o.xyz"`.
 
+The two formats intentionally expose different optimization detail. Concise
+`.oqp` geometry drivers always use the native OpenQP engine and have no `lib`
+selector. Traditional `.inp` files retain `[optimize] lib=oqp`,
+`lib=geometric`, or `lib=scipy` for compatibility; geomeTRIC is an optional
+legacy dependency used chiefly for constrained optimization.
+
 OpenQP inputs are INI-like text files. Options are grouped by section:
 
 ```ini
@@ -77,15 +83,15 @@ previous geometry.
 | `[md]` | Nonadiabatic-dynamics controls used by `runtype=namd`. |
 | `[qmmm]` | OpenMM QM/MM system and molecular-dynamics controls. |
 | `[properties]` | Gradients, NAC, NMR, export, and property requests. |
-| `[optimize]` | Geometry-optimization target and convergence controls. |
-| `[oqp]` | Native optimizer controls. |
-| `[geometric]` | geomeTRIC backend controls. |
+| `[optimize]` | Geometry target and convergence controls; backend selection is retained for traditional `.inp` and Python compatibility. |
+| `[oqp]` | Native optimizer, TS-Hessian, IRC, MEP, and NEB controls. |
+| `[geometric]` | Optional legacy geomeTRIC controls for traditional `.inp` workflows. |
 | `[pcm]` | Reference-SCF PCM/ddX energy settings. |
 | `[symmetry]` | Point-group metadata and optional symmetry reductions. |
 | `[hess]` | Hessian and frequency controls. |
 | `[nac]` | NAC/NACME controls. |
 | `[ekt]` | MRSF-EKT IP/EA channel selection. |
-| `[neb]` | NEB product and image controls. |
+| `[neb]` | NEB product/image controls plus optional legacy geomeTRIC compatibility keys. |
 | `[json]` | Advanced JSON/restart metadata. |
 | `[tests]` | Internal regression-test expectations. |
 

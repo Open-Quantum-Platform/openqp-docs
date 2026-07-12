@@ -73,7 +73,7 @@ nav:
       - ekt: keywords/ekt.md
       - optimize: keywords/optimize.md
       - oqp: keywords/oqp.md
-      - geometric: keywords/geometric.md
+      - geometric (optional legacy .inp/Python): keywords/geometric.md
       - neb: keywords/neb.md
       - pcm: keywords/pcm.md
       - symmetry: keywords/symmetry.md

@@ -35,9 +35,17 @@ specific input contract.
 
 ## Geometry and Paths
 
-The native optimizer is selected with `[optimize] lib=oqp` and supports
-`optimize`, `ts`, `meci`, `mecp`, `tci`, `neb`, `irc`, and `mep`. geomeTRIC and
-SciPy remain optional backends for the workflows wired to them.
+The native optimizer supports `optimize`, `ts`, `meci`, `mecp`, `tci`, `neb`,
+`irc`, and `mep`. Concise `.oqp` geometry drivers select it automatically and
+do not expose a backend selector. Native TS supports model, numerical, or
+analytical initial Hessians and mode following. Native NEB supports endpoint
+alignment and relaxation, climbing images, maximum and RMS force convergence,
+and final multi-frame XYZ path output.
+
+geomeTRIC and SciPy remain optional compatibility backends for traditional
+sectioned `.inp` files and the Python API. In particular, legacy geomeTRIC is
+the current escape hatch for constrained optimization; concise `.oqp` does not
+claim native constraint support yet.
 
 ## Upcoming or Limited Areas
 

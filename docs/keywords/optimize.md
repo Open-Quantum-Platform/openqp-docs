@@ -3,9 +3,16 @@
 The `[optimize]` section selects the optimization backend, target states, and
 convergence thresholds for geometry and reaction-path workflows.
 
+!!! note "Two input surfaces"
+
+    Concise `.oqp` geometry drivers always use the native OpenQP engine and do
+    not accept `lib`, `optimizer`, `step_size`, `step_tol`, or `mep_maxit`.
+    Those five keys remain documented here for traditional sectioned `.inp`
+    files and the compatible Python workflow API.
+
 In Python scripts, use `job.workflow.optimize(...)` for the optimization runtype, common
 optimization options, and backend options. For example,
-`job.workflow.optimize(lib="oqp", coordsys="tric")` routes
+`job.workflow.optimize(istate=0, coordsys="tric")` uses the native default and routes
 `coordsys` to the native optimizer backend while keeping state and convergence
 options in `[optimize]`. The lower-level `job.optimize(...)` section helper
 remains available for existing scripts.
@@ -21,10 +28,11 @@ remains available for existing scripts.
 | Values | `oqp`, `geometric`, `scipy` |
 | Used by | optimizer backend selection |
 
-Selects the optimizer backend. The native `oqp` backend supports `optimize`,
-`ts`, `meci`, `mecp`, `tci`, `neb`, `irc`, and `mep`. geomeTRIC supports
-`optimize`, `meci`, `mecp`, `ts`, `irc`, and `neb`. SciPy is a legacy backend
-for `optimize`, `meci`, `mecp`, and `mep`.
+Traditional `.inp` and Python API backend selector. The native `oqp` backend
+supports `optimize`, `ts`, `meci`, `mecp`, `tci`, `neb`, `irc`, and `mep`.
+geomeTRIC supports `optimize`, `meci`, `mecp`, `ts`, `irc`, and `neb`; it is
+retained chiefly as an optional constrained-optimization escape hatch. SciPy is
+a legacy backend for `optimize`, `meci`, `mecp`, and `mep`.
 
 DL-FIND is not a current user-facing optimizer backend.
 
@@ -154,6 +162,9 @@ RMS and maximum geometry-step convergence thresholds.
 
 Step-size controls used by legacy optimization paths.
 
+These are SciPy-backend compatibility keys for traditional `.inp` files and
+the Python API. They are not accepted in concise `.oqp` geometry drivers.
+
 ### `mep_maxit`
 
 | Field | Value |
@@ -163,6 +174,10 @@ Step-size controls used by legacy optimization paths.
 | Used by | MEP workflow |
 
 Maximum number of MEP iterations.
+
+This is a legacy SciPy MEP key and is not accepted in concise `.oqp`. Use
+`mep(points=N,step=...)`; `points` lowers to the native `maxit` limit and
+`step` lowers to [`[oqp] mep_step`](oqp.md#mep_step).
 
 ### `init_scf`
 
