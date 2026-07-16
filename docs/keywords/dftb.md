@@ -146,6 +146,18 @@ Overrides library discovery. The search order is `library_path` →
 | Default | *(empty)* |
 | Used by | `backend=probe` fallback executable |
 
+### `timeout`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `300` |
+| Used by | `backend=probe` subprocess wall-clock limit (seconds) |
+
+Per-call wall-clock limit, in seconds, for each `backend=probe` state-gradient
+subprocess; must be positive. Ignored by `backend=native`, which runs in-process
+and spawns no subprocess.
+
 ### SCC (ground-state self-consistent charge) keywords
 
 | Keyword | Type | Default | Meaning |
