@@ -142,7 +142,7 @@ from oqp.openqp import OpenQP
 
 job = (
     OpenQP(project="thymine_dftb")
-    .molecule(geometry="thymine.xyz", basis="sto-3g")
+    .molecule("thymine.xyz", basis="sto-3g")
     .dftb(runtype="grad", response_type="mrsf", nstate=3,
           parameter_path="/path/to/params")
 )

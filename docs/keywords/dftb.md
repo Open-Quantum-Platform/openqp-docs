@@ -14,10 +14,12 @@ for complete decks.
     OpenQP-DFTB is a **separate, optional library** (`libopenqp_dftb_c`,
     repository
     [`openqp-dftb`](https://github.com/Open-Quantum-Platform/openqp-dftb)) loaded
-    in-process through a `ctypes` adapter; it is not linked into `liboqp`. Install
-    it with `pip install openqp-dftb`, point [`library_path`](#library_path) at a
-    prebuilt `libopenqp_dftb_c`, or build OpenQP with `-DENABLE_OPENQP_DFTB=ON`.
-    The integration is tracked in OpenQP PR
+    in-process through a `ctypes` adapter; it is not linked into `liboqp`. Build
+    it from the [`openqp-dftb`](https://github.com/Open-Quantum-Platform/openqp-dftb)
+    repository and point [`library_path`](#library_path) at the resulting
+    `libopenqp_dftb_c`, or build OpenQP with `-DENABLE_OPENQP_DFTB=ON`. A published
+    `pip install openqp-dftb` wheel is planned but not yet on PyPI, so the pip form
+    is not available today. The integration is tracked in OpenQP PR
     [#266](https://github.com/Open-Quantum-Platform/openqp/pull/266) and is not
     part of OpenQP 1.2.0.
 
@@ -94,8 +96,12 @@ value), but a value must be present to satisfy the generic input checker.
 | Used by | library selection |
 
 `native` loads the standalone `libopenqp_dftb_c` shared library in-process
-(recommended). `probe` is an explicit developer fallback that shells out to a
-standalone executable; it does not support QM/MM electrostatic embedding.
+(recommended). `probe` is an explicit developer fallback that shells out to the
+state-gradient executable; it supports **only energy and gradient** runs. It does
+not support QM/MM electrostatic embedding, and — because the NACME, SOC, and NAMD
+workflows need the native state-overlap and SOC-matrix entry points —
+`backend=probe` cannot drive those. Use `backend=native` for anything beyond a
+plain energy/gradient.
 
 ### `type`
 
@@ -173,7 +179,8 @@ Overrides library discovery. The search order is `library_path` →
 | `omega` | float | `0.3` | range-separation parameter of the response kernel (a.u.$^{-1}$) |
 | `cam_alpha` | float | `0.0` | short-range exchange-like weight |
 | `cam_beta` | float | `1.0` | long-range exchange-like weight |
-| `spc`, `spc_coco`, `spc_ovov`, `spc_coov` | float | `0.5` / `-999.0` | MRSF spin-pairing channel scales (`-999.0` inherits the reference scale) |
+| `spc` | float | `0.5` | MRSF spin-pairing scale applied to all channels. `-1` inherits the resolved CAM exchange fraction; every other value must be `>= 0` (the input checker rejects negatives other than `-1`, so `-999` is **not** valid here). |
+| `spc_coco`, `spc_ovov`, `spc_coov` | float | inherit | Per-channel overrides (CO×CO, OV×OV, CO×OV) that split the single `spc`. Reachable only through the standalone `libopenqp_dftb_c` / probe interface, not the PyOQP `[dftb]` surface; each defaults to inheriting the resolved exchange fraction. |
 | `mrsf_shift_oo`, `mrsf_shift_co`, `mrsf_shift_ov`, `mrsf_shift_cv` | float | `0.0` | optional diagnostic diagonal shifts (Hartree) by CSF class |
 
 !!! note "erf-tuned kernel"

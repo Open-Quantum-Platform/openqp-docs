@@ -1,11 +1,13 @@
 # `[md]`
 
 The `[md]` section controls nonadiabatic molecular dynamics (`runtype=namd`):
-Tully fewest-switches surface hopping (FSSH) on MRSF-TDDFT states, optionally
+Tully fewest-switches surface hopping (FSSH) on MRSF states, optionally
 with spin-orbit-coupled intersystem crossing (SOC-NAMD) and ESPF QM/MM
-embedding. It is used together with [`[input] runtype=namd`](input.md#runtype),
-an MRSF-TDDFT theory block, and — for embedded dynamics — the
-[`[qmmm]`](qmmm.md) section. See the
+embedding. It is used together with [`[input] runtype=namd`](input.md#runtype)
+and an MRSF theory block — either all-electron MRSF-TDDFT (`method=tdhf`,
+`[tdhf] type=mrsf`) or the [MRSF-TDDFTB](../workflows/mrsf-tddftb.md) backend
+(`method=dftb`, `[dftb] type=mrsf`), which share the same FSSH driver — and, for
+embedded dynamics, the [`[qmmm]`](qmmm.md) section. See the
 [SOC-NAMD-QMMM workflow](../workflows/soc-namd-qmmm.md) for complete decks and
 theory.
 
