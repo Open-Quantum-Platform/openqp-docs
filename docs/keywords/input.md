@@ -84,9 +84,9 @@ reference calculations. Use `method=mp2` for standalone ground-state MP2
 correlation. Use `method=tdhf` for TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, SOC,
 NACME, and MRSF-EKT workflows. Use [`method=dftb`](dftb.md) for the OpenQP-DFTB
 tight-binding backend (ground-state DFTB2, LC-DFTB2, and SF/MRSF-TDDFTB) and
-[`method=xtb`](xtb.md) for the LC-GFN1-xTB backend; both are optional external
-libraries that share the tight-binding dispatch and the SF/MRSF response
-plumbing (development preview, not part of OpenQP 1.2.0).
+`method=xtb` for the LC-GFN1-xTB backend; both are optional external libraries
+that share the tight-binding dispatch and the SF/MRSF response plumbing
+(development preview, not part of OpenQP 1.2.0).
 
 DFT calculations still use `method=hf`; the functional is selected separately
 with `functional`. MP2 calculations require `functional` to be empty.
