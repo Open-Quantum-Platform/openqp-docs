@@ -47,6 +47,7 @@ nav:
       - TDDFT and TDHF: workflows/tddft.md
       - SF-TDDFT: workflows/sf-tddft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
+      - MRSF-TDDFTB (DFTB backend): workflows/mrsf-tddftb.md
       - MRSF Analysis and Interoperability: workflows/mrsf-analysis.md
       - Hessian and Frequencies: workflows/hessian.md
       - Optimization: workflows/optimization.md
@@ -66,6 +67,7 @@ nav:
       - dftb: keywords/dftb.md
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md
+      - dftb: keywords/dftb.md
       - md: keywords/md.md
       - qmmm: keywords/qmmm.md
       - properties: keywords/properties.md

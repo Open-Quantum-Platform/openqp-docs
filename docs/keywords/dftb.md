@@ -1,99 +1,213 @@
 # `[dftb]`
 
-The `[dftb]` section configures the optional OpenQP-DFTB adapter. In one-line
-`.oqp` input, prefer the routes `dftb`, `dftb0`, `tddftb(...)`,
-`tda-tddftb(...)`, `sf-tddftb(...)`, and `mrsf-tddftb(...)`, then put only
-backend-specific controls in `dftb(...)`.
+The `[dftb]` section configures the optional **OpenQP-DFTB** backend, a
+density-functional tight-binding engine that provides ground-state DFTB2, the
+long-range-corrected LC-DFTB2 reference, and the SF/MRSF-TDDFTB excited-state
+response with analytic gradients. It is activated by
+[`[input] method=dftb`](input.md#method) and delivers the same runtypes as the
+all-electron methods — energies, gradients, geometry optimization, MECI
+searches, NACME, spin-orbit coupling, and surface-hopping dynamics — at
+tight-binding cost. See the [MRSF-TDDFTB workflow](../workflows/mrsf-tddftb.md)
+for complete decks.
 
-```text
-mrsf-tddftb(nstate=3) geom="h2o.xyz" grad(S1) dftb(parameter_path="params.opdftb")
+!!! warning "External library and development preview"
+    OpenQP-DFTB is a **separate, optional library** (`libopenqp_dftb_c`,
+    repository
+    [`openqp-dftb`](https://github.com/Open-Quantum-Platform/openqp-dftb)) loaded
+    in-process through a `ctypes` adapter; it is not linked into `liboqp`. Build
+    it from the [`openqp-dftb`](https://github.com/Open-Quantum-Platform/openqp-dftb)
+    repository and point [`library_path`](#library_path) at the resulting
+    `libopenqp_dftb_c`, or build OpenQP with `-DENABLE_OPENQP_DFTB=ON`. A published
+    `pip install openqp-dftb` wheel is planned but not yet on PyPI, so the pip form
+    is not available today. The integration is tracked in OpenQP PR
+    [#266](https://github.com/Open-Quantum-Platform/openqp/pull/266) and is not
+    part of OpenQP 1.2.0.
+
+## Background
+
+DFTB replaces the all-electron two-electron integrals with atom-resolved
+transition charges and short atom-pair kernels, so the SF/MRSF response is
+evaluated in a compact transition-charge representation rather than from
+four-center electron-repulsion integrals. The high-spin reference is a
+restricted open-shell (ROKS) DFTB determinant with common spatial orbitals; the
+mixed-reference singlet/triplet CSF construction is applied at the response
+level exactly as in all-electron MRSF-TDDFT. Because the electronic problem is
+minimal-basis, MRSF-level photochemistry becomes practical for large
+chromophores, molecular aggregates, and long trajectories. See
+[References](../references.md) for the DFTB, LC-DFTB, and MRSF-TDDFT theory.
+
+The choice of response type is driven either by [`type`](#type) or, when
+`type=auto`, by [`[tdhf] type`](tdhf.md#type): `mrsf` selects MRSF-TDDFTB, `sf`
+selects SF-TDDFTB, `tda`/`rpa` selects ordinary TDDFTB, and a plain
+energy/gradient run with no excited state requested runs a ground-state DFTB2
+energy.
+
+## Minimal DFTB Example
+
+Ground-state DFTB2 energy:
+
+```ini
+[input]
+runtype=energy
+method=dftb
+basis=sto-3g
+functional=
+
+[dftb]
+type=ground
+parameter_path=/path/to/params
 ```
 
-The route owns `type`, `reference_multiplicity`, and `target_multiplicity` in
-`.oqp`. Those keys remain available to traditional `.inp` files.
+MRSF-TDDFTB excited-state gradient:
 
-## Backend and Parameter Source
+```ini
+[input]
+runtype=grad
+method=dftb
+basis=sto-3g
+functional=
 
-### `backend`, `type`, `parameter_path`, `library_path`, `executable`, `timeout`
+[tdhf]
+type=mrsf
+nstate=3
+
+[dftb]
+type=mrsf
+parameter_path=/path/to/params
+
+[properties]
+grad=1
+```
+
+`parameter_path` accepts either a single combined `.opdftb` parameter file or a
+directory of Slater–Koster `<El>-<El>.skf` files. `basis` is a placeholder for
+the DFTB backend (the Slater–Koster minimal basis is used regardless of its
+value), but a value must be present to satisfy the generic input checker.
+
+## Keywords
+
+### `backend`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `native` |
+| Values | `native`, `probe` |
+| Used by | library selection |
+
+`native` loads the standalone `libopenqp_dftb_c` shared library in-process
+(recommended). `probe` is an explicit developer fallback that shells out to the
+state-gradient executable; it supports **only energy and gradient** runs. It does
+not support QM/MM electrostatic embedding, and — because the NACME, SOC, and NAMD
+workflows need the native state-overlap and SOC-matrix entry points —
+`backend=probe` cannot drive those. Use `backend=native` for anything beyond a
+plain energy/gradient.
+
+### `type`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `auto` |
+| Values | `auto`, `ground`, `dftb`, `dftb0`, `ground_noscc`, `noscc`, `tddftb`, `tda`, `sf`, `sftddftb`, `sf-tddftb`, `mrsf`, `mrsftddftb`, `mrsf-tddftb` |
+| Used by | response-method selection |
+
+Selects the DFTB response family. `auto` derives it from the workflow and
+[`[tdhf] type`](tdhf.md#type), defaulting to a ground-state DFTB energy when no
+excited state is requested.
+
+### `parameter_path`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | *(empty)* |
+| Used by | Slater–Koster parameters (required) |
+
+Path to a `.opdftb` parameter file or an SKF directory.
+
+### `library_path`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | *(empty)* |
+| Used by | explicit `libopenqp_dftb_c` location |
+
+Overrides library discovery. The search order is `library_path` →
+`OPENQP_DFTB_LIBRARY` → the pip-installed `openqp-dftb` package →
+`$OPENQP_ROOT/lib` → `PATH`.
+
+### `executable`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | *(empty)* |
+| Used by | `backend=probe` fallback executable |
+
+### `timeout`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `300` |
+| Used by | `backend=probe` subprocess wall-clock limit (seconds) |
+
+Per-call wall-clock limit, in seconds, for each `backend=probe` state-gradient
+subprocess; must be positive. Ignored by `backend=native`, which runs in-process
+and spawns no subprocess.
+
+### SCC (ground-state self-consistent charge) keywords
 
 | Keyword | Type | Default | Meaning |
 | --- | --- | --- | --- |
-| `backend` | string | `native` | Adapter backend: `native`; `auto` currently selects the same native path, while `probe` is an explicit developer fallback. |
-| `type` | string | `auto` | Ground/response family. Accepted legacy values include `ground`, `ground_noscc`, `tddftb`, `tda`, `sf`, and `mrsf`. |
-| `parameter_path` | path | empty | `.opdftb` file or SKF parameter directory. `OPENQP_DFTB_PARAMETER_PATH` is the environment fallback. |
-| `library_path` | path | empty | Explicit native shared-library path. `OPENQP_DFTB_LIBRARY` is the environment fallback; otherwise OpenQP checks the installed locator package and staged runtime library. |
-| `executable` | path | empty | Probe executable when `backend=probe`. `OPENQP_DFTB_STATE_GRADIENT_PROBE` and then `PATH` provide fallbacks. |
-| `timeout` | integer | `300` | Probe-subprocess timeout in seconds; must be positive. |
+| `scc_tolerance` | float | `1.0e-8` | SCC charge convergence tolerance |
+| `scc_mixer` | string | `auto` | charge mixer (`auto`, `linear`, `anderson`, `broyden`, `diis`, `trust`/`trah`) |
+| `scc_mixing` | float | `0.35` | linear/damping mixing factor |
+| `scc_history` | int | `12` | mixer history length |
+| `scc_max_step` | float | `0.5` | maximum charge step |
+| `max_scc_iterations` | int | `1200` | maximum SCC iterations |
 
-The native backend is required for state overlap, NAC/NACME, NAMD, SOC, and
-controls that the probe executable cannot forward. The probe also rejects
-nondefault target/reference multiplicities, per-channel `spc_*`, MRSF shifts,
-LC ground-state handling, spin-completeness changes, and response/Z-vector
-controls that its command line cannot represent.
-
-## SCC Controls
-
-### `scc_tolerance`, `scc_mixer`, `scc_mixing`, `scc_history`, `scc_max_step`, `max_scc_iterations`
+### Response (Davidson) keywords
 
 | Keyword | Type | Default | Meaning |
 | --- | --- | --- | --- |
-| `scc_tolerance` | float | `1.0e-8` | SCC convergence threshold; must be positive. |
-| `scc_mixer` | string | `auto` | `auto`, `linear`, `anderson`, `pulay`, `broyden`, `diis`, `trust`, or `trah`. |
-| `scc_mixing` | float | `0.35` | Population-vector mixing fraction in `(0,1]`. |
-| `scc_history` | integer | `12` | Mixer history length; must be positive. |
-| `scc_max_step` | float | `0.5` | Maximum SCC update; zero disables the cap. |
-| `max_scc_iterations` | integer | `1200` | Maximum SCC iterations; must be positive. |
+| `response_tolerance` | float | `1.0e-6` | response residual tolerance |
+| `response_max_iterations` | int | `50` | maximum Davidson iterations |
+| `response_max_subspace` | int | `100` | maximum Davidson subspace size |
+| `response_solver` | string | `auto` | `auto`, `dense`, or `davidson` |
+| `zvector` | bool | `True` | use the Z-vector (interchange) analytic-gradient fast path |
+| `spin_complete` | bool | `True` | spin-adapted CSF construction (MRSF) vs. bare SOMO-pair CSFs |
+| `reference_multiplicity` | int | `0` | high-spin reference multiplicity (`0` = auto) |
+| `target_multiplicity` | int | `1` | response manifold (`1` singlets, `3` triplets) |
 
-## Response Controls
-
-### `response_tolerance`, `response_max_iterations`, `response_max_subspace`, `response_solver`, `zvector`
-
-| Keyword | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `response_tolerance` | float | `1.0e-6` | Response-solver convergence threshold. |
-| `response_max_iterations` | integer | `50` | Maximum response iterations. |
-| `response_max_subspace` | integer | `100` | Maximum iterative-solver subspace. |
-| `response_solver` | string | `auto` | `auto`, `dense`, or `davidson`. |
-| `zvector` | boolean | `True` | Enable the relaxed Z-vector response where supported. |
-
-## Spin, Range Separation, and MRSF Controls
-
-### `spc`, `spc_coco`, `spc_ovov`, `spc_coov`
+### Long-range / spin-pairing keywords
 
 | Keyword | Type | Default | Meaning |
 | --- | --- | --- | --- |
-| `spc` | float | `0.5` | MRSF spin-pair coupling. `-1` inherits the CAM exchange fraction. |
-| `spc_coco` | float | `-999.0` | Closed-open/closed-open channel override; the sentinel inherits global `spc`. |
-| `spc_ovov` | float | `-999.0` | Occupied-virtual channel override; the sentinel inherits global `spc`. |
-| `spc_coov` | float | `-999.0` | Mixed channel override; the sentinel inherits global `spc`. |
+| `lc_gamma` | string | `yukawa` | long-range kernel: `yukawa` (LC-DFTB2 Yukawa–Slater) or `erf` (erf$(\omega R)/R$) |
+| `lc_ground_state` | bool | `False` | include LC long-range exchange in the ROKS reference |
+| `omega` | float | `0.3` | range-separation parameter of the response kernel (a.u.$^{-1}$) |
+| `cam_alpha` | float | `0.0` | short-range exchange-like weight |
+| `cam_beta` | float | `1.0` | long-range exchange-like weight |
+| `spc` | float | `0.5` | MRSF spin-pairing scale applied to all channels. `-1` inherits the resolved CAM exchange fraction; every other value must be `>= 0` (the input checker rejects negatives other than `-1`, so `-999` is **not** valid here). |
+| `spc_coco`, `spc_ovov`, `spc_coov` | float | inherit | Per-channel overrides (CO×CO, OV×OV, CO×OV) that split the single `spc`. Reachable only through the standalone `libopenqp_dftb_c` / probe interface, not the PyOQP `[dftb]` surface; each defaults to inheriting the resolved exchange fraction. |
+| `mrsf_shift_oo`, `mrsf_shift_co`, `mrsf_shift_ov`, `mrsf_shift_cv` | float | `0.0` | optional diagnostic diagonal shifts (Hartree) by CSF class |
 
-### `omega`, `cam_alpha`, `cam_beta`, `lc_gamma`, `lc_ground_state`
+!!! note "erf-tuned kernel"
+    The combination `lc_gamma=erf`, `omega=0.25`, `cam_beta=1.2` is the
+    *erf-tuned* response operator that reproduces the MRSF-TDDFT relative
+    ordering of near-degenerate bright/dark states. The `cam_beta>1`
+    over-correction makes the LC ground-state SCC harder to converge; use a
+    robust mixer (`scc_mixer=trust`).
 
-| Keyword | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `omega` | float | `0.3` | Range-separation parameter; must be non-negative. |
-| `cam_alpha` | float | `0.0` | Short-range CAM exchange coefficient. |
-| `cam_beta` | float | `1.0` | Long-range CAM increment. |
-| `lc_gamma` | string | `yukawa` | Long-range gamma kernel: `yukawa` or `erf`. |
-| `lc_ground_state` | boolean | `False` | Apply the long-range correction to the ground-state SCC problem. |
+### QM/MM and SOC
 
-### `spin_complete`, `reference_multiplicity`, `target_multiplicity`
-
-| Keyword | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `spin_complete` | boolean | `True` | Use the spin-complete response construction where supported. |
-| `reference_multiplicity` | integer | `0` | Auto reference multiplicity: `3` for SF/MRSF and `1` otherwise. The `.oqp` route owns it. |
-| `target_multiplicity` | integer | `1` | Legacy response multiplicity, currently singlet `1` or triplet `3`; the `.oqp` state label owns it. |
-
-### `mrsf_shift_oo`, `mrsf_shift_co`, `mrsf_shift_ov`, `mrsf_shift_cv`
-
-| Keyword | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `mrsf_shift_oo` | float | `0.0` | MRSF occupied-occupied block shift. |
-| `mrsf_shift_co` | float | `0.0` | MRSF closed-open block shift. |
-| `mrsf_shift_ov` | float | `0.0` | MRSF occupied-virtual block shift. |
-| `mrsf_shift_cv` | float | `0.0` | MRSF closed-virtual block shift. |
-
-DFTB does not consume Gaussian-basis SCF property analyses or PCM. Available
-workflow combinations also depend on the DFTB response type and backend; rely
-on input validation rather than assuming every all-electron workflow is wired.
+DFTB QM/MM uses Mulliken-monopole electrostatic embedding: the MM potential
+enters the SCC Hamiltonian directly (no ESPF grid fitting), and the analytic
+gradient carries the coupling. Activate it with
+[`[input] qmmm_flag=true`](input.md#qmmm_flag) and the [`[qmmm]`](qmmm.md)
+section; the legacy `split` embedding is not supported. One-center spin-orbit
+coupling reads per-element `soc Z l xi` records from the parameter file. See the
+[MRSF-TDDFTB workflow](../workflows/mrsf-tddftb.md).
