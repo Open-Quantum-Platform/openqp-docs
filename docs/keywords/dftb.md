@@ -1,18 +1,20 @@
 # `[dftb]`
 
-The `[dftb]` section configures the optional **OpenQP-DFTB** backend, a
-density-functional tight-binding engine that provides ground-state DFTB2, the
+The `[dftb]` section configures OpenQP's **DFTB method** (density-functional
+tight binding) — a first-class electronic-structure method on the same footing
+as HF, DFT, and MRSF-TDDFT, selected with
+[`[input] method=dftb`](input.md#method). It provides ground-state DFTB2, the
 long-range-corrected LC-DFTB2 reference, and the SF/MRSF-TDDFTB excited-state
-response with analytic gradients. It is activated by
-[`[input] method=dftb`](input.md#method) and delivers the same runtypes as the
+response with analytic gradients, delivering the same runtypes as the
 all-electron methods — energies, gradients, geometry optimization, MECI
 searches, NACME, spin-orbit coupling, and surface-hopping dynamics — at
-tight-binding cost. See the [MRSF-TDDFTB workflow](../workflows/mrsf-tddftb.md)
-for complete decks.
+tight-binding cost. See the DFTB method manuals for complete decks:
+[ground-state DFTB](../workflows/dftb.md), [TD-DFTB](../workflows/tddftb.md),
+and [MRSF-TDDFTB](../workflows/mrsf-tddftb.md).
 
 !!! warning "External library and development preview"
-    OpenQP-DFTB is a **separate, optional library** (`libopenqp_dftb_c`,
-    repository
+    The DFTB method is implemented by **OpenQP-DFTB**, a **separate, optional
+    library** (`libopenqp_dftb_c`, repository
     [`openqp-dftb`](https://github.com/Open-Quantum-Platform/openqp-dftb)) loaded
     in-process through a `ctypes` adapter; it is not linked into `liboqp`. Build
     it from the [`openqp-dftb`](https://github.com/Open-Quantum-Platform/openqp-dftb)
@@ -76,12 +78,18 @@ type=mrsf
 parameter_path=/path/to/params
 
 [properties]
-grad=1
+grad=2
 ```
+
+`grad=2` targets the first excited singlet `S1`. MRSF relabels its lowest
+singlet response root as `S0` (root 1), so `[properties] grad` and
+`[optimize] istate` are 1-based over the MRSF manifold — an `S0` gradient uses
+`grad=1`. See the
+[MRSF-TDDFTB workflow](../workflows/mrsf-tddftb.md#state-labels).
 
 `parameter_path` accepts either a single combined `.opdftb` parameter file or a
 directory of Slater–Koster `<El>-<El>.skf` files. `basis` is a placeholder for
-the DFTB backend (the Slater–Koster minimal basis is used regardless of its
+the DFTB method (the Slater–Koster minimal basis is used regardless of its
 value), but a value must be present to satisfy the generic input checker.
 
 ## Keywords
