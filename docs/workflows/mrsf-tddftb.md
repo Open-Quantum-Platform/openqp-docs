@@ -76,6 +76,60 @@ cam_beta=1.2
 scc_mixer=trust
 ```
 
+## Conical intersections (MECI)
+
+DFTB supplies MRSF-TDDFTB state energies and analytic gradients, so a
+minimum-energy conical-intersection (MECI) search is driven by the shared
+[`[optimize]`](../keywords/optimize.md) optimizer with `method=dftb` — there is
+no separate DFTB entry point. In particular the **BaekA** two-or-more-state
+adaptive-penalty algorithm
+([`[optimize] meci_search=baeka`](../keywords/optimize.md#meci_search)) runs on
+MRSF-TDDFTB states exactly as it does on all-electron MRSF-TDDFT, at
+tight-binding cost; this is the engine behind the DTCAM-TB conical-intersection
+benchmarks.
+
+The MRSF physical S₀ is response root 1, so `[optimize] states` is 1-based over
+the MRSF manifold (`1`=S₀, `2`=S₁). A two-state S₁/S₀ crossing:
+
+```ini
+[input]
+runtype=meci
+method=dftb
+basis=sto-3g
+functional=
+
+[tdhf]
+type=mrsf
+nstate=3
+
+[dftb]
+type=mrsf
+parameter_path=/path/to/params
+
+[optimize]
+meci_search=baeka
+states=1,2
+gap=1.0e-4
+```
+
+```python
+from oqp.openqp import OpenQP
+
+job = (
+    OpenQP(project="chromophore_ci")
+    .molecule("guess.xyz", basis="sto-3g")
+    .dftb(response_type="mrsf", nstate=3, parameter_path="/path/to/params")
+    .workflow.meci(states=[1, 2], algorithm="baeka", gap=1.0e-4)
+)
+job.run()
+```
+
+The BaekA controls (`sigma`, `alpha`, `delta_beta`, `beta_schedule`, `gap`, and
+the ordered `states` list) and its distinction from the legacy three-state
+`runtype=tci` deck are documented once in the
+[`[optimize]`](../keywords/optimize.md#meci_search) reference and apply unchanged
+with `method=dftb`.
+
 ## NACME and surface hopping
 
 Nonadiabatic couplings are overlap-based time-derivative couplings, computed
