@@ -54,6 +54,7 @@ runtype=energy
 charge=0
 basis=sto-3g
 functional=
+system=chromophore.xyz
 
 [tdhf]
 type=mrsf
@@ -97,6 +98,7 @@ runtype=grad
 charge=0
 basis=sto-3g
 functional=
+system=chromophore.xyz
 
 [tdhf]
 type=mrsf
@@ -145,6 +147,7 @@ runtype=optimize
 charge=0
 basis=sto-3g
 functional=
+system=chromophore.xyz
 
 [tdhf]
 type=mrsf
@@ -224,6 +227,7 @@ runtype=meci
 charge=0
 basis=sto-3g
 functional=
+system=guess.xyz
 
 [tdhf]
 type=mrsf
