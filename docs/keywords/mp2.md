@@ -6,6 +6,9 @@ the defaults are conventional unscaled MP2.
 
 MP2 is a post-SCF energy workflow. It requires an HF reference, so
 `[input] functional` must be empty and `[input] runtype` must be `energy`.
+In concise input, select that reference with
+`mp2(reference=rhf|rohf|uhf)/BASIS`; the value lowers to `[scf] type` and is
+not a keyword in this section.
 
 ## Minimal Examples
 

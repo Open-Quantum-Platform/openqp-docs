@@ -35,7 +35,9 @@ nav:
   - Installation: installation.md
   - Build Options: build-options.md
   - Quickstart: quickstart.md
-  - Input File Format: input-file.md
+  - Input Styles:
+      - One-line .oqp: oqp-input.md
+      - Legacy .inp: input-file.md
   - Capabilities: capabilities.md
   - Performance: performance.md
   - Run from Python: python-scripting.md
@@ -49,6 +51,7 @@ nav:
       - MRSF Analysis and Interoperability: workflows/mrsf-analysis.md
       - Hessian and Frequencies: workflows/hessian.md
       - Optimization: workflows/optimization.md
+      - BaekA Multistate MECI: workflows/baeka-multistate-meci.md
       - Spin-Orbit Coupling: workflows/soc.md
       - NACME: workflows/nacme.md
       - SOC-NAMD-QMMM: workflows/soc-namd-qmmm.md
@@ -61,6 +64,7 @@ nav:
       - guess: keywords/guess.md
       - scf: keywords/scf.md
       - mp2: keywords/mp2.md
+      - dftb: keywords/dftb.md
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md
       - dftb: keywords/dftb.md
@@ -72,10 +76,12 @@ nav:
       - ekt: keywords/ekt.md
       - optimize: keywords/optimize.md
       - oqp: keywords/oqp.md
-      - geometric: keywords/geometric.md
+      - geometric (optional legacy .inp/Python): keywords/geometric.md
       - neb: keywords/neb.md
       - pcm: keywords/pcm.md
       - symmetry: keywords/symmetry.md
+      - json: keywords/json.md
+      - tests: keywords/tests.md
   - References: references.md
   - Examples: examples/index.md
   - Troubleshooting: troubleshooting.md

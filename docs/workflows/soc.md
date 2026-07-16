@@ -8,6 +8,25 @@ singlet-triplet mixing is important. See the
 [References](../references.md#spin-orbit-coupling) page for OpenQP's
 relativistic MRSF-TDDFT SOC method and the mean-field SOC operator background.
 
+## One-line `.oqp`
+
+Use one route count for equal singlet and triplet spaces:
+
+```text
+mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" soc
+```
+
+This requests `S0`--`S2` and `T0`--`T2`. For unequal spaces, omit route
+`nstate` and specify both counts:
+
+```text
+mrsf/bhhlyp/6-31g* geom="h2o.xyz" soc(ns=3,nt=5)
+```
+
+Do not combine the two forms. The canonical route also recognizes
+MRSF-TDHF and MRSF-TDDFTB SOC, subject to the selected backend being available;
+the detailed all-electron example below is MRSF-TDDFT.
+
 Input style:
 
 ```ini
@@ -58,8 +77,8 @@ two-electron SOC contribution:
 | `0` | One-electron SOC terms only. |
 | `1` | One-electron plus mean-field two-electron SOC terms. |
 
-SOC workflows currently require MRSF-TDDFT: a triplet ROHF reference and
-`[tdhf] type=mrsf`.
+The all-electron workflow on this page uses MRSF with its automatic triplet
+ROHF working reference and `[tdhf] type=mrsf` in legacy input.
 The SOC driver computes both singlet and triplet response roots internally, so
 Python scripts should use `job.workflow.soc(...)` after
 `job.theory.mrsf(...)` rather than setting

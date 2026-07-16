@@ -5,6 +5,12 @@ The
 are the preferred source of runnable input decks. Use them as templates before
 writing a new input from scratch.
 
+Every sectioned `*.inp` deck has a same-stem one-line `*.oqp` companion. The
+two files describe the same calculation, so new users can start from the
+shorter `.oqp` form while existing scripts can keep using `.inp` unchanged.
+Shared Cartesian coordinates used by the concise decks live in
+`examples/geometries`.
+
 | Folder | Contents |
 | --- | --- |
 | `examples/HF` | RHF, ROHF, and UHF Hartree-Fock energies and gradients. |
@@ -15,7 +21,7 @@ writing a new input from scratch.
 | `examples/TDDFT` | TDDFT energy and gradient examples. |
 | `examples/SF-TDDFT` | Spin-flip TDDFT examples. |
 | `examples/MRSF-TDDFT` | MRSF-TDDFT energies, gradients, and optimization data. |
-| `examples/OPT` | Native and geomeTRIC optimization, MECI, MECP, TCI, TS, IRC, NEB, and MEP. |
+| `examples/OPT` | Native optimization including frozen-distance constraints, MECI including the BaekA multistate regression, MECP, TS, IRC, NEB, and MEP; the TCI-named deck is retained for compatibility. |
 | `examples/HESS` | Analytic and numerical Hessian workflows. |
 | `examples/PCM` | ddX reference-SCF PCM energy cases. |
 | `examples/SOC` | MRSF-TDDFT SOC cases. |
@@ -30,20 +36,37 @@ writing a new input from scratch.
 Run a single example:
 
 ```bash
-openqp examples/HF/H2O_RHF-HF_ENERGY.inp
+openqp examples/HF/H2O_RHF-HF_ENERGY.oqp
 ```
 
 For the standalone MP2 example:
 
 ```bash
-openqp examples/MP2/h2o_ump2_6-31g.inp
+openqp examples/MP2/h2o_ump2_6-31g.oqp
 ```
 
 Run the packaged example tests:
 
 ```bash
-openqp --run_tests all
+openqp --run_tests all                         # automatic mixed regression set
+openqp --run_tests all --input-format inp      # standard suite through .inp
+openqp --run_tests all --input-format oqp      # standard suite through .oqp
+openqp --run_tests all --input-format both     # both syntaxes in that suite
 ```
+
+The default `auto` mode prefers `.oqp`, retains any `.inp` without a concise
+companion, and keeps a small representative `.inp` compatibility set. The
+historical `all` scope still excludes unusually slow or non-self-contained
+examples. Supplying an explicit directory instead applies the selected format
+to every matching input below that directory. Each calculation receives an
+isolated output folder, so paired `.inp`/`.oqp` logs and fixed-name optimization
+artifacts cannot overwrite one another.
+
+Geometry and reaction-path examples use the native OpenQP engine, including
+[`HCN_RHF-DFT_CONSTRAINED_OQP.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/HCN_RHF-DFT_CONSTRAINED_OQP.oqp),
+which demonstrates a frozen C-N distance. The optional geomeTRIC adapter is
+retained for external compatibility but is not required by the standard
+example suite.
 
 ## QM/MM examples
 
@@ -67,15 +90,21 @@ run them directly.
 Run a NAMD-QMMM example:
 
 ```bash
-openqp examples/QMMM/H2CO-water_BHHLYP-MRSF-NAMD-QMMM.inp
+openqp examples/QMMM/H2CO-water_BHHLYP-MRSF-NAMD-QMMM.oqp
 ```
 
 Run the covalent-boundary ground-state QM/MM MD example (from the folder, so the
 PDB/force-field files resolve):
 
 ```bash
-cd examples/QMMM && openqp ala-dipeptide_BHHLYP-QMMM-MD-RCD.inp
+cd examples/QMMM && openqp ala-dipeptide_BHHLYP-QMMM-MD-RCD.oqp
 ```
+
+Repository maintainers can regenerate and audit the concise companions after
+editing legacy examples with `python tools/convert_legacy_examples.py --write`.
+Running the command without `--write` performs a dry-run audit. The
+converter refuses a file when an explicitly written legacy setting cannot be
+represented faithfully; it does not silently create a reduced calculation.
 
 See the [`[qmmm]`](../keywords/qmmm.md) keyword page for the input contract and
 [covalent QM/MM boundaries](../keywords/qmmm.md#covalent-qmmm-boundaries), and the

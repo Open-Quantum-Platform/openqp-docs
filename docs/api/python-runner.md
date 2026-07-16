@@ -96,9 +96,12 @@ job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
 job.workflow.gradient(state=3)
 job.control(omp_threads=8, usempi=False)
 
-job.theory.dft(functional="pbe0", basis="6-31g*")
-job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2")
-job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
+dft_job = OpenQP("water_opt").molecule(geometry="water")
+dft_job.theory.dft(functional="pbe0", basis="6-31g*")
+dft_job.workflow.optimize(istate=0, coordsys="tric", trust=0.2)
+
+mp2_job = OpenQP("water_mp2").molecule(geometry="water")
+mp2_job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2")
 ```
 
 | Method | Returns | Use |
@@ -114,13 +117,19 @@ job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
 | `control(omp_threads=None, usempi=None, **kwargs)` | `OpenQP` | Sets hardware/runtime controls such as `[input] omp_threads` and the runtime-only MPI flag. |
 | `workflow.gradient(state=None, **kwargs)` | `OpenQP` | Selects `runtype=grad` and stores the gradient state in `[properties] grad`. |
 | `workflow.hessian(**kwargs)` | `OpenQP` | Selects `runtype=hess` and stores Hessian controls in `[hess]`. |
-| `workflow.optimize(**kwargs)` | `OpenQP` | Selects `runtype=optimize` and routes optimizer/backend options to `[optimize]`, `[oqp]`, or `[geometric]`. |
-| `workflow.meci(**kwargs)` | `OpenQP` | Selects `runtype=meci`; the same style is available for `mecp`, `tci`, `mep`, `ts`, `irc`, and `neb`. |
+| `workflow.optimize(**kwargs)` | `OpenQP` | Selects `runtype=optimize`; native controls route to `[oqp]` by default, while explicit compatibility backends may route to `[geometric]` or legacy SciPy controls. |
+| `workflow.meci(**kwargs)` | `OpenQP` | Selects `runtype=meci`. Use `states=[...]` and `algorithm="baeka"` for the BaekA two-or-more-state algorithm; public controls also include `sigma`, `alpha`, `delta_beta`, `beta_schedule`, and `gap`. The same workflow style is available for `mecp`, `mep`, `ts`, `irc`, and `neb`; `workflow.tci(...)` remains a compatibility path. |
 | `workflow.nacme(**kwargs)` | `OpenQP` | Selects `runtype=nacme` and requires MRSF-TDDFT. |
 | `workflow.ekt(ip=False, ea=False, **kwargs)` | `OpenQP` | Selects `runtype=ekt`, requires MRSF-TDDFT, and requires IP, EA, or both. |
 | `workflow.soc(soc_2e=1, scal_rel=2, **tdhf_keywords)` | `OpenQP` | Selects `runtype=soc` for an already configured MRSF-TDDFT theory, sets DKH2 scalar relativity by default, and rejects non-MRSF theories. |
 | `workflow.pcm(**kwargs)` | `OpenQP` | Selects the current energy-only PCM/ddX path and requires HF/DFT reference-SCF, RHF/ROHF, `backend="ddx"`, and `mode="reference_scf"`. |
 | `workflow.nmr(gauge="cgo", **kwargs)` | `OpenQP` | Requests NMR shielding and requires HF/DFT reference-SCF. CGO is RHF-only; use GIAO for open-shell references. |
+
+The Python workflow API retains explicit `lib="geometric"` and `lib="scipy"`
+selection for compatibility. This is intentionally broader than concise
+`.oqp`, whose geometry drivers always use the native engine and reject backend
+selectors. Native `oqp` handles frozen-distance minima; install
+`openqp[geometric]` only before explicitly selecting geomeTRIC.
 
 Plain energy calculations do not need a workflow call. Use `job.workflow.<name>(...)`
 only when selecting a non-energy workflow or setting workflow-specific controls.
@@ -150,7 +159,7 @@ ground state. Existing scripts that use `grad=...` still work.
 job.settings.scf(conv=1.0e-8)
 job.settings.tdhf(target=2)
 
-job.workflow.optimize(lib="oqp", coordsys="tric", trust=0.2)
+job.workflow.optimize(istate=0, coordsys="tric", trust=0.2)
 
 job.settings.tdhf.nstate = 5
 
@@ -175,6 +184,8 @@ For optimization workflows, `job.workflow.optimize(...)` routes ordinary optimiz
 keywords to `[optimize]`, while backend options such as `coordsys`, `trust`, and
 `constraints_file` are sent to the selected backend section. The lower-level
 `job.optimize(...)` section helper remains available for existing scripts.
+The native backend is the default; `constraints_file` is relevant to the
+optional legacy geomeTRIC path.
 
 `oqp.openqp.OQP` is an alias for `OpenQP`.
 

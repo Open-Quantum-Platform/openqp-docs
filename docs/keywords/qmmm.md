@@ -1,12 +1,20 @@
 # `[qmmm]`
 
 The `[qmmm]` section configures hybrid quantum-mechanics/molecular-mechanics
-(QM/MM) calculations. A quantum region described by an OpenQP method (HF, DFT, or
-MRSF-TDDFT) is embedded in a classical force-field environment handled by
-[OpenMM](https://openmm.org). The QM/MM path is activated by
-`[input] qmmm_flag=true`, and it is used by single-point QM/MM energies,
-ground-state QM/MM molecular dynamics, and nonadiabatic
-[SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md) dynamics.
+(QM/MM) calculations. A quantum region described by an OpenQP method is
+embedded in a classical force-field environment handled by
+[OpenMM](https://openmm.org). The established `.inp` surface includes
+single-point QM/MM energy and ground-state QM/MM molecular dynamics, while
+NAMD uses the separate embedded surface-hopping driver.
+
+In one-line `.oqp`, `qmmm(...)` is accepted with `energy`, ground-state `md`,
+and embedded `namd`; writing it also enables `qmmm_flag`. QM/MM gradients and
+geometry optimizations are rejected because those generic backends do not yet
+provide the assembled QM/MM gradient.
+
+```text
+dft/pbe0/def2-svp geom="ala.pdb 9 10 17 18 19" energy qmmm(embedding=electrostatic)
+```
 
 !!! warning "Development preview"
     This section documents the QM/MM implementation branch in
@@ -28,15 +36,16 @@ energy-conserving QM/MM gradient. See
 [References](../references.md#qmmm-espf-embedding) for the ESPF operator and its
 periodic (particle-mesh Ewald) extension.
 
-Two ways of defining the QM region are supported, matching the two driver paths:
+Two ways of defining the QM region are supported, matching the driver paths:
 
-- **Single-point / ground-state QM/MM** reads the geometry and QM selection from
+- **Single-point QM/MM energy** reads the geometry and QM selection from
   `[input] system = file.pdb <indices>` (see [`[input] system`](input.md#system)).
   Dangling covalent bonds crossing the QM/MM boundary are capped automatically
   (see [Link atoms](#link-atoms)).
-- **QM/MM molecular dynamics and SOC-NAMD-QMMM** (`runtype=namd`) read the PDB,
-  force field, and QM selection from the `[qmmm]` keys `pdb_file`,
-  `forcefield_files`, and `qm_atoms` below.
+- **Ground-state QM/MM molecular dynamics and NAMD-QMMM** read the PDB, force
+  field, and QM selection from the `[qmmm]` keys `pdb_file`,
+  `forcefield_files`, and `qm_atoms` below. NAMD additionally uses
+  `runtype=namd` and the `[md]` section.
 
 ## Minimal QM/MM Example
 
@@ -55,7 +64,7 @@ system     = ala.pdb 9 10 17 18 19
 type = rhf
 ```
 
-QM/MM molecular dynamics (QM selection in the `[qmmm]` section):
+Embedded nonadiabatic molecular dynamics (QM selection in `[qmmm]`):
 
 ```ini
 [input]
@@ -132,8 +141,9 @@ full nonadiabatic QM/MM setup.
 | Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
 
 Path to the PDB file that defines the full QM+MM system (coordinates and
-topology) for `runtype=namd`. The single-point and ground-state QM/MM paths take
-the PDB path from `[input] system` instead.
+topology) for ground-state `runtype=md` and nonadiabatic `runtype=namd`.
+Single-point QM/MM energy instead takes its PDB path and QM indices together
+from `[input] system = file.pdb <indices>`.
 
 ### `forcefield_files`
 
@@ -169,13 +179,15 @@ explicit `forcefield_files` value. New QM/MM-MD decks should set
 
 Zero-based indices of the atoms placed in the QM region, as individual indices
 and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. Give the indices in
-**ascending order**. Whole-molecule QM selections (e.g. a solute in a solvent
-box) are the common case, and the only case supported by the nonadiabatic
-(`runtype=namd`) path. In the single-point and ground-state QM/MM MD paths a
-selection that cuts a covalent bond is capped with a hydrogen
-[link atom](#link-atoms) and the MM frontier charge is treated per
-[`frontier_scheme`](#frontier_scheme); see the
-[SOC-NAMD-QMMM scope note](../workflows/soc-namd-qmmm.md#scope-and-limitations).
+**ascending order**. This key is required by ground-state QM/MM MD and NAMD;
+single-point energy writes the equivalent selection after its PDB path in
+`[input] system`. Whole-molecule QM selections (e.g. a solute in a solvent box)
+are the common case, and the only case supported by the nonadiabatic
+(`runtype=namd`) path. In single-point energy and ground-state QM/MM MD, a
+selection that cuts a covalent bond is capped with a hydrogen [link
+atom](#link-atoms) and the MM frontier charge is treated per
+[`frontier_scheme`](#frontier_scheme); see the [SOC-NAMD-QMMM scope
+note](../workflows/soc-namd-qmmm.md#scope-and-limitations).
 
 ### `cutoff`
 
@@ -301,10 +313,13 @@ MD timestep for the ground-state QM/MM MD path. The nonadiabatic path uses
 | --- | --- |
 | Type | integer |
 | Default | `1` |
-| Used by | ground-state QM/MM MD |
+| Used by | legacy static QM/MM bookkeeping |
 
-Number of MD steps for the ground-state QM/MM MD path. The nonadiabatic path
-uses [`[md] nstep`](md.md#nstep).
+Retained for compatibility with the older static-driver configuration. The
+current ground-state OpenMM MD engine uses [`n_steps`](#n_steps); the
+nonadiabatic path uses [`[md] nstep`](md.md#nstep). In concise `.oqp`, however,
+`qmmm(nsteps=N)` is accepted as an alias and lowered to the active `n_steps`
+key; this does not change the meaning of `nsteps` in a sectioned `.inp`.
 
 ### `istate`
 
@@ -314,7 +329,128 @@ uses [`[md] nstep`](md.md#nstep).
 | Default | `0` |
 | Used by | ground-state QM/MM |
 
-Electronic state index for the ground-state QM/MM path (`0` = reference state).
+Obsolete numeric selector from the disconnected legacy `libopenmm` path. It is
+retained in the sectioned schema for compatibility but is reserved in `.oqp`;
+do not write `qmmm(istate=...)`. Ground-state canonical `md` uses `S0`, and
+state-aware drivers own their physical state labels.
+
+## Ground-state OpenMM MD Keywords
+
+These keys are consumed by the command-line ground-state QM/MM-MD driver. The
+command must run without MPI.
+
+### `n_steps`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `1000` |
+| Used by | number of ground-state QM/MM-MD integration steps |
+
+This is the preferred MD spelling. Concise `.oqp` accepts `nsteps` as an alias
+for this key, while a traditional sectioned `.inp` keeps `nsteps` as separate
+legacy bookkeeping with its own default of one.
+
+### `ensemble`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `nve` |
+| Values | `nve`, `nvt`, `npt` |
+
+### `friction`
+
+| Field | Value |
+| --- | --- |
+| Type | float, ps^-1 |
+| Default | `1.0` |
+| Used by | Langevin integration for NVT/NPT |
+
+### `pressure`
+
+| Field | Value |
+| --- | --- |
+| Type | float, bar |
+| Default | `1.0` |
+| Used by | NPT barostat target |
+
+### `barostat_interval`
+
+| Field | Value |
+| --- | --- |
+| Type | integer steps |
+| Default | `25` |
+| Used by | NPT barostat update interval |
+
+NPT requires a periodic nonbonded method rather than `NoCutoff`.
+
+### `trajectory_format`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `pdb` |
+| Values | `pdb`, `dcd` |
+
+### `trajectory_file`
+
+| Field | Value |
+| --- | --- |
+| Type | path |
+| Schema default | empty |
+| Used by | coordinate trajectory output |
+
+When omitted from the active MD configuration, the driver uses
+`qmmm_trajectory.<trajectory_format>`.
+
+### `log_file`
+
+| Field | Value |
+| --- | --- |
+| Type | path |
+| Schema default | empty |
+| Used by | OpenMM state-data output |
+
+The active MD driver uses `qmmm_trajectory.dat` when no path is supplied.
+
+### `report_interval`
+
+| Field | Value |
+| --- | --- |
+| Type | integer steps |
+| Default | `1` |
+| Used by | trajectory, log, and energy reporting frequency |
+
+### `energy_file`
+
+| Field | Value |
+| --- | --- |
+| Type | path |
+| Schema default | empty |
+| Used by | saved QM, MM, kinetic, and total-energy arrays |
+
+The active MD driver uses `total_energy.npz` when no path is supplied.
+
+### `qm_atoms_xyz`
+
+| Field | Value |
+| --- | --- |
+| Type | path |
+| Default | empty |
+| Used by | optional replacement coordinates for the QM atoms |
+
+### `qm_list`
+
+| Field | Value |
+| --- | --- |
+| Type | integer list |
+| Default | empty |
+| Used by | mapping QM atoms to rows of `qm_atoms_xyz` |
+
+When `qm_atoms_xyz` is present and `qm_list` is omitted, rows are used in QM
+atom order. If supplied, `qm_list` must have the same length as the QM atom
+selection and contain valid XYZ indices.
 
 ## Covalent QM/MM boundaries
 

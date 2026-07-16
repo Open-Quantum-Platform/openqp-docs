@@ -35,9 +35,19 @@ specific input contract.
 
 ## Geometry and Paths
 
-The native optimizer is selected with `[optimize] lib=oqp` and supports
-`optimize`, `ts`, `meci`, `mecp`, `tci`, `neb`, `irc`, and `mep`. geomeTRIC and
-SciPy remain optional backends for the workflows wired to them.
+The native optimizer supports `optimize`, `ts`, `meci`, `mecp`, `neb`, `irc`,
+and `mep`; legacy `tci` inputs remain compatible. MECI includes the BaekA
+adaptive algorithm for two or more same-manifold states. Concise `.oqp`
+geometry drivers select the native engine automatically and do not expose a
+backend selector. Native TS supports model, numerical, or analytical initial
+Hessians and mode following. Native NEB supports endpoint alignment and
+relaxation, climbing images, maximum and RMS force convergence, and final
+multi-frame XYZ path output.
+
+geomeTRIC and SciPy remain optional compatibility backends for traditional
+sectioned `.inp` files and the Python API. Native `.oqp` supports frozen-distance
+minimum searches; legacy geomeTRIC remains an escape hatch for advanced
+constraint types that the concise grammar does not yet support.
 
 ## Upcoming or Limited Areas
 

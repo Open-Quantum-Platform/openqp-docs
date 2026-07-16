@@ -2,8 +2,8 @@
 
 This page collects the paper references cited by the manual. Use the OpenQP
 platform paper when citing the code itself, and add method-specific references
-when a paper uses MP2, spin-scaled MP2, MRSF-TDDFT, SOC, scalar relativistic
-correction, PCM/ddX, or related workflows.
+when a paper uses MP2, spin-scaled MP2, MRSF-TDDFT, BaekA multistate MECI,
+SOC, scalar relativistic correction, PCM/ddX, or related workflows.
 
 ## OpenQP
 
@@ -55,6 +55,14 @@ correction, PCM/ddX, or related workflows.
   understanding molecules and materials." Bulletin of the Korean Chemical
   Society 46, 330-346 (2025).
   [doi:10.1002/bkcs.70011](https://doi.org/10.1002/bkcs.70011)
+
+## BaekA Multistate MECI
+
+- Baek YS, Lee S, Filatov M, and Choi CH. "Optimization of Three State Conical
+  Intersections by Adaptive Penalty Function Algorithm in Connection with the
+  Mixed-Reference Spin-Flip Time-Dependent Density Functional Theory Method
+  (MRSF-TDDFT)." Journal of Physical Chemistry A 125, 1994-2006 (2021).
+  [doi:10.1021/acs.jpca.0c11294](https://doi.org/10.1021/acs.jpca.0c11294)
 
 ## Spin-Orbit Coupling
 

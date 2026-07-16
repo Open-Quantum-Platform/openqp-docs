@@ -71,6 +71,19 @@ UMRSF-TDDFT requires a UHF reference.
 Number of excited states to compute. It must be at least as large as the highest
 state requested by gradients, optimizations, NACME, SOC, Hessians, or EKT.
 
+### `nstate_s`, `nstate_t`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Defaults | `0`, `0` |
+| Used by | unequal singlet/triplet SOC spaces |
+
+Optional numbers of singlet and triplet roots for SOC. Zero means to use
+`nstate` for that common count. In a one-line `.oqp` file, do not set these
+internal selectors directly; write `soc(ns=3,nt=5)`. Both counts must be
+provided together, and that form must not be combined with route `nstate`.
+
 ### `target`
 
 | Field | Value |

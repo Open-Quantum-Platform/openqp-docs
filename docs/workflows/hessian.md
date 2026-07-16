@@ -135,4 +135,9 @@ Runnable input:
   state `1` is the lowest target state.
 - `[hess] restart=True` can continue a numerical Hessian workflow where the
   corresponding temporary files are available.
+- `[hess] read=True` accepts only a current versioned `.hess.json` whose
+  electronic-model configuration, state, atoms, geometry, and isotopic masses
+  match the present job. Referenced file contents and the OpenQP binary are not
+  content-fingerprinted, so regenerate the sidecar after changing either one.
+  Unsigned legacy sidecars must be regenerated with `read=False`.
 - `[hess] clean=True` removes temporary Hessian files where supported.

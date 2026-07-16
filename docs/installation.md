@@ -26,9 +26,23 @@ files, and data files together. Normal command-line use does not require
 - GCC, G++, and Gfortran
 - CMake 3.25 or newer
 - BLAS/LAPACK
-- `cffi`, NumPy, SciPy, and geomeTRIC
+- `cffi`, NumPy, and SciPy
 - Ninja, recommended for source builds
 - OpenMPI or another MPI implementation, only when building with MPI
+
+geomeTRIC is optional. Concise `.oqp` geometry drivers use the native OpenQP
+optimizer and do not require it. Install the extra only for traditional `.inp`
+or Python workflows that explicitly select the legacy geomeTRIC backend, such
+as advanced constraint types beyond native frozen distances:
+
+```bash
+pip install "openqp[geometric]"
+```
+
+The `geometric` extra is introduced by the companion next-release core change
+in [OpenQP #273](https://github.com/Open-Quantum-Platform/openqp/pull/273).
+OpenQP 1.2.0 still lists geomeTRIC as a normal dependency, so its plain
+`pip install openqp` already includes that backend.
 
 See the [Build Options](build-options.md) reference for the full CMake option
 table, defaults, BLAS/LAPACK choices, external dependency cache behavior, and
@@ -125,6 +139,11 @@ the built-in default.
 ```bash
 openqp --run_tests all
 ```
+
+This uses the default mixed regression set. Add `--input-format inp` or
+`--input-format oqp` to select one syntax within that test scope, or
+`--input-format both` to include both. See [Examples](examples/index.md) for the
+standard `all` exclusions and explicit-directory policy.
 
 For a smaller first check:
 

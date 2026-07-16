@@ -3,6 +3,10 @@
 This quickstart runs a small MRSF-TDDFT calculation on water. You can start from
 either a standard OpenQP input file or the compact Python API.
 
+This page uses the released sectioned `.inp` format. Users testing the current
+development branch can instead begin with the [one-line `.oqp` Quick
+Start](oqp-input.md#quick-start).
+
 ## Input File
 
 Create `h2o_mrsf.inp`:

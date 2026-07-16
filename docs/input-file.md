@@ -1,5 +1,42 @@
 # Input File Format
 
+!!! warning "Development / next release"
+
+    The one-line `.oqp` parser belongs to the current development branch, not
+    the published OpenQP 1.2.0 release documented by this site. Traditional
+    `.inp` input below remains the released format.
+
+OpenQP accepts two complementary text formats. New inputs can use a compact
+`.oqp` file with one readable line:
+
+```text
+mrsf/bhhlyp/6-31g* h2o.xyz opt
+```
+
+This means an MRSF-TDDFT optimization of `S0`; OpenQP selects the required
+working reference automatically. Start with the [`.oqp` Quick
+Start](oqp-input.md#quick-start) for state labels, SOC counts, and more
+examples.
+
+Traditional `.inp` files use the sectioned format documented on this page and
+remain supported unchanged. Keep sectioned syntax in `.inp` and one-line syntax
+in `.oqp`; changing formats is optional. The correction assistant is a
+secondary aid that produces an inspectable `.resolved.oqp` file, while the
+resolved one-line command remains the authoritative calculation record.
+OpenQP renders the short positional geometry above as the explicit canonical
+spelling `geom="h2o.xyz"`.
+
+The OpenQP repository ships a same-stem `.oqp` companion for every legacy
+example `.inp`. This makes the complete legacy example inventory available
+in both formats without removing the established input system.
+
+The two formats intentionally expose different optimization detail. Concise
+`.oqp` geometry drivers always use the native OpenQP engine and have no `lib`
+selector. Traditional `.inp` files retain `[optimize] lib=oqp`,
+`lib=geometric`, or `lib=scipy` for compatibility; geomeTRIC is an optional
+legacy dependency used chiefly for advanced constraints beyond native frozen
+distances.
+
 OpenQP inputs are INI-like text files. Options are grouped by section:
 
 ```ini
@@ -47,16 +84,21 @@ previous geometry.
 | `[mp2]` | Standalone MP2 spin-scaling controls. |
 | `[dftgrid]` | DFT functional/grid controls. |
 | `[tdhf]` | TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, and UMRSF settings. |
+| `[dftb]` | DFTB backend, SCC, response, and MRSF-TDDFTB controls. |
+| `[md]` | Nonadiabatic-dynamics controls used by `runtype=namd`. |
+| `[qmmm]` | OpenMM QM/MM system and molecular-dynamics controls. |
 | `[properties]` | Gradients, NAC, NMR, export, and property requests. |
-| `[optimize]` | Geometry-optimization target and convergence controls. |
-| `[oqp]` | Native optimizer controls. |
-| `[geometric]` | geomeTRIC backend controls. |
+| `[optimize]` | Geometry target and convergence controls; backend selection is retained for traditional `.inp` and Python compatibility. |
+| `[oqp]` | Native optimizer, TS-Hessian, IRC, MEP, and NEB controls. |
+| `[geometric]` | Optional legacy geomeTRIC controls for traditional `.inp` workflows. |
 | `[pcm]` | Reference-SCF PCM/ddX energy settings. |
 | `[symmetry]` | Point-group metadata and optional symmetry reductions. |
 | `[hess]` | Hessian and frequency controls. |
 | `[nac]` | NAC/NACME controls. |
 | `[ekt]` | MRSF-EKT IP/EA channel selection. |
-| `[neb]` | NEB product and image controls. |
+| `[neb]` | NEB product/image controls plus optional legacy geomeTRIC compatibility keys. |
+| `[json]` | Advanced JSON/restart metadata. |
+| `[tests]` | Internal regression-test expectations. |
 
 ## Run Types
 
@@ -67,16 +109,29 @@ Common `[input] runtype` values:
 | `energy` | Single-point energy and requested properties. |
 | `grad` | Energy plus gradient for the requested state. |
 | `hess` | Hessian/frequency workflow. |
+| `nac`, `bp` | Numerical nonadiabatic-coupling vector and branching-plane workflows. |
 | `nacme` | Time/geometric derivative coupling between MRSF states. |
-| `soc` | MRSF-TDDFT spin-orbit coupling workflow. |
+| `soc` | MRSF-TDDFT, MRSF-TDHF, or MRSF-TDDFTB spin-orbit coupling workflow. |
 | `ekt` | MRSF-EKT ionization-potential/electron-affinity workflow. |
+| `md` | Ground-state QM/MM molecular dynamics. The command-line runner dispatches this OpenMM path specially. |
+| `namd` | Nonadiabatic molecular dynamics using `[md]` controls. |
 | `optimize` | Geometry optimization. |
-| `meci`, `mecp`, `tci` | Crossing-point searches. |
+| `meci`, `mecp` | Crossing-point searches. `meci_search=baeka` selects the two-or-more-state adaptive MECI algorithm. |
+| `tci` | Existing three-state adaptive-penalty workflow, retained for backward compatibility. It is distinct from the new general `meci_search=baeka` option. |
 | `ts`, `irc`, `neb`, `mep` | Reaction-path workflows. |
 | `prop`, `data` | Multi-state property/gradient workflows for downstream drivers. |
 
-`md` is recognized by validation code but is not the current production
-workflow in this repository.
+For QM/MM MD, use `[qmmm] n_steps=N`. The older `[qmmm] nsteps=N` keyword
+remains available for legacy bookkeeping. Canonical `qmmm(...)` may accompany
+`energy`, `md`, or `namd`; `md` requires it, while `namd` may also run gas
+phase. Canonical QM/MM gradients and optimizations are rejected until their
+active backends provide the required assembled gradient.
+
+Bare `runtype=md` without QM/MM remains invalid. With `qmmm_flag=true`, both
+the command-line path and programmatic `Runner` dispatch ground-state MD to the
+OpenMM `QMMM_MD` driver. This applies after a concise `.oqp` request has been
+lowered as well as to a traditional sectioned `.inp`. Run it without MPI, for
+example `openqp file.oqp --nompi` or `openqp file.inp --nompi`.
 
 Standalone MP2 is selected with `[input] method=mp2`, uses only
 `runtype=energy`, and requires an empty `[input] functional`. Spin-scaled MP2
