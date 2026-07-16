@@ -1,20 +1,34 @@
-# Geometry Optimization
+# Geometry Optimization and Reaction Paths
 
-The default optimizer backend is the native OpenQP optimizer:
+Concise `.oqp` geometry drivers use the native OpenQP optimizer automatically.
+Users select a physical state and the calculation they want; there is no
+backend or `lib` keyword in this format.
 
-```ini
-[optimize]
-lib=oqp
+```text
+dft/pbe0/def2-svp geom="h2o.xyz" opt(S0,maxit=50)
+mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,maxit=100)
 ```
 
-The native backend uses redundant internal coordinates, DLC/TRIC-style
-coordinate handling, and restricted-step RFO/P-RFO style steps. It supports
-minima, transition states, MECI/MECP/TCI, NEB, IRC, and MEP workflows where the
-corresponding run type is implemented.
+The native engine supports minima, transition states, two-state and BaekA
+multistate MECI, MECP, MEP, IRC, and NEB. It uses redundant internal, DLC,
+TRIC, or Cartesian coordinates as appropriate, with restricted-step RFO/P-RFO
+optimization.
 
 ## Native Minimum Search
 
-Input style:
+The shortest canonical input is:
+
+```text
+dft/bhhlyp/6-31g* geom="h2o.xyz" opt
+```
+
+`opt` defaults to `S0`. Add native controls directly when needed:
+
+```text
+dft/bhhlyp/6-31g* geom="h2o.xyz" opt(S0,maxit=50,coordsys=tric,trust=0.2,trust_max=0.5)
+```
+
+The equivalent traditional sectioned `.inp` spelling remains supported:
 
 ```ini
 [input]
@@ -30,14 +44,16 @@ multiplicity=1
 [optimize]
 lib=oqp
 istate=0
-maxit=10
+maxit=50
 
 [oqp]
 coordsys=tric
 trust=0.2
+trust_max=0.5
 ```
 
-Python style:
+Python also uses the native backend by default. Its explicit backend selector
+is retained for compatibility with existing scripts:
 
 ```python
 from oqp.openqp import OpenQP
@@ -45,28 +61,150 @@ from oqp.openqp import OpenQP
 job = OpenQP("h2o_opt", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory.dft(functional="bhhlyp", basis="6-31g*")
-job.workflow.optimize(
-    lib="oqp",
-    istate=0,
-    maxit=10,
-    coordsys="tric",
-    trust=0.2,
-)
-
+job.workflow.optimize(istate=0, maxit=50, coordsys="tric", trust=0.2)
 mol = job.run()
 ```
 
-Runnable input:
+Runnable traditional input:
 [`examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp).
 
-## geomeTRIC Backend
+## Native Transition State and IRC
 
-Use geomeTRIC when you need a workflow or constraint style that is best handled
-by that external optimizer:
+Native TS optimization uses P-RFO. `follow` selects the initial mode index, and
+`hessian` selects how the starting Hessian is obtained:
+
+```text
+dft/pbe0/def2-svp geom="ts_guess.xyz" ts(S0,follow=0,hessian=numerical,maxit=50)
+```
+
+`hessian=model` is the inexpensive default. `numerical` or `analytical`
+calculates a real Cartesian Hessian for the selected state before the first TS
+step. Availability of an analytical Hessian still depends on the electronic
+method and basis. For an isolated molecule in full-rank TRIC or Cartesian
+coordinates, OpenQP removes whole-molecule translation/rotation zero-mode noise
+from a real Hessian and restores positive model curvature in those rigid
+directions before P-RFO mode selection; internal-only RIC/DLC modes are left
+unchanged. The standalone engine leaves this projection off by default so an
+external field can retain genuine lab-frame curvature. Active QM/MM OpenQP
+geometry and reaction-path jobs are currently rejected in preflight because
+their force backend is not connected to these optimizers; supported QM/MM
+workflows remain energy, MD, and NAMD.
+
+After locating a transition state, trace either native IRC branch explicitly:
+
+```text
+dft/pbe0/def2-svp geom="ts.xyz" irc(S0,direction=forward,step=0.1,hessian=analytical,gtol=1e-4,maxit=30)
+dft/pbe0/def2-svp geom="ts.xyz" irc(S0,direction=backward,step=0.1,hessian=analytical,gtol=1e-4,maxit=30)
+```
+
+Native IRC projects mass-weighted translation and rotation modes, then requires
+exactly one significant negative vibrational mode. It rejects a minimum (none)
+or a higher-order saddle (more than one) before tracing the path.
+
+Native MEP uses the same gradient stopping threshold without requiring a
+transition-state Hessian:
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g* geom="start.xyz" mep(S0,points=30,step=0.1,gtol=1e-4)
+```
+
+## Native NEB
+
+The reactant comes from `geom`; `product` supplies the second endpoint. Native
+NEB can align the endpoints, relax them, run climbing-image NEB, test both
+maximum and RMS force thresholds, and write the final band:
+
+```text
+dft/pbe0/def2-svp geom="reactant.xyz" neb(S0,product="product.xyz",images=7,spring=0.05,climb=true,fmax=0.002,frms=0.001,dt=0.5,maxmove=0.2,align=true,opt_ends=true,end_fmax=0.001,output="reaction_path.xyz")
+```
+
+`climb`, `align`, and `opt_ends` are booleans. If `output` is omitted, OpenQP
+writes `<project>_neb.xyz` in the log directory. The multi-frame XYZ file
+contains every final image and records each image energy in Hartree.
+When `climb=true`, set `climb_fmax >= fmax` so the climbing image activates
+before the final convergence threshold can be satisfied.
+
+## Crossing Points
+
+Physical state labels replace internal state indices in `.oqp`:
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,maxit=100)
+mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" mecp(S0,T0,maxit=100)
+mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,algorithm=baeka,maxit=100)
+mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,S2,algorithm=baeka,maxit=100)
+mrsf(nstate=6)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,S2,S3,algorithm=baeka,maxit=100)
+```
+
+`algorithm=baeka` selects the Baek adaptive penalty-function method within the
+ordinary MECI driver. It accepts two or more states from one spin manifold,
+uses the independent adjacent energy gaps, and updates the penalty strength
+additively. Existing `tci(S0,S1,S2,...)` routes remain supported as an
+independent legacy three-state workflow; they are not aliases for BaekA and
+retain their established multiplicative update. See
+[BaekA Multistate MECI](baeka-multistate-meci.md) for the
+method, production controls, and regression-example scope.
+
+Traditional `.inp` and Python scripts may continue to use the internal
+`istate`, `jstate`, `kstate`, `imult`, and `jmult` fields documented under
+[`[optimize]`](../keywords/optimize.md).
+
+## Native Frozen-Distance Constraints
+
+Native minimum searches can freeze one or more initial atom-pair distances.
+Atom indices are one-based, and multiple constraints are separated by
+semicolons:
+
+```text
+dft/bhhlyp/3-21g geom="hcn.xyz" opt(S0,freeze="distance(1,2)",coordsys=dlc,trust=0.05,trust_max=0.05)
+```
+
+The distance is fixed at its value in the input geometry. The native optimizer
+projects the gradient into the constraint tangent space and corrects every
+trial geometry back to the requested distance. The traditional equivalent is:
 
 ```ini
 [optimize]
+lib=oqp
+
+[oqp]
+coordsys=dlc
+trust=0.05
+trust_max=0.05
+freeze=distance(1,2)
+```
+
+Runnable regression:
+[`HCN_RHF-DFT_CONSTRAINED_OQP.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/HCN_RHF-DFT_CONSTRAINED_OQP.inp).
+
+## Optional Legacy geomeTRIC Compatibility
+
+geomeTRIC is not part of the concise `.oqp` geometry grammar. It remains
+available to traditional sectioned `.inp` files and the Python API for advanced
+constraint types beyond the native frozen-distance control.
+Install the optional dependency first:
+
+```bash
+pip install "openqp[geometric]"
+```
+
+Then use the established sectioned input:
+
+```ini
+[input]
+runtype=optimize
+method=hf
+functional=pbe0
+basis=def2-svp
+system=reactant.xyz
+
+[scf]
+type=rhf
+multiplicity=1
+
+[optimize]
 lib=geometric
+istate=0
 
 [geometric]
 coordsys=tric
@@ -74,57 +212,18 @@ trust=0.1
 constraints_file=my.constraints
 ```
 
-Python style uses `job.workflow.optimize(...)` for the optimizer selection and routes the
-backend options to geomeTRIC:
+The compatible Python spelling is also retained:
 
 ```python
 job.workflow.optimize(
     lib="geometric",
+    istate=0,
     coordsys="tric",
     trust=0.1,
     constraints_file="my.constraints",
 )
 ```
 
-Runnable geomeTRIC inputs are available in
-[`examples/OPT`](https://github.com/Open-Quantum-Platform/openqp/tree/main/examples/OPT),
-including
-[`H2O_RHF-DFT_OPTIMIZE_GEOMETRIC.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_GEOMETRIC.inp).
-
-## Crossing Points
-
-MECI and related workflows select the state pair or triplet in `[optimize]`:
-
-Input style:
-
-```ini
-[input]
-runtype=meci
-method=tdhf
-functional=bhhlyp
-
-[tdhf]
-type=mrsf
-nstate=5
-
-[optimize]
-lib=oqp
-istate=1
-jstate=2
-```
-
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("meci_mrsf", silent=1)
-job.molecule("reactant.xyz", charge=0)
-job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
-job.workflow.meci(lib="oqp", istate=1, jstate=2)
-
-mol = job.run()
-```
-
-Runnable inputs are available in
-[`examples/OPT`](https://github.com/Open-Quantum-Platform/openqp/tree/main/examples/OPT).
+No standard shipped regression now depends on geomeTRIC. General minimum,
+frozen-distance, crossing-point, TS, IRC, MEP, and NEB examples use the native
+engine.

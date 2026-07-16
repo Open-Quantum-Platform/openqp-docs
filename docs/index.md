@@ -20,8 +20,8 @@ workflows and keywords.
   output file.
 - [Run OpenQP from Python](python-scripting.md): drive complete OpenQP
   calculations from Python scripts, notebooks, or workflow managers.
-- [Input File Format](input-file.md): section layout, geometry input, run types, and
-  output files.
+- [Input styles](oqp-input.md): the development/next-release one-line `.oqp`
+  guide, alongside the released [sectioned `.inp` format](input-file.md).
 - [Examples](examples/index.md): runnable inputs stored in the OpenQP code
   repository.
 - [References](references.md): platform, MP2, MRSF-TDDFT, SOC, scalar
