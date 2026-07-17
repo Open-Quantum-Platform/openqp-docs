@@ -142,8 +142,8 @@ selects the DTCAM-TB operator: reference LC erf(0, 0.04, 0.30 a₀⁻¹) with an
 LC ground state, independent response LC (0, 1.0125, 0.2625 a₀⁻¹), official
 OB2 spin-W at strengths (1.00, 0.6375), SPC channels (1.025, 0.25, 0.2625),
 response-only on-site pp −0.0125 Eₕ, and the fixed numerical protocol
-(Broyden 0.35 with history 12, SCC tolerance 1e-8 and budget 4000, Davidson
-response, Z-vector analytic gradients).
+(Broyden 0.35 with history 12 and max step 1.0, SCC tolerance 1e-8 and
+budget 4000, Davidson response, Z-vector analytic gradients).
 
 A preset is all-inclusive: the input checker rejects combining `model=` with
 any operator key or with the preset-fixed numerical keys (`scc_mixer`,
