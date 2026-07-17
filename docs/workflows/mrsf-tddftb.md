@@ -66,6 +66,10 @@ type=mrsf
 parameter_path=/path/to/params
 ```
 
+`parameter_path` may be left empty with a current openqp-dftb wheel — the
+bundled OB2W0PT3 set (official `spinw.txt` included) is resolved
+automatically; see [dftb keywords](../keywords/dftb.md#parameter_path).
+
 **`.oqp`**
 
 ```text

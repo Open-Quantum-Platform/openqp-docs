@@ -88,7 +88,10 @@ singlet response root as `S0` (root 1), so `[properties] grad` and
 [MRSF-TDDFTB workflow](../workflows/mrsf-tddftb.md#state-labels).
 
 `parameter_path` accepts either a single combined `.opdftb` parameter file or a
-directory of Slater–Koster `<El>-<El>.skf` files. `basis` is a placeholder for
+directory of Slater–Koster `<El>-<El>.skf` files. It may be left empty with a
+current openqp-dftb wheel: the bundled OB2W0PT3 set (official shell-resolved
+`spinw.txt` included) is then resolved automatically — see
+[`parameter_path`](#parameter_path). `basis` is a placeholder for
 the DFTB method (the Slater–Koster minimal basis is used regardless of its
 value), but a value must be present to satisfy the generic input checker.
 
@@ -124,15 +127,48 @@ Selects the DFTB response family. `auto` derives it from the workflow and
 [`[tdhf] type`](tdhf.md#type), defaulting to a ground-state DFTB energy when no
 excited state is requested.
 
-### `parameter_path`
+### `model`
 
 | Field | Value |
 | --- | --- |
 | Type | string |
 | Default | *(empty)* |
-| Used by | Slater–Koster parameters (required) |
+| Values | `dtcam-tb` |
+| Used by | published operator presets (native backend only) |
 
-Path to a `.opdftb` parameter file or an SKF directory.
+Applies a complete, published operator preset, resolved inside openqp-dftb
+(single source of truth, so inputs cannot drift from the paper). `dtcam-tb`
+selects the DTCAM-TB operator: reference LC erf(0, 0.04, 0.30 a₀⁻¹) with an
+LC ground state, independent response LC (0, 1.0125, 0.2625 a₀⁻¹), official
+OB2 spin-W at strengths (1.00, 0.6375), SPC channels (1.025, 0.25, 0.2625),
+response-only on-site pp −0.0125 Eₕ, and the fixed numerical protocol
+(Broyden 0.35 with history 12, SCC tolerance 1e-8 and budget 4000, Davidson
+response, Z-vector analytic gradients).
+
+A preset is all-inclusive: the input checker rejects combining `model=` with
+any operator key or with the preset-fixed numerical keys (`scc_mixer`,
+`scc_mixing`, `scc_history`, `scc_max_step`, `scc_tolerance`,
+`max_scc_iterations`, `response_solver`, `zvector`). Keys the preset does not
+fix — `nstate`, `response_tolerance`, `response_max_iterations`,
+`response_max_subspace`, `parameter_path`, … — remain tunable. Omit `model=`
+to tune the operator manually.
+
+### `parameter_path`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | *(empty — resolves the bundled set)* |
+| Used by | Slater–Koster parameters |
+
+Path to a `.opdftb` parameter file or an SKF directory. When empty, the
+resolution order is the `OPENQP_DFTB_PARAMETER_PATH` environment variable,
+then the parameter set bundled with the installed openqp-dftb wheel
+(`OB2W0PT3`: an H/C/N/O/S OB2 reparametrization at ω = 0.3 a₀⁻¹ with the
+official shell-resolved `spinw.txt` alongside, which the spin-polarization
+W kernels require). An explicitly supplied path always wins and is never
+second-guessed. The input checker reports an error only when no source —
+explicit, environment, or bundled — is resolvable.
 
 ### `library_path`
 
