@@ -26,8 +26,11 @@ geom="ala.pdb 9 10 17 18 19"
     [Covalent QM/MM boundaries](#covalent-qmmm-boundaries) treatment are added
     separately by PR
     [#258](https://github.com/Open-Quantum-Platform/openqp/pull/258) — a checkout
-    of PR #205 alone will not have `frontier_scheme`. Neither is part of OpenQP
-    1.2.0; use a source branch (or later release) that includes them.
+    of PR #205 alone will not have `frontier_scheme`. Tight-binding dispatch at
+    covalent boundaries is reconciled in OpenQP PR
+    [#270](https://github.com/Open-Quantum-Platform/openqp/pull/270). These
+    additions are not part of OpenQP 1.2.0; use a source branch (or later
+    release) that includes them.
 
 ## Background
 
@@ -212,7 +215,8 @@ explicit `forcefield_files` value. New QM/MM-MD decks should set
 
 Zero-based indices of the atoms placed in the QM region, as individual indices
 and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. Give the indices in
-**ascending order**. This key is required by ground-state QM/MM MD and NAMD;
+any order; the driver normalizes them into topology order before building the
+QM geometry and scattering forces. This key is required by ground-state QM/MM MD and NAMD;
 single-point energy writes the equivalent selection after its PDB path in
 `[input] system`. Whole-molecule QM selections (e.g. a solute in a solvent box)
 are the common case, and the only case supported by the nonadiabatic
@@ -548,9 +552,18 @@ Covalent-boundary QM/MM is available in the **single-point** and **ground-state
 QM/MM MD** (`runtype=md`) paths. The nonadiabatic (`runtype=namd`,
 [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md)) path builds its QM molecule from
 `qm_atoms` only and **raises on a covalent cut** — use the ground-state MD path.
-A runnable deck is `examples/QMMM/ala-dipeptide_BHHLYP-QMMM-MD-RCD.inp` (alanine
-dipeptide, QM = the C-terminal amide cutting the `ALA C–CA` bond,
-`frontier_scheme=rcd`); see [QM/MM examples](../examples/index.md#qmmm-examples).
+
+The QM method may be an AO-based HF/DFT method, native DFTB
+(`method=dftb`), or native xTB (`method=xtb`). The tight-binding adapters receive
+the same full-ESPF potential and return relaxed atomic charges for the
+classical coupling force, so the link-atom projection and MM reaction force are
+shared with the AO path. DFTB and xTB require their optional native libraries
+and parameter data.
+
+Runnable decks include
+`examples/QMMM/ala-dipeptide_BHHLYP-QMMM-MD-RCD.inp` for AO-based DFT and
+`examples/QMMM/alanine_DFTB-QMMM-MD.inp` for a one-step DFTB covalent-boundary
+run; see [QM/MM examples](../examples/index.md#qmmm-examples).
 
 ## Link atoms
 
