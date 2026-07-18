@@ -13,42 +13,19 @@ MP2 is currently an energy-only post-SCF workflow:
 
 ## Energy
 
-### One-line `.oqp` Style
+### `.oqp`
 
 ```text
-mp2(reference=uhf)/6-31g geom="../geometries/H2O-0381125c86f2.xyz" charge=0 mult=1 energy scf(conv=1e-10)
+mp2(reference=uhf)/6-31g
+energy
+scf(conv=1e-10)
+geom="../geometries/H2O-0381125c86f2.xyz"
 ```
 
 The `reference` route option accepts `rhf`, `rohf`, or `uhf` and lowers to
 `[scf] type`. It is separate from the `[mp2]` spin-scaling section.
 
-### Input File Style
-
-```ini
-[input]
-system=
- 8   0.000000000   0.000000000  -0.041061554
- 1  -0.533194329   0.533194329  -0.614469223
- 1   0.533194329  -0.533194329  -0.614469223
-charge=0
-runtype=energy
-method=mp2
-functional=
-basis=6-31g
-
-[guess]
-type=huckel
-
-[scf]
-type=uhf
-multiplicity=1
-conv=1.0e-10
-
-[mp2]
-variant=mp2
-```
-
-### Pythonic Style
+### Python
 
 ```python
 from oqp.openqp import OpenQP
@@ -72,6 +49,32 @@ job.theory.mp2(
     same_spin_scale=0.50,
     opposite_spin_scale=1.10,
 )
+```
+
+### Legacy `.inp`
+
+```ini
+[input]
+system=
+ 8   0.000000000   0.000000000  -0.041061554
+ 1  -0.533194329   0.533194329  -0.614469223
+ 1   0.533194329  -0.533194329  -0.614469223
+charge=0
+runtype=energy
+method=mp2
+functional=
+basis=6-31g
+
+[guess]
+type=huckel
+
+[scf]
+type=uhf
+multiplicity=1
+conv=1.0e-10
+
+[mp2]
+variant=mp2
 ```
 
 Runnable input:

@@ -18,10 +18,12 @@ workflows and keywords.
   overrides, BLAS/LAPACK choices, and external dependency cache behavior.
 - [Quickstart](quickstart.md): the shortest path from a molecule to an OpenQP
   output file.
-- [Run OpenQP from Python](python-scripting.md): drive complete OpenQP
-  calculations from Python scripts, notebooks, or workflow managers.
-- [Input styles](oqp-input.md): the development/next-release one-line `.oqp`
-  guide, alongside the released [sectioned `.inp` format](input-file.md).
+- [`.oqp` input](oqp-input.md): the recommended input style used first
+  throughout the workflow chapters.
+- [Run OpenQP from Python](python-scripting.md): the second, programmatic style
+  for scripts, notebooks, and workflow managers.
+- [Legacy `.inp` input](input-file.md): the supported sectioned format for
+  existing decks and legacy-only controls.
 - [Examples](examples/index.md): runnable inputs stored in the OpenQP code
   repository.
 - [References](references.md): platform, MP2, MRSF-TDDFT, SOC, scalar
@@ -55,8 +57,9 @@ when OpenQP changes.
 
 ## API Documentation
 
-The [Run OpenQP from Python](python-scripting.md) chapter shows complete
-script-based calculations next to ordinary workflow input files. The
+Workflow pages use the same order throughout the manual: recommended `.oqp`,
+Python, then legacy `.inp`. The [Run OpenQP from Python](python-scripting.md)
+chapter expands the script-based form. The
 [API chapter](api/index.md) appears last in the manual and is the lower-level
 reference for `oqp.pyoqp.Runner`, in-memory inputs, result extraction through
 `runner.mol`, and the input-checking API used by front ends and automated

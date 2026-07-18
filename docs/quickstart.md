@@ -1,45 +1,56 @@
 # Quickstart
 
-This quickstart runs a small MRSF-TDDFT calculation on water. You can start from
-either a standard OpenQP input file or the compact Python API.
+This quickstart runs a small MRSF-TDDFT calculation on water. The recommended
+starting point is the readable `.oqp` input. The same calculation is then shown
+with the Python API, followed by the legacy sectioned `.inp` format.
 
-This page uses the released sectioned `.inp` format. Users testing the current
-development branch can instead begin with the [one-line `.oqp` Quick
-Start](oqp-input.md#quick-start).
+!!! warning "Development input format"
+    The `.oqp` parser is available on the current development branch (see the
+    companion [OpenQP PR #282](https://github.com/Open-Quantum-Platform/openqp/pull/282)),
+    but it is not part of the published OpenQP 1.2.0 release. With OpenQP 1.2.0,
+    use the [legacy `.inp` example](#legacy-inp-input) below; otherwise build the
+    current development version before running this `.oqp` quickstart.
 
-## Input File
+## `.oqp` Input
 
-Create `h2o_mrsf.inp`:
+Create `h2o.xyz`:
 
-```ini
-[input]
-system=
-   8   0.000000000   0.000000000  -0.041061554
-   1  -0.533194329   0.533194329  -0.614469223
-   1   0.533194329  -0.533194329  -0.614469223
-charge=0
-runtype=energy
-basis=6-31g*
-functional=bhhlyp
-method=tdhf
-
-[guess]
-type=huckel
-
-[scf]
-type=rohf
-multiplicity=3
-
-[tdhf]
-type=mrsf
-nstate=3
+```text
+3
+water
+O   0.000000000   0.000000000  -0.041061554
+H  -0.533194329   0.533194329  -0.614469223
+H   0.533194329  -0.533194329  -0.614469223
 ```
+
+Create `h2o_mrsf.oqp` beside it:
+
+```text
+mrsf(nstate=3)/bhhlyp/6-31g*
+energy
+geom="h2o.xyz"
+```
+
+Read the file from top to bottom: use MRSF-TDDFT with BHHLYP/6-31G*, calculate
+three states, run a single-point energy, and read the water geometry.
+OpenQP selects the required high-spin working reference automatically.
+
+The same items may be placed on one line; whitespace outside quotes and
+parentheses has no semantic effect. Examples use one logical item per line and
+put `geom` last for readability.
 
 Run it:
 
 ```bash
-openqp h2o_mrsf.inp
+openqp h2o_mrsf.oqp
 ```
+
+For a gradient or geometry optimization, replace `energy` with `grad(S0)` or
+`opt(S0)`. For HF and DFT, the only ground-state surface is implicit, so
+`grad` and `grad(S0)` are equivalent, as are `opt` and `opt(S0)`.
+
+See [`.oqp` Input](oqp-input.md) for routes, physical state labels,
+workflow controls, and more examples.
 
 ## Python Script
 
@@ -67,18 +78,52 @@ ordinary SCF setup.
 OpenQP writes a log and structured output files in the working directory. For
 more Python examples, see [Run OpenQP from Python](python-scripting.md).
 
+## Legacy `.inp` Input
+
+Existing sectioned inputs remain supported. The legacy spelling of the same
+calculation is:
+
+```ini
+[input]
+system=
+   8   0.000000000   0.000000000  -0.041061554
+   1  -0.533194329   0.533194329  -0.614469223
+   1   0.533194329  -0.533194329  -0.614469223
+charge=0
+runtype=energy
+basis=6-31g*
+functional=bhhlyp
+method=tdhf
+
+[guess]
+type=huckel
+
+[scf]
+type=rohf
+multiplicity=3
+
+[tdhf]
+type=mrsf
+nstate=3
+```
+
+Save it as `h2o_mrsf.inp` and run `openqp h2o_mrsf.inp`. Use this format when
+maintaining an existing input deck or when a legacy-only option is required;
+new input examples in this manual lead with `.oqp`.
+
 ## Next Calculations
 
-Use these input files as nearby templates:
+Use these `.oqp` inputs as nearby templates. Every linked `.oqp` example has
+a same-stem legacy `.inp` companion.
 
-| Goal | Example input |
+| Goal | Recommended example |
 | --- | --- |
-| MRSF-TDDFT energy | [`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp) |
-| RHF energy | [`examples/HF/H2O_RHF-HF_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HF/H2O_RHF-HF_ENERGY.inp) |
-| MP2 energy | [`examples/MP2/h2o_ump2_6-31g.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MP2/h2o_ump2_6-31g.inp) |
-| DFT gradient | [`examples/DFT/H2O_RHF-DFT_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/DFT/H2O_RHF-DFT_GRADIENT.inp) |
-| Analytic HF/DFT Hessian | [`examples/HESS/H2O_RHF-DFT_ANA_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.inp) |
-| Native geometry optimization | [`examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp) |
-| SOC | [`examples/SOC/H2O_BHHLYP_SOC.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SOC/H2O_BHHLYP_SOC.inp) |
-| PCM/ddX energy | [`examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.inp) |
-| NMR shielding | [`examples/NMR/H2O_RHF-NMR.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/NMR/H2O_RHF-NMR.inp) |
+| MRSF-TDDFT energy | [`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.oqp) |
+| RHF energy | [`examples/HF/H2O_RHF-HF_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HF/H2O_RHF-HF_ENERGY.oqp) |
+| MP2 energy | [`examples/MP2/h2o_ump2_6-31g.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MP2/h2o_ump2_6-31g.oqp) |
+| DFT gradient | [`examples/DFT/H2O_RHF-DFT_GRADIENT.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/DFT/H2O_RHF-DFT_GRADIENT.oqp) |
+| Analytic HF/DFT Hessian | [`examples/HESS/H2O_RHF-DFT_ANA_HESS.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.oqp) |
+| Native geometry optimization | [`examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.oqp) |
+| SOC | [`examples/SOC/H2O_BHHLYP_SOC.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SOC/H2O_BHHLYP_SOC.oqp) |
+| PCM/ddX energy | [`examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.oqp) |
+| NMR shielding | [`examples/NMR/H2O_RHF-NMR.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/NMR/H2O_RHF-NMR.oqp) |

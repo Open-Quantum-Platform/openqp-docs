@@ -45,7 +45,27 @@ zero-based labels `S0`, `S1`, `T0`, … directly. As with every DFTB family,
 
 Three singlet states (`S0`–`S2`) from one MRSF-TDDFTB response:
 
-**`.inp`**
+**`.oqp`**
+
+```text
+mrsf-tddftb(nstate=3)
+energy
+geom="chromophore.xyz"
+```
+
+**Python**
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="mrsf_energy")
+job.molecule("chromophore.xyz")
+job.dftb(response_type="mrsf", nstate=3)
+job.workflow.energy()
+job.run()
+```
+
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -63,17 +83,23 @@ nstate=3
 [dftb]
 backend=native
 type=mrsf
-parameter_path=/path/to/params
 ```
 
-`parameter_path` may be left empty with a current openqp-dftb wheel — the
-bundled OB2W0PT3 set (official `spinw.txt` included) is resolved
-automatically; see [dftb keywords](../keywords/dftb.md#parameter_path).
+The bundled OB2W0PT3 set (official `spinw.txt` included) is resolved
+automatically. Use `parameter_path` only to override it; see
+[dftb keywords](../keywords/dftb.md#parameter_path).
+
+## Gradient
+
+Gradient of the first excited singlet `S1`. `S1` is response **root 2**, so
+`[properties] grad=2` (root 1 is `S0`):
 
 **`.oqp`**
 
 ```text
-mrsf-tddftb(nstate=3) geom="chromophore.xyz" energy dftb(parameter_path="params.opdftb")
+mrsf-tddftb(nstate=3)
+grad(S1)
+geom="chromophore.xyz"
 ```
 
 **Python**
@@ -81,19 +107,14 @@ mrsf-tddftb(nstate=3) geom="chromophore.xyz" energy dftb(parameter_path="params.
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP(project="mrsf_energy")
-job.molecule("chromophore.xyz", charge=0)
-job.dftb(response_type="mrsf", nstate=3, parameter_path="/path/to/params")
-job.workflow.energy()
+job = OpenQP(project="mrsf_grad")
+job.molecule("chromophore.xyz")
+job.dftb(response_type="mrsf", nstate=3)
+job.workflow.gradient(state=2)
 job.run()
 ```
 
-## Gradient
-
-Gradient of the first excited singlet `S1`. `S1` is response **root 2**, so
-`[properties] grad=2` (root 1 is `S0`):
-
-**`.inp`**
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -111,28 +132,9 @@ nstate=3
 [dftb]
 backend=native
 type=mrsf
-parameter_path=/path/to/params
 
 [properties]
 grad=2
-```
-
-**`.oqp`**
-
-```text
-mrsf-tddftb(nstate=3) geom="chromophore.xyz" grad(S1) dftb(parameter_path="params.opdftb")
-```
-
-**Python**
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP(project="mrsf_grad")
-job.molecule("chromophore.xyz", charge=0)
-job.dftb(response_type="mrsf", nstate=3, parameter_path="/path/to/params")
-job.workflow.gradient(state=2)
-job.run()
 ```
 
 Use `grad=1` / `grad(S0)` / `gradient(state=1)` for the `S0` gradient.
@@ -142,7 +144,27 @@ Use `grad=1` / `grad(S0)` / `gradient(state=1)` for the `S0` gradient.
 Optimize the `S1` minimum — root 2, so `istate=2` (use `istate=1` for the `S0`
 minimum):
 
-**`.inp`**
+**`.oqp`**
+
+```text
+mrsf-tddftb(nstate=3)
+opt(S1)
+geom="chromophore.xyz"
+```
+
+**Python**
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="mrsf_opt")
+job.molecule("chromophore.xyz")
+job.dftb(response_type="mrsf", nstate=3)
+job.workflow.optimize(istate=2)
+job.run()
+```
+
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -160,30 +182,10 @@ nstate=3
 [dftb]
 backend=native
 type=mrsf
-parameter_path=/path/to/params
 
 [optimize]
 lib=oqp
 istate=2
-maxit=100
-```
-
-**`.oqp`**
-
-```text
-mrsf-tddftb(nstate=3) geom="chromophore.xyz" opt(S1) dftb(parameter_path="params.opdftb")
-```
-
-**Python**
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP(project="mrsf_opt")
-job.molecule("chromophore.xyz", charge=0)
-job.dftb(response_type="mrsf", nstate=3, parameter_path="/path/to/params")
-job.workflow.optimize(istate=2, maxit=100)
-job.run()
 ```
 
 ## Long-range kernels and the erf-tuned operator
@@ -196,11 +198,18 @@ near-degenerate bright/dark states, which the stock kernels can invert. Because
 its `cam_beta>1` LC ground-state SCC is harder to converge, pair it with a
 robust mixer:
 
+```text
+mrsf-tddftb(nstate=3)
+dftb(lc_gamma=erf,omega=0.25,cam_beta=1.2,scc_mixer=trust)
+energy
+geom="chromophore.xyz"
+```
+
+The equivalent legacy override is:
+
 ```ini
 [dftb]
-backend=native
 type=mrsf
-parameter_path=/path/to/params
 lc_gamma=erf
 omega=0.25
 cam_beta=1.2
@@ -222,7 +231,27 @@ is the DFTB family to use for S₀/S₁ conical intersections.
 The MRSF `S0` is response root 1, so `[optimize] states` is 1-based
 (`1`=`S0`, `2`=`S1`). A two-state `S1`/`S0` crossing:
 
-**`.inp`**
+**`.oqp`**
+
+```text
+mrsf-tddftb(nstate=3)
+meci(S0,S1,algorithm=baeka,gap=1e-4)
+geom="guess.xyz"
+```
+
+**Python**
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="mrsf_ci")
+job.molecule("guess.xyz")
+job.dftb(response_type="mrsf", nstate=3)
+job.workflow.meci(states=[1, 2], algorithm="baeka", gap=1.0e-4)
+job.run()
+```
+
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -240,30 +269,11 @@ nstate=3
 [dftb]
 backend=native
 type=mrsf
-parameter_path=/path/to/params
 
 [optimize]
 meci_search=baeka
 states=1,2
 gap=1.0e-4
-```
-
-**`.oqp`**
-
-```text
-mrsf-tddftb(nstate=3) geom="guess.xyz" meci(S0,S1,algorithm=baeka,gap=1e-4) dftb(parameter_path="params.opdftb")
-```
-
-**Python**
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP(project="mrsf_ci")
-job.molecule("guess.xyz", charge=0)
-job.dftb(response_type="mrsf", nstate=3, parameter_path="/path/to/params")
-job.workflow.meci(states=[1, 2], algorithm="baeka", gap=1.0e-4)
-job.run()
 ```
 
 The BaekA controls (`sigma`, `alpha`, `delta_beta`, `beta_schedule`, `gap`, and
@@ -278,6 +288,29 @@ workflow.
 Nonadiabatic couplings are overlap-based time-derivative couplings, computed
 from a cross-geometry Slater–Koster state overlap. NACME uses two geometries and
 requires `backend=native`:
+
+**`.oqp`**
+
+```text
+mrsf-tddftb(nstate=3)
+nacme(S0,S1,dt=1,align=reorder)
+geom="ch2.xyz"
+geom2="ch2_previous.xyz"
+```
+
+**Python**
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="mrsf_dftb_nacme")
+job.molecule("ch2.xyz", "ch2_previous.xyz")
+job.dftb(response_type="mrsf", nstate=3)
+job.workflow.nacme()
+job.run()
+```
+
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -301,7 +334,6 @@ nstate=3
 [dftb]
 backend=native
 type=mrsf
-parameter_path=/path/to/params
 
 [nac]
 dt=1
@@ -350,8 +382,8 @@ the builder or through `job.workflow.energy()`, `.gradient(state=N)`,
 from oqp.openqp import OpenQP
 
 job = OpenQP(project="thymine_dftb")
-job.molecule("thymine.xyz", charge=0)
-job.mrsf_tddftb(nstate=3, parameter_path="/path/to/params", print_level=1)
+job.molecule("thymine.xyz")
+job.mrsf_tddftb(nstate=3, print_level=1)
 job.workflow.gradient(state=2)
 job.run()
 ```

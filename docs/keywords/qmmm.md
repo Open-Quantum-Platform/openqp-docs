@@ -7,13 +7,16 @@ embedded in a classical force-field environment handled by
 single-point QM/MM energy and ground-state QM/MM molecular dynamics, while
 NAMD uses the separate embedded surface-hopping driver.
 
-In one-line `.oqp`, `qmmm(...)` is accepted with `energy`, ground-state `md`,
+In `.oqp`, `qmmm(...)` is accepted with `energy`, ground-state `md`,
 and embedded `namd`; writing it also enables `qmmm_flag`. QM/MM gradients and
 geometry optimizations are rejected because those generic backends do not yet
 provide the assembled QM/MM gradient.
 
 ```text
-dft/pbe0/def2-svp geom="ala.pdb 9 10 17 18 19" energy qmmm(embedding=electrostatic)
+dft/pbe0/def2-svp
+energy
+qmmm(embedding=electrostatic)
+geom="ala.pdb 9 10 17 18 19"
 ```
 
 !!! warning "Development preview"
@@ -49,7 +52,28 @@ Two ways of defining the QM region are supported, matching the driver paths:
 
 ## Minimal QM/MM Example
 
-Single-point QM/MM energy (QM selection inline in `[input] system`):
+Single-point QM/MM energy in `.oqp`:
+
+```text
+dft/bhhlyp/6-31g*
+energy
+qmmm(embedding=electrostatic)
+geom="ala.pdb 9 10 17 18 19"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("ala_qmmm", silent=1)
+job.molecule("ala.pdb 9 10 17 18 19", basis="6-31g*")
+job.theory("hf", functional="bhhlyp")
+job.qmmm(embedding="electrostatic")
+mol = job.run()
+```
+
+Legacy `.inp` (QM selection inline in `[input] system`):
 
 ```ini
 [input]
@@ -64,7 +88,16 @@ system     = ala.pdb 9 10 17 18 19
 type = rhf
 ```
 
-Embedded nonadiabatic molecular dynamics (QM selection in `[qmmm]`):
+Embedded nonadiabatic molecular dynamics in `.oqp`:
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g
+namd
+qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-2",cutoff=PME,embedding=electrostatic)
+geom="water_box.pdb 0-2"
+```
+
+The legacy `.inp` spelling is:
 
 ```ini
 [input]

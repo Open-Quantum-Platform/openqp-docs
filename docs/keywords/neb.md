@@ -39,7 +39,9 @@ Number of NEB images. The input checker requires at least `3`.
 For concise input, write the endpoint and native controls together:
 
 ```text
-dft/pbe0/def2-svp geom="reactant.xyz" neb(S0,product="product.xyz",images=7,spring=0.05,climb=true,output="path.xyz")
+dft/pbe0/def2-svp
+neb(S0,product="product.xyz",images=7,spring=0.05,climb=true,output="path.xyz")
+geom="reactant.xyz"
 ```
 
 The concise `images` spelling lowers to `nimage`, and `output` lowers to

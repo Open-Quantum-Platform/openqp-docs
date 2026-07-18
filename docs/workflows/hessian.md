@@ -12,7 +12,29 @@ then select the Hessian workflow with `job.workflow.hessian(...)`.
 
 ## Analytical HF/DFT Hessian
 
-Input style:
+`.oqp`:
+
+```text
+dft/bhhlyp/6-31g*
+hess(S0,type=analytical,clean=true)
+geom="h2o.xyz"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_dft_hess", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.dft(functional="bhhlyp", basis="6-31g*")
+job.workflow.hessian(type="analytical", state=0, clean=True)
+
+mol = job.run()
+hessian = mol.get_hess()
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -31,26 +53,35 @@ state=0
 clean=True
 ```
 
-Python style:
+Runnable `.oqp`:
+[`examples/HESS/H2O_RHF-DFT_ANA_HESS.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.oqp).
+The same-stem `.inp` file is retained for legacy use.
+
+## Numerical HF/DFT Hessian
+
+Omit `type=analytical` to use the numerical finite-difference path.
+
+`.oqp`:
+
+```text
+dft/bhhlyp/6-31g*
+hess(S0,clean=true)
+geom="h2o.xyz"
+```
+
+Python:
 
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP("h2o_dft_hess", silent=1)
+job = OpenQP("h2o_dft_num_hess", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory.dft(functional="bhhlyp", basis="6-31g*")
-job.workflow.hessian(type="analytical", state=0, clean=True)
-
+job.workflow.hessian(state=0, clean=True)
 mol = job.run()
-hessian = mol.get_hess()
 ```
 
-Runnable input:
-[`examples/HESS/H2O_RHF-DFT_ANA_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.inp).
-
-## Numerical HF/DFT Hessian
-
-Omit `[hess] type=analytical` to use the numerical finite-difference path.
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -68,20 +99,9 @@ state=0
 clean=True
 ```
 
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_dft_num_hess", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory.dft(functional="bhhlyp", basis="6-31g*")
-job.workflow.hessian(state=0, clean=True)
-mol = job.run()
-```
-
-Runnable input:
-[`examples/HESS/H2O_RHF-DFT_NUM_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_NUM_HESS.inp).
+Runnable `.oqp`:
+[`examples/HESS/H2O_RHF-DFT_NUM_HESS.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_NUM_HESS.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 ## Numerical MRSF-TDDFT Hessian
 
@@ -89,7 +109,28 @@ MRSF-TDDFT Hessians use the numerical path in the documented examples. The
 MRSF state numbering follows the MRSF target-state list; `state=1` is the
 lowest MRSF target state, which can be the multiconfigurational ground state.
 
-Input style:
+`.oqp`:
+
+```text
+mrsf(nstate=2)/bhhlyp/6-31g*
+hess(S0,clean=true)
+geom="h2o.xyz"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_mrsf_hess", silent=1)
+job.molecule(geometry="water", charge=0)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=2)
+job.workflow.hessian(state=1, clean=True)
+
+mol = job.run()
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -111,21 +152,9 @@ state=1
 clean=True
 ```
 
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_mrsf_hess", silent=1)
-job.molecule(geometry="water", charge=0)
-job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=2)
-job.workflow.hessian(state=1, clean=True)
-
-mol = job.run()
-```
-
-Runnable input:
-[`examples/HESS/H2O_BHHLYP-MRSFTDDFT_NUM_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_BHHLYP-MRSFTDDFT_NUM_HESS.inp).
+Runnable `.oqp`:
+[`examples/HESS/H2O_BHHLYP-MRSFTDDFT_NUM_HESS.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_BHHLYP-MRSFTDDFT_NUM_HESS.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 ## Notes
 

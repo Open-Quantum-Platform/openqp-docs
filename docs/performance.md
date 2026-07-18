@@ -1,7 +1,25 @@
 # Performance
 
-OpenQP's performance knobs are ordinary **input keys** (no environment variables) bundled
-behind a single opt-in preset, `[input] perf`, that acts as one accuracy↔speed dial.
+OpenQP's performance knobs are ordinary input keys (no environment variables)
+bundled behind a single opt-in `perf` preset that acts as one accuracy↔speed
+dial.
+
+`.oqp`:
+
+```text
+dft/pbe0/def2-svp
+perf=1
+energy
+geom="h2o.xyz"
+```
+
+Python:
+
+```python
+job.settings.input(perf=1)
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -50,6 +68,17 @@ explicitly only when you want to test progressive screening.
 
 Precedence (low → high): control default → `perf` preset → explicit input key. For example,
 production speed but keep the full XC grid and a tight response on one job:
+
+```text
+mrsf(nstate=3)/bhhlyp/6-31g*
+perf=2
+energy
+scf(xc_c2f=off)
+tdhf(resp_cutoff=5e-11)
+geom="h2o.xyz"
+```
+
+The legacy `.inp` spelling is:
 
 ```ini
 [input]

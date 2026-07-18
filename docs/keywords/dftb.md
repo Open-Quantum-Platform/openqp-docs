@@ -46,21 +46,32 @@ energy.
 
 ## Minimal DFTB Example
 
-Ground-state DFTB2 energy:
+The compact `.oqp` form is the recommended input. The method route owns
+`type`, `reference_multiplicity`, and `target_multiplicity`; the installed
+`openqp-dftb` package supplies its bundled parameter set. Put
+`dftb(parameter_path=...)` in an `.oqp` file only when overriding that set.
 
-```ini
-[input]
-runtype=energy
-method=dftb
-basis=sto-3g
-functional=
+**`.oqp`**
 
-[dftb]
-type=ground
-parameter_path=/path/to/params
+```text
+mrsf-tddftb(nstate=3)
+grad(S1)
+geom="h2o.xyz"
 ```
 
-MRSF-TDDFTB excited-state gradient:
+**Python**
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="mrsf_dftb_grad")
+job.molecule("h2o.xyz", charge=0)
+job.dftb(response_type="mrsf", nstate=3)
+job.workflow.gradient(state=2)
+job.run()
+```
+
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -75,7 +86,6 @@ nstate=3
 
 [dftb]
 type=mrsf
-parameter_path=/path/to/params
 
 [properties]
 grad=2
@@ -115,7 +125,7 @@ compatible workflow. For example:
 from oqp.openqp import OpenQP
 
 job = OpenQP(project="h2o_tddftb")
-job.molecule("h2o.xyz", charge=0)
+job.molecule("h2o.xyz")
 job.tddftb(nstate=3, state_to_state_spectrum=True)
 job.workflow.energy()
 job.run()

@@ -1,11 +1,35 @@
 # HF and DFT
 
-HF and DFT calculations use `[input] method=hf`. Set `[input] functional` only
-for DFT; leaving it empty gives Hartree-Fock.
+HF and DFT use a basis-only or functional/basis `.oqp` route. The legacy
+keyword form uses `[input] method=hf`; setting `[input] functional` selects
+DFT, while leaving it empty gives Hartree-Fock.
 
 ## Energy
 
-Input style:
+`.oqp`:
+
+```text
+hf/6-31g*
+energy
+geom="h2o.xyz"
+```
+
+`energy` is the default driver and may also be omitted.
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_hf", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.hf(basis="6-31g*")
+
+mol = job.run()
+print("SCF energy:", mol.get_scf_energy())
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -26,42 +50,24 @@ type=rhf
 multiplicity=1
 ```
 
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_hf", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory.hf(basis="6-31g*")
-
-mol = job.run()
-print("SCF energy:", mol.get_scf_energy())
-```
-
-Runnable input:
-[`examples/HF/H2O_RHF-HF_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HF/H2O_RHF-HF_ENERGY.inp).
+Runnable `.oqp`:
+[`examples/HF/H2O_RHF-HF_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HF/H2O_RHF-HF_ENERGY.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 ## Gradient
 
-For a DFT gradient, request `runtype=grad`, set a functional, and use
-`[properties] grad=0` for the reference-state gradient. In Python, the same
-choice is written as `job.workflow.gradient(state=0)`.
+For a DFT ground-state gradient, `grad` and `grad(S0)` are equivalent. In
+Python, the same choice is written as `job.workflow.gradient(state=0)`.
 
-Input style:
+`.oqp`:
 
-```ini
-[input]
-runtype=grad
-method=hf
-functional=bhhlyp
-basis=6-31g*
-
-[properties]
-grad=0
+```text
+dft/bhhlyp/6-31g*
+grad
+geom="h2o.xyz"
 ```
 
-Python style:
+Python:
 
 ```python
 from oqp.openqp import OpenQP
@@ -75,8 +81,22 @@ mol = job.run()
 gradient = mol.get_grad()
 ```
 
-Runnable input:
-[`examples/DFT/H2O_RHF-DFT_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/DFT/H2O_RHF-DFT_GRADIENT.inp).
+Legacy `.inp`:
+
+```ini
+[input]
+runtype=grad
+method=hf
+functional=bhhlyp
+basis=6-31g*
+
+[properties]
+grad=0
+```
+
+Runnable `.oqp`:
+[`examples/DFT/H2O_RHF-DFT_GRADIENT.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/DFT/H2O_RHF-DFT_GRADIENT.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 ## Hessian
 

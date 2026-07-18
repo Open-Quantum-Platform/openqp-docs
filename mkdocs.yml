@@ -36,7 +36,7 @@ nav:
   - Build Options: build-options.md
   - Quickstart: quickstart.md
   - Input Styles:
-      - One-line .oqp: oqp-input.md
+      - .oqp Input: oqp-input.md
       - Legacy .inp: input-file.md
   - Capabilities: capabilities.md
   - Performance: performance.md

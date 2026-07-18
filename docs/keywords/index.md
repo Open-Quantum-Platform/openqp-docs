@@ -1,9 +1,10 @@
 # Keyword Reference
 
-This chapter is the book-style reference for OpenQP input keywords. Workflow
-pages show complete input decks; this chapter explains what each keyword means,
-what type of value it expects, what default the parser applies, and which
-workflow constraints are enforced by the input checker.
+This chapter is the book-style reference for OpenQP's section-level settings.
+Workflow pages lead with the recommended `.oqp` form, then Python, and
+finally a legacy sectioned `.inp` equivalent. This chapter explains the
+underlying section keywords, their value types and defaults, and the workflow
+constraints enforced by the input checker.
 
 The entries are aligned with these OpenQP source files:
 
@@ -29,9 +30,9 @@ Boolean keywords accept ordinary true/false spellings such as `true`, `false`,
 Numeric state indices in traditional sectioned input are workflow dependent.
 HF/DFT reference-state properties use state `0`. Ordinary TDHF/TDDFT state `1`
 means the first excited state. SF-TDDFT and MRSF-TDDFT internal state `1` means
-the lowest response target. The one-line format hides that offset: MRSF uses
+the lowest response target. The `.oqp` format hides that offset: MRSF uses
 physical `S0`, `T0`, and `Q0`, while SF uses `root=1`. See
-[One-line `.oqp` input](../oqp-input.md#physical-states-and-reserved-internal-keys).
+[`.oqp` input](../oqp-input.md#physical-states-and-reserved-internal-keys).
 
 Method background and literature pointers are collected in
 [References](../references.md). The keyword pages link there for MRSF-TDDFT,

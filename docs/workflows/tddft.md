@@ -14,7 +14,30 @@ type separately with `job.workflow.*` only when you need a non-energy workflow.
 
 ## Energy
 
-Input style:
+`.oqp`:
+
+```text
+tddft(nstate=3)/b3lyp5/6-31g*
+energy
+geom="h2o.xyz"
+```
+
+For TDHF, use the same layout with the route `tdhf(nstate=3)/6-31g*`.
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_tddft", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.tddft(functional="b3lyp5", basis="6-31g*", nstate=3)
+
+mol = job.run()
+print("TD energies:", mol.get_td_energies())
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -31,31 +54,40 @@ multiplicity=1
 nstate=3
 ```
 
-Python style:
+Runnable `.oqp`:
+[`examples/TDDFT/H2O_B3LYP5-TDDFT_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDDFT/H2O_B3LYP5-TDDFT_ENERGY.oqp).
+The same-stem `.inp` file is retained for legacy use.
+
+For TDHF, use the same structure without `[input] functional`:
+[`examples/TDHF/H2O_TDHF_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDHF/H2O_TDHF_ENERGY.oqp).
+
+## Gradient
+
+In ordinary TDHF/TDDFT, `S1` means the first excited state.
+
+`.oqp`:
+
+```text
+tddft(nstate=3)/b3lyp5/6-31g*
+grad(S3)
+geom="h2o.xyz"
+```
+
+Python:
 
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP("h2o_tddft", silent=1)
+job = OpenQP("h2o_tddft_grad", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory.tddft(functional="b3lyp5", basis="6-31g*", nstate=3)
+job.workflow.gradient(state=3)
 
 mol = job.run()
-print("TD energies:", mol.get_td_energies())
+gradient = mol.get_grad()
 ```
 
-Runnable input:
-[`examples/TDDFT/H2O_B3LYP5-TDDFT_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDDFT/H2O_B3LYP5-TDDFT_ENERGY.inp).
-
-For TDHF, use the same structure without `[input] functional`:
-[`examples/TDHF/H2O_TDHF_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDHF/H2O_TDHF_ENERGY.inp).
-
-## Gradient
-
-TDDFT gradients use `runtype=grad` and `[properties] grad` for the target
-excited state. In ordinary TDHF/TDDFT, state `1` means the first excited state.
-
-Input style:
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -75,25 +107,12 @@ nstate=3
 grad=3
 ```
 
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_tddft_grad", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory.tddft(functional="b3lyp5", basis="6-31g*", nstate=3)
-job.workflow.gradient(state=3)
-
-mol = job.run()
-gradient = mol.get_grad()
-```
-
-Runnable input:
-[`examples/TDDFT/H2O_B3LYP5-TDDFT_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDDFT/H2O_B3LYP5-TDDFT_GRADIENT.inp).
+Runnable `.oqp`:
+[`examples/TDDFT/H2O_B3LYP5-TDDFT_GRADIENT.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDDFT/H2O_B3LYP5-TDDFT_GRADIENT.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 TDHF gradient example:
-[`examples/TDHF/H2O_TDHF_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDHF/H2O_TDHF_GRADIENT.inp).
+[`examples/TDHF/H2O_TDHF_GRADIENT.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDHF/H2O_TDHF_GRADIENT.oqp).
 
 ## Notes
 

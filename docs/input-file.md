@@ -1,16 +1,17 @@
-# Input File Format
+# Legacy `.inp` Input
 
-!!! warning "Development / next release"
+The sectioned `.inp` format remains supported for existing input decks and
+controls that do not have a concise spelling. New calculations should begin
+with the recommended [`.oqp` format](oqp-input.md) or the
+[Python API](python-scripting.md); workflow pages show those forms before their
+legacy `.inp` equivalents.
 
-    The one-line `.oqp` parser belongs to the current development branch, not
-    the published OpenQP 1.2.0 release documented by this site. Traditional
-    `.inp` input below remains the released format.
-
-OpenQP accepts two complementary text formats. New inputs can use a compact
-`.oqp` file with one readable line:
+A compact `.oqp` file describes the same calculation in one readable line:
 
 ```text
-mrsf/bhhlyp/6-31g* h2o.xyz opt
+mrsf/bhhlyp/6-31g*
+opt
+geom="h2o.xyz"
 ```
 
 This means an MRSF-TDDFT optimization of `S0`; OpenQP selects the required
@@ -18,11 +19,11 @@ working reference automatically. Start with the [`.oqp` Quick
 Start](oqp-input.md#quick-start) for state labels, SOC counts, and more
 examples.
 
-Traditional `.inp` files use the sectioned format documented on this page and
-remain supported unchanged. Keep sectioned syntax in `.inp` and one-line syntax
+Legacy `.inp` files use the sectioned format documented on this page and
+remain supported unchanged. Keep sectioned syntax in `.inp` and compact syntax
 in `.oqp`; changing formats is optional. The correction assistant is a
 secondary aid that produces an inspectable `.resolved.oqp` file, while the
-resolved one-line command remains the authoritative calculation record.
+resolved canonical file remains the authoritative calculation record.
 OpenQP renders the short positional geometry above as the explicit canonical
 spelling `geom="h2o.xyz"`.
 
@@ -37,7 +38,7 @@ selector. Traditional `.inp` files retain `[optimize] lib=oqp`,
 legacy dependency used chiefly for advanced constraints beyond native frozen
 distances.
 
-OpenQP inputs are INI-like text files. Options are grouped by section:
+Legacy `.inp` files are INI-like text files. Options are grouped by section:
 
 ```ini
 [input]

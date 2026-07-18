@@ -6,7 +6,9 @@
     physical calculation you want:
 
     ```text
-    mrsf/bhhlyp/6-31g* h2o.xyz opt
+    mrsf/bhhlyp/6-31g*
+    opt
+    geom="h2o.xyz"
     ```
 
     This optimizes `S0`. Write `opt(S1)` for the next singlet or `opt(T0)` for
@@ -14,7 +16,10 @@
     internal MRSF reference automatically. Add controls only when needed:
 
     ```text
-    mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" opt(S1,maxit=100) scf(conv=1e-8)
+    mrsf(nstate=3)/bhhlyp/6-31g*
+    opt(S1,maxit=100)
+    scf(conv=1e-8)
+    geom="h2o.xyz"
     ```
 
     See the [`.oqp` Quick Start](../oqp-input.md#quick-start).
@@ -35,14 +40,18 @@ for the original theory, analytic-gradient implementation, and recent accounts.
 The concise form defaults to the singlet manifold:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" energy
+mrsf(nstate=3)/bhhlyp/6-31g*
+energy
+geom="h2o.xyz"
 ```
 
 This calculates `S0`--`S2`. Select another physical manifold through the
 driver, not through the route:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" energy(T0)
+mrsf(nstate=3)/bhhlyp/6-31g*
+energy(T0)
+geom="h2o.xyz"
 ```
 
 This calculates `T0`--`T2`. All-electron MRSF also accepts `energy(Q0)` for a
@@ -51,13 +60,30 @@ quintet manifold. Route parentheses accept `nstate` only.
 For MRSF-TDHF, use the explicit basis-only route:
 
 ```text
-mrsf-tdhf(nstate=3)/6-31g* geom="h2o.xyz" energy
+mrsf-tdhf(nstate=3)/6-31g*
+energy
+geom="h2o.xyz"
 ```
 
 Related basis-only routes are `sf-tdhf(...)`, `umrsf-tdhf(...)`, and
 `tda-tdhf(...)`; `cis(...)` is an accepted alias of `tda-tdhf(...)`.
 
-Input style:
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_mrsf", silent=1)
+job.molecule(geometry="water", charge=0)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
+
+mol = job.run()
+results = mol.get_results()
+print("Ground/reference energy:", results["energy"])
+print("TD energies:", results["td_energies"])
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -75,23 +101,9 @@ type=mrsf
 nstate=3
 ```
 
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_mrsf", silent=1)
-job.molecule(geometry="water", charge=0)
-job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
-
-mol = job.run()
-results = mol.get_results()
-print("Ground/reference energy:", results["energy"])
-print("TD energies:", results["td_energies"])
-```
-
-Runnable input:
-[`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.inp).
+Runnable `.oqp`:
+[`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 For post-run NTOs, attachment/detachment densities, transition densities,
 cube files, QCSchema export, FCIDUMP export, and external-code comparisons, see
@@ -103,16 +115,30 @@ In canonical input, select the physical state directly; an omitted state
 defaults to `S0`:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" grad(S2)
+mrsf(nstate=3)/bhhlyp/6-31g*
+grad(S2)
+geom="h2o.xyz"
 ```
 
 Here physical `S2` lowers to internal response root `3`, matching the
 traditional and Python examples below.
 
-In traditional input, use `runtype=grad` and select the internal response root
-through `[properties] grad`.
+Python:
 
-Input style:
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_mrsf_grad", silent=1)
+job.molecule(geometry="water", charge=0)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
+job.workflow.gradient(state=3)
+
+mol = job.run()
+gradient = mol.get_grad()
+```
+
+Legacy `.inp` uses `runtype=grad` and selects the internal response root
+through `[properties] grad`:
 
 ```ini
 [input]
@@ -133,22 +159,9 @@ nstate=3
 grad=3
 ```
 
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_mrsf_grad", silent=1)
-job.molecule(geometry="water", charge=0)
-job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
-job.workflow.gradient(state=3)
-
-mol = job.run()
-gradient = mol.get_grad()
-```
-
-Runnable input:
-[`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_GRADIENT.inp).
+Runnable `.oqp`:
+[`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_GRADIENT.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_GRADIENT.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 ## Notes
 
