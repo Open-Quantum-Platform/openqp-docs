@@ -16,7 +16,7 @@ geom="h2o.xyz"
 Python:
 
 ```python
-job.input(perf=1)
+job.settings.input(perf=1)
 ```
 
 Legacy `.inp`:

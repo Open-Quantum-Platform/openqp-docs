@@ -121,6 +121,8 @@ geom="chromophore_water.pdb 0-14"
 
 The PDB path appears only once. OpenQP derives `qmmm.pdb_file` from the PDB
 prefix of `geom`; the atom selector remains available to the QM geometry.
+The Python API likewise derives both `qmmm.pdb_file` and `qmmm.qm_atoms` from
+`job.molecule("file.pdb <selector>")` when they are omitted from `job.qmmm(...)`.
 
 Python — `job.qmmm(...)` enables ESPF QM/MM and
 `job.workflow.namd(...)` selects the surface-hopping run (see
@@ -138,7 +140,6 @@ job.theory.mrsf(functional="bhhlyp", nstate=3)   # ROHF triplet reference + MRSF
 # ESPF QM/MM embedding in a periodic TIP3P water box
 job.qmmm(
     forcefield=["amber14-all.xml", "amber14/tip3p.xml"],
-    qm_atoms="0-14",
     cutoff="PME",
     embedding="electrostatic",
     rigidwater=True,

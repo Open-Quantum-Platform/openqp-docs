@@ -204,12 +204,12 @@ routes contain no functional component, whereas the corresponding
 TDDFT-family routes do.
 
 DFTB-family routes contain no functional or basis component. `dftb0` selects
-the non-SCC ground-state model. Conventional `tddftb` and `tda-tddftb` accept
-physical singlet and triplet labels; `T0` is their first triplet response root.
-The character of an SF state is not known before diagonalization, so
-`sf-tddftb` uses `root=N`, for example `grad(root=2)`, rather than `S`/`T`
-labels. MRSF-TDDFTB uses zero-based `S0`/`T0` labels and does not support
-quintets.
+the non-SCC ground-state model. Conventional `tddftb` and `tda-tddftb`
+currently accept singlet targets only. For triplet calculations, use
+`sf-tddftb` or `mrsf-tddftb`. The character of an SF state is not known before
+diagonalization, so `sf-tddftb` uses `root=N`, for example `grad(root=2)`,
+rather than `S`/`T` labels. MRSF-TDDFTB uses zero-based `S0`/`T0` labels and
+does not support quintets.
 
 When `mult` is omitted from `dftb`, `dftb0`, `tddftb`, or `tda-tddftb`, the
 canonical lowering does not invent `dftb.reference_multiplicity`. This lets a
