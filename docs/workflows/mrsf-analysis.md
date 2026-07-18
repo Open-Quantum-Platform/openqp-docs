@@ -10,6 +10,18 @@ The public import surface is `oqp.interop`. The lower-level implementation lives
 in `oqp.analysis`, `oqp.export`, and `oqp.quantum`, but user scripts should
 normally import from `oqp.interop`.
 
+## `.oqp` Calculation
+
+Run the underlying MRSF energy calculation first:
+
+```text
+mrsf(nstate=4)/bhhlyp/6-31g*
+energy
+geom="formaldehyde.xyz"
+```
+
+The analysis itself is performed through the Python API below.
+
 ## Python Style
 
 Run the calculation with the high-level `OpenQP` wrapper, then wrap the returned
@@ -53,7 +65,7 @@ print("Promoted charge:", ad["n_promoted"])
 Analysis state indices are zero-based. `0` is the lowest MRSF response root
 used as `S0`; `1` is the first `S0 -> S1` target in the examples above.
 
-## Input File Style
+## Legacy `.inp` Style
 
 The analysis layer works on the same MRSF energy calculation that is available
 from an input file.

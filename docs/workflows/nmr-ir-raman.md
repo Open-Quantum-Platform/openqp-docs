@@ -2,9 +2,31 @@
 
 ## NMR Shielding
 
-Request NMR shielding through `[properties] scf_prop=nmr`.
+Request NMR shielding with the `nmr` modifier.
 
-Input style:
+`.oqp`:
+
+```text
+hf/sto-3g
+energy
+nmr(gauge=cgo)
+geom="h2o.xyz"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_nmr", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.hf(basis="sto-3g")
+job.workflow.nmr(gauge="cgo")
+
+mol = job.run()
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -21,21 +43,9 @@ scf_prop=nmr
 nmr_gauge=cgo
 ```
 
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_nmr", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory.hf(basis="sto-3g")
-job.workflow.nmr(gauge="cgo")
-
-mol = job.run()
-```
-
-Runnable input:
-[`examples/NMR/H2O_RHF-NMR.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/NMR/H2O_RHF-NMR.inp).
+Runnable `.oqp`:
+[`examples/NMR/H2O_RHF-NMR.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/NMR/H2O_RHF-NMR.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 `nmr_gauge` accepts:
 
@@ -55,7 +65,30 @@ IR and Raman intensities are produced from supported Hessian/frequency
 workflows. See [Hessian and Frequencies](hessian.md) for the main Hessian
 workflow page.
 
-Input style:
+`.oqp`:
+
+```text
+dft/bhhlyp/6-31g*
+hess(S0,type=analytical)
+ir
+raman
+geom="h2o.xyz"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_freq", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.dft(functional="bhhlyp", basis="6-31g*")
+job.workflow.hessian(type="analytical", state=0)
+
+mol = job.run()
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -69,20 +102,9 @@ type=analytical
 state=0
 ```
 
-Python style:
+Runnable `.oqp` inputs:
 
-```python
-from oqp.openqp import OpenQP
+- [`examples/HESS/H2O_RHF-DFT_ANA_HESS.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.oqp)
+- [`examples/HESS/H2O_RHF-DFT_NUM_HESS.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_NUM_HESS.oqp)
 
-job = OpenQP("h2o_freq", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory.dft(functional="bhhlyp", basis="6-31g*")
-job.workflow.hessian(type="analytical", state=0)
-
-mol = job.run()
-```
-
-Runnable inputs:
-
-- [`examples/HESS/H2O_RHF-DFT_ANA_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.inp)
-- [`examples/HESS/H2O_RHF-DFT_NUM_HESS.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_NUM_HESS.inp)
+Each has a same-stem legacy `.inp` companion.

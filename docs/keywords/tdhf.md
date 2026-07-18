@@ -17,6 +17,26 @@ recent overview articles.
 
 ## Minimal MRSF-TDDFT Example
 
+`.oqp`:
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g*
+energy
+geom="h2o.xyz"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("mrsf_keywords")
+job.molecule(geometry="water", charge=0)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
+```
+
+Legacy `.inp`:
+
 ```ini
 [input]
 method=tdhf
@@ -28,16 +48,6 @@ multiplicity=3
 [tdhf]
 type=mrsf
 nstate=5
-```
-
-The same setup in Python keeps the native section names visible:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("mrsf_keywords")
-job.molecule(geometry="water", charge=0)
-job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
 ```
 
 ## Keywords
@@ -80,7 +90,7 @@ state requested by gradients, optimizations, NACME, SOC, Hessians, or EKT.
 | Used by | unequal singlet/triplet SOC spaces |
 
 Optional numbers of singlet and triplet roots for SOC. Zero means to use
-`nstate` for that common count. In a one-line `.oqp` file, do not set these
+`nstate` for that common count. In a `.oqp` file, do not set these
 internal selectors directly; write `soc(ns=3,nt=5)`. Both counts must be
 provided together, and that form must not be combined with route `nstate`.
 

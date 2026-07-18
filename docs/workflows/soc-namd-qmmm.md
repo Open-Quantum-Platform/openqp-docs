@@ -110,6 +110,56 @@ and `soc_basis`:
 A complete deck for a chromophore solvated in a periodic TIP3P water box. The
 whole chromophore is the QM region (`qm_atoms`); the water is MM.
 
+`.oqp`:
+
+```text
+mrsf(nstate=3)/bhhlyp/6-31g*
+namd(S1,soc=true,soc_basis=mch,nstep=200,dt=0.5,thrshe=0.1,init_temp=300.0,grad_wthr=0.001)
+qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-14",cutoff=PME,embedding=electrostatic,rigidwater=true)
+geom="chromophore_water.pdb 0-14"
+```
+
+The PDB path appears only once. OpenQP derives `qmmm.pdb_file` from the PDB
+prefix of `geom`; the atom selector remains available to the QM geometry.
+
+Python — `job.qmmm(...)` enables ESPF QM/MM and
+`job.workflow.namd(...)` selects the surface-hopping run (see
+[Run from Python](../python-scripting.md#qmmm-and-nonadiabatic-dynamics)):
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("chromophore_socnamd_qmmm", silent=1)
+
+# QM geometry + atom selection from the PDB (whole-molecule QM region)
+job.molecule("chromophore_water.pdb 0-14", basis="6-31g*")
+job.theory.mrsf(functional="bhhlyp", nstate=3)   # ROHF triplet reference + MRSF
+
+# ESPF QM/MM embedding in a periodic TIP3P water box
+job.qmmm(
+    forcefield=["amber14-all.xml", "amber14/tip3p.xml"],
+    qm_atoms="0-14",
+    cutoff="PME",
+    embedding="electrostatic",
+    rigidwater=True,
+)
+
+# SOC-NAMD on the spin-adiabatic manifold, exact-gradient (MCH) force basis
+job.workflow.namd(
+    soc=True,
+    soc_basis="mch",
+    init_state="S1",
+    nstep=200,
+    dt=0.5,
+    thrshe=0.1,
+    init_temp=300.0,
+)
+
+mol = job.run()
+```
+
+Legacy `.inp`:
+
 ```ini
 [input]
 runtype    = namd
@@ -144,43 +194,6 @@ qm_atoms         = 0-14
 cutoff           = PME
 embedding        = electrostatic
 rigidwater       = True
-```
-
-The same job in the compact Python API — `job.qmmm(...)` enables ESPF QM/MM and
-`job.workflow.namd(...)` selects the surface-hopping run (see
-[Run from Python](../python-scripting.md#qmmm-and-nonadiabatic-dynamics)):
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("chromophore_socnamd_qmmm", silent=1)
-
-# QM geometry + atom selection from the PDB (whole-molecule QM region)
-job.molecule("chromophore_water.pdb 0-14", basis="6-31g*")
-job.theory.mrsf(functional="bhhlyp", nstate=3)   # ROHF triplet reference + MRSF
-
-# ESPF QM/MM embedding in a periodic TIP3P water box
-job.qmmm(
-    pdb_file="chromophore_water.pdb",
-    forcefield=["amber14-all.xml", "amber14/tip3p.xml"],
-    qm_atoms="0-14",
-    cutoff="PME",
-    embedding="electrostatic",
-    rigidwater=True,
-)
-
-# SOC-NAMD on the spin-adiabatic manifold, exact-gradient (MCH) force basis
-job.workflow.namd(
-    soc=True,
-    soc_basis="mch",
-    init_state="S1",
-    nstep=200,
-    dt=0.5,
-    thrshe=0.1,
-    init_temp=300.0,
-)
-
-mol = job.run()
 ```
 
 Notes on the deck:

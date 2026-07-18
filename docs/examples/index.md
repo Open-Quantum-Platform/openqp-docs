@@ -5,7 +5,7 @@ The
 are the preferred source of runnable input decks. Use them as templates before
 writing a new input from scratch.
 
-Every sectioned `*.inp` deck has a same-stem one-line `*.oqp` companion. The
+Every sectioned `*.inp` deck has a same-stem readable `*.oqp` companion. The
 two files describe the same calculation, so new users can start from the
 shorter `.oqp` form while existing scripts can keep using `.inp` unchanged.
 Shared Cartesian coordinates used by the concise decks live in
@@ -80,12 +80,12 @@ run them directly.
 
 | Deck | Type | What it shows |
 | --- | --- | --- |
-| `H2CO-water_BHHLYP-MRSF-NAMD-QMMM.inp` | `runtype=namd` | MRSF-TDDFT Tully FSSH (internal conversion, `[md] soc=false`) with ESPF QM/MM: formaldehyde QM + 5 TIP3P waters, `NoCutoff` cluster. |
-| `H2CO-water_BHHLYP-SOC-NAMD-QMMM.inp` | `runtype=namd` | SOC-NAMD (intersystem crossing, `[md] soc=true`) on the spin-adiabatic manifold with ESPF QM/MM, same system. |
-| `ala-dipeptide_BHHLYP-QMMM-MD-RCD.inp` | `runtype=md` | Ground-state QM/MM MD across a **covalent boundary**: alanine dipeptide, QM = the C-terminal amide (cuts the ALA C–CA bond), hydrogen link-atom cap + `frontier_scheme=rcd`. |
-| `run.inp` | `runtype=md` | Ground-state QM/MM MD, whole-molecule QM region (one water of a water dimer). |
-| `ala.inp` | single-point | QM/MM energy of the alanine amide (QM selection via `[input] system = file.pdb <indices>`). |
-| `2E4E_RHF-DFT-QMMM_energy.inp` | single-point | QM/MM energy on a protein fragment. |
+| `H2CO-water_BHHLYP-MRSF-NAMD-QMMM.oqp` | NAMD | MRSF-TDDFT Tully FSSH (internal conversion, `md(soc=false)`) with ESPF QM/MM: formaldehyde QM + 5 TIP3P waters, `NoCutoff` cluster. |
+| `H2CO-water_BHHLYP-SOC-NAMD-QMMM.oqp` | SOC-NAMD | Intersystem crossing on the spin-adiabatic manifold with ESPF QM/MM, using the same system. |
+| `ala-dipeptide_BHHLYP-QMMM-MD-RCD.oqp` | Ground-state MD | QM/MM MD across a **covalent boundary**: alanine dipeptide, QM = the C-terminal amide, hydrogen link-atom cap + `frontier_scheme=rcd`. |
+| `run.oqp` | Ground-state MD | Whole-molecule QM region: one water of a water dimer. |
+| `ala.oqp` | Single-point | QM/MM energy of the alanine amide. |
+| `2E4E_RHF-DFT-QMMM_energy.oqp` | Single-point | QM/MM energy on a protein fragment. |
 
 Run a NAMD-QMMM example:
 

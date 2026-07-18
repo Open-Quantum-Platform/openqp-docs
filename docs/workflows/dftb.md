@@ -21,11 +21,12 @@ keywords are documented in the [`[dftb]` reference](../keywords/dftb.md).
     Install and build details are in the [`[dftb]`
     reference](../keywords/dftb.md).
 
-Every example below is shown in all three input formats. Two DFTB conventions
+Every example below leads with the recommended `.oqp` form, followed by Python
+and the legacy `.inp` form. Two DFTB conventions
 apply throughout:
 
 - `basis=` is a **required-but-ignored placeholder** (the Slater–Koster minimal
-  basis is always used); `functional=` must be **empty**. The one-line `.oqp`
+  basis is always used); `functional=` must be **empty**. The `.oqp`
   route carries neither.
 - The ground state is **state 0** (`grad`/`istate` count from `0`).
 
@@ -33,7 +34,27 @@ apply throughout:
 
 DFTB2 single-point energy:
 
-**`.inp`**
+**`.oqp`** (route `dftb`; the geometry file sits beside the `.oqp` file)
+
+```text
+dftb
+energy
+geom="h2o.xyz"
+```
+
+**Python**
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="h2o_dftb")
+job.molecule("h2o.xyz")
+job.dftb(response_type="ground")
+job.workflow.energy()
+job.run()
+```
+
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -50,13 +71,18 @@ system=
 [dftb]
 backend=native
 type=ground
-parameter_path=/path/to/params.opdftb
 ```
 
-**`.oqp`** (route `dftb`; the geometry file sits beside the `.oqp` file)
+## Gradient
+
+Add `[properties] grad=0` (the ground state is state 0):
+
+**`.oqp`**
 
 ```text
-dftb geom="h2o.xyz" energy dftb(parameter_path="params.opdftb")
+dftb
+grad
+geom="h2o.xyz"
 ```
 
 **Python**
@@ -64,18 +90,14 @@ dftb geom="h2o.xyz" energy dftb(parameter_path="params.opdftb")
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP(project="h2o_dftb")
-job.molecule("h2o.xyz", charge=0)
-job.dftb(response_type="ground", parameter_path="params.opdftb")
-job.workflow.energy()
+job = OpenQP(project="h2o_dftb_grad")
+job.molecule("h2o.xyz")
+job.dftb(response_type="ground")
+job.workflow.gradient(state=0)
 job.run()
 ```
 
-## Gradient
-
-Add `[properties] grad=0` (the ground state is state 0):
-
-**`.inp`**
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -92,28 +114,9 @@ system=
 [dftb]
 backend=native
 type=ground
-parameter_path=/path/to/params.opdftb
 
 [properties]
 grad=0
-```
-
-**`.oqp`**
-
-```text
-dftb geom="h2o.xyz" grad dftb(parameter_path="params.opdftb")
-```
-
-**Python**
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP(project="h2o_dftb_grad")
-job.molecule("h2o.xyz", charge=0)
-job.dftb(response_type="ground", parameter_path="params.opdftb")
-job.workflow.gradient(state=0)
-job.run()
 ```
 
 ## Geometry optimization
@@ -121,7 +124,27 @@ job.run()
 `runtype=optimize` with the native optimizer (`[optimize] lib=oqp`) on the
 ground state (`istate=0`):
 
-**`.inp`**
+**`.oqp`**
+
+```text
+dftb
+opt
+geom="h2o.xyz"
+```
+
+**Python**
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="h2o_dftb_opt")
+job.molecule("h2o.xyz")
+job.dftb(response_type="ground")
+job.workflow.optimize(istate=0)
+job.run()
+```
+
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -138,30 +161,10 @@ system=
 [dftb]
 backend=native
 type=ground
-parameter_path=/path/to/params.opdftb
 
 [optimize]
 lib=oqp
 istate=0
-maxit=100
-```
-
-**`.oqp`**
-
-```text
-dftb geom="h2o.xyz" opt dftb(parameter_path="params.opdftb")
-```
-
-**Python**
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP(project="h2o_dftb_opt")
-job.molecule("h2o.xyz", charge=0)
-job.dftb(response_type="ground", parameter_path="params.opdftb")
-job.workflow.optimize(istate=0, maxit=100)
-job.run()
 ```
 
 !!! note "Ground state and the `[tdhf]` block"
@@ -176,7 +179,27 @@ DFTB0 is the same ground-state method without charge self-consistency. Switch
 Python `response_type="ground"` → `"dftb0"`. Energy, gradient, and optimization
 work identically (state 0 only):
 
-**`.inp`**
+**`.oqp`** (aliases `dftb-noscc`, `dftb-nonscc` are also accepted)
+
+```text
+dftb0
+energy
+geom="h2o.xyz"
+```
+
+**Python**
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="h2o_dftb0")
+job.molecule("h2o.xyz")
+job.dftb(response_type="dftb0")
+job.workflow.energy()
+job.run()
+```
+
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -193,28 +216,10 @@ system=
 [dftb]
 backend=native
 type=dftb0
-parameter_path=/path/to/params.opdftb
 ```
 
-**`.oqp`** (aliases `dftb-noscc`, `dftb-nonscc` are also accepted)
-
-```text
-dftb0 geom="h2o.xyz" energy dftb(parameter_path="params.opdftb")
-```
-
-**Python**
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP(project="h2o_dftb0")
-job.molecule("h2o.xyz", charge=0)
-job.dftb(response_type="dftb0", parameter_path="params.opdftb")
-job.workflow.energy()
-job.run()
-```
-
-`parameter_path` accepts either a single combined `.opdftb` file or a directory
-of Slater–Koster `<El>-<El>.skf` files. There is no MECI task for a ground-state
+`parameter_path` is optional. To override the bundled parameters, point it to
+a combined `.opdftb` file or a directory of Slater–Koster `<El>-<El>.skf`
+files. There is no MECI task for a ground-state
 method (it targets a single state); for conical intersections use
 [MRSF-TDDFTB](mrsf-tddftb.md#conical-intersections-meci).

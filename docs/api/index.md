@@ -8,7 +8,8 @@ with the Python API because it covers both compact `OpenQP` scripts and direct
 
 | Layer | Entry point | Audience | Stability |
 | --- | --- | --- | --- |
-| Command line | `openqp input.inp` | Production runs, shell scripts, workflows | Stable |
+| Command line | `openqp input.oqp` | Production runs, shell scripts, workflows | Recommended |
+| Legacy command line | `openqp input.inp` | Existing sectioned decks and legacy-only controls | Stable |
 | Python API | `oqp.openqp.OpenQP`, `oqp.pyoqp.Runner` | Scripts, notebooks, services, and automated workflows | Recommended |
 | Molecule data | `runner.mol` | Result extraction and advanced workflows | Semi-stable |
 | MRSF analysis and interoperability | `oqp.interop` | NTOs, attachment/detachment densities, cubes, QCSchema, FCIDUMP, and external comparisons | Recommended |

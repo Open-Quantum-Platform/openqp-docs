@@ -18,9 +18,21 @@ See the [method reference](../references.md#baeka-multistate-meci).
 The same public command covers two, three, and more states:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,algorithm=baeka)
-mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,S2,algorithm=baeka)
-mrsf(nstate=6)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,S2,S3,algorithm=baeka)
+mrsf(nstate=5)/bhhlyp/6-31g*
+meci(S0,S1,algorithm=baeka)
+geom="guess.xyz"
+```
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g*
+meci(S0,S1,S2,algorithm=baeka)
+geom="guess.xyz"
+```
+
+```text
+mrsf(nstate=6)/bhhlyp/6-31g*
+meci(S0,S1,S2,S3,algorithm=baeka)
+geom="guess.xyz"
 ```
 
 A two-state `meci(S0,S1)` call retains the established `penalty` default, so
@@ -39,7 +51,9 @@ A three-state production-style route with every public BaekA control explicit
 is:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,S2,algorithm=baeka,sigma=1.0,alpha=0.02,delta_beta=0.025,beta_schedule="10,10,25,25,100,100,1000,1000,3000",gap=1e-4,maxit=100,energy_shift=1e-6,rmsd_grad=1e-4,coordsys=auto,trust=0.15,trust_max=0.5)
+mrsf(nstate=5)/bhhlyp/6-31g*
+meci(S0,S1,S2,algorithm=baeka,sigma=1.0,alpha=0.02,delta_beta=0.025,beta_schedule="10,10,25,25,100,100,1000,1000,3000",gap=1e-4,maxit=100,energy_shift=1e-6,rmsd_grad=1e-4,coordsys=auto,trust=0.15,trust_max=0.5)
+geom="guess.xyz"
 ```
 
 The concise route selects the native OpenQP optimizer automatically. Do not add
@@ -167,10 +181,23 @@ projected convergence interpretation.
   algorithms. Select `algorithm=baeka` when the additive independent-gap
   formulation is intended, including for a two-state calculation.
 
-## Traditional `.inp` and Python Configuration
+## Python and Legacy `.inp` Configuration
 
 The concise list of physical labels lowers to an ordered internal state list.
-The equivalent sectioned control surface is:
+The Python workflow accepts the same public names:
+
+```python
+job.workflow.meci(
+    algorithm="baeka",
+    states=[1, 2, 3],
+    sigma=1.0,
+    delta_beta=0.025,
+    beta_schedule=[10, 25],
+    gap=1e-4,
+)
+```
+
+The equivalent legacy `.inp` control surface is:
 
 ```ini
 [input]
@@ -207,9 +234,6 @@ trust_max=0.5
 `[optimize] states` is authoritative for BaekA and must contain two or more
 distinct, ascending, consecutive internal roots. The older `istate`/`jstate`
 pair remains the traditional two-state spelling for the other MECI algorithms.
-The Python workflow accepts the public names too, for example
-`job.workflow.meci(algorithm="baeka", states=[1, 2, 3], sigma=1.0,
-delta_beta=0.025, beta_schedule=[10, 25], gap=1e-4)`.
 
 ## `tci` Compatibility
 

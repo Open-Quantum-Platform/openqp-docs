@@ -9,7 +9,29 @@ state-specific excited-state PCM work. See the
 [References](../references.md#pcm-and-ddx) page for continuum-solvation and
 domain-decomposition ddPCM background.
 
-Input style:
+`.oqp`:
+
+```text
+hf/6-31g*
+energy
+pcm(epsilon=78.3553)
+geom="h2o.xyz"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_pcm", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.hf(basis="6-31g*")
+job.workflow.pcm(epsilon=78.3553)
+
+mol = job.run()
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -29,27 +51,9 @@ model=ddpcm
 epsilon=78.3553
 ```
 
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_pcm", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory.hf(basis="6-31g*")
-job.workflow.pcm(
-    enabled=True,
-    backend="ddx",
-    mode="reference_scf",
-    model="ddpcm",
-    epsilon=78.3553,
-)
-
-mol = job.run()
-```
-
-Runnable input:
-[`examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.inp).
+Runnable `.oqp`:
+[`examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/PCM/H2O_RHF-HF_DDPCM_ENERGY_ISPHER.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 ## Scope
 

@@ -9,13 +9,15 @@ ground-state surfaces.
 In Python scripts, SF-TDDFT is a theory choice. Select the calculation type
 separately with `job.workflow.*` only when you need a non-energy workflow.
 
-!!! note "One-line `.oqp` uses response roots"
+!!! note "`.oqp` uses response roots"
 
     The spin character of an SF root is not known before diagonalization.
     State-specific `.oqp` input must therefore use `root=N`, for example:
 
     ```text
-    sf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" grad(root=1)
+    sf(nstate=3)/bhhlyp/6-31g*
+    grad(root=1)
+    geom="h2o.xyz"
     ```
 
     Do not write an `S`/`T` label or omit the root on an SF state-specific
@@ -23,7 +25,28 @@ separately with `job.workflow.*` only when you need a non-energy workflow.
 
 ## Energy
 
-Input style:
+`.oqp`:
+
+```text
+sf(nstate=3)/bhhlyp/6-31g*
+energy
+geom="h2o.xyz"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_sf", silent=1)
+job.molecule(geometry="water", charge=0)
+job.theory.sf_tddft(functional="bhhlyp", basis="6-31g*", nstate=3)
+
+mol = job.run()
+print("SF-TDDFT energies:", mol.get_td_energies())
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -41,29 +64,38 @@ type=sf
 nstate=3
 ```
 
-Python style:
+Runnable `.oqp`:
+[`examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_ENERGY.oqp).
+The same-stem `.inp` file is retained for legacy use.
+
+## Gradient
+
+In SF-TDDFT, root `1` means the lowest spin-flip target state, not the first
+ordinary TDDFT excited state.
+
+`.oqp`:
+
+```text
+sf(nstate=3)/bhhlyp/6-31g*
+grad(root=3)
+geom="h2o.xyz"
+```
+
+Python:
 
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP("h2o_sf", silent=1)
+job = OpenQP("h2o_sf_grad", silent=1)
 job.molecule(geometry="water", charge=0)
 job.theory.sf_tddft(functional="bhhlyp", basis="6-31g*", nstate=3)
+job.workflow.gradient(state=3)
 
 mol = job.run()
-print("SF-TDDFT energies:", mol.get_td_energies())
+gradient = mol.get_grad()
 ```
 
-Runnable input:
-[`examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_ENERGY.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_ENERGY.inp).
-
-## Gradient
-
-SF-TDDFT gradients use `runtype=grad` and `[properties] grad`. In SF-TDDFT,
-state `1` means the lowest spin-flip target state, not the first ordinary
-TDDFT excited state.
-
-Input style:
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -84,22 +116,9 @@ nstate=3
 grad=3
 ```
 
-Python style:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_sf_grad", silent=1)
-job.molecule(geometry="water", charge=0)
-job.theory.sf_tddft(functional="bhhlyp", basis="6-31g*", nstate=3)
-job.workflow.gradient(state=3)
-
-mol = job.run()
-gradient = mol.get_grad()
-```
-
-Runnable input:
-[`examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_GRADIENT.inp).
+Runnable `.oqp`:
+[`examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_GRADIENT.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_GRADIENT.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 ## Notes
 

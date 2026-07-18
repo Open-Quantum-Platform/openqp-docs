@@ -30,7 +30,27 @@ one-line form. As with all DFTB families, `basis=` is an ignored placeholder,
 
 Three singlet roots (`S1`–`S3`) above the DFTB ground state:
 
-**`.inp`**
+**`.oqp`** (route `tddftb(nstate=N)`; `tda-tddftb(nstate=N)` for TDA)
+
+```text
+tddftb(nstate=3)
+energy
+geom="h2o.xyz"
+```
+
+**Python**
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="h2o_tddftb")
+job.molecule("h2o.xyz")
+job.dftb(response_type="tddftb", nstate=3)
+job.workflow.energy()
+job.run()
+```
+
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -51,13 +71,18 @@ nstate=3
 [dftb]
 backend=native
 type=tddftb
-parameter_path=/path/to/params.opdftb
 ```
 
-**`.oqp`** (route `tddftb(nstate=N)`; `tda-tddftb(nstate=N)` for TDA)
+## Gradient
+
+Gradient of the first excited singlet `S1` (response root 1 → `grad=1`):
+
+**`.oqp`**
 
 ```text
-tddftb(nstate=3) geom="h2o.xyz" energy dftb(parameter_path="params.opdftb")
+tddftb(nstate=3)
+grad(S1)
+geom="h2o.xyz"
 ```
 
 **Python**
@@ -65,18 +90,14 @@ tddftb(nstate=3) geom="h2o.xyz" energy dftb(parameter_path="params.opdftb")
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP(project="h2o_tddftb")
-job.molecule("h2o.xyz", charge=0)
-job.dftb(response_type="tddftb", nstate=3, parameter_path="params.opdftb")
-job.workflow.energy()
+job = OpenQP(project="h2o_tddftb_grad")
+job.molecule("h2o.xyz")
+job.dftb(response_type="tddftb", nstate=3)
+job.workflow.gradient(state=1)
 job.run()
 ```
 
-## Gradient
-
-Gradient of the first excited singlet `S1` (response root 1 → `grad=1`):
-
-**`.inp`**
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -97,23 +118,32 @@ nstate=3
 [dftb]
 backend=native
 type=tddftb
-parameter_path=/path/to/params.opdftb
 
 [properties]
 grad=1
 ```
 
+Conventional TD-DFTB currently supports singlet targets. Use
+[`sf-tddftb`](../oqp-input.md#route-and-model-reference) or
+[`mrsf-tddftb`](mrsf-tddftb.md) for triplet-state calculations. The equivalent
+TDA singlet gradient is:
+
+```text
+tda-tddftb(nstate=3)
+grad(S1)
+geom="h2o.xyz"
+```
+
+## Geometry optimization
+
+Optimize the `S1` excited-state minimum (`istate=1`):
+
 **`.oqp`**
 
 ```text
-tddftb(nstate=3) geom="h2o.xyz" grad(S1) dftb(parameter_path="params.opdftb")
-```
-
-For a triplet-root gradient use the physical triplet label — `grad(T0)` is the
-first triplet response state (`tda-tddftb` shown, but `tddftb` behaves the same):
-
-```text
-tda-tddftb(nstate=3) geom="h2o.xyz" grad(T0) dftb(parameter_path="params.opdftb")
+tddftb(nstate=3)
+opt(S1)
+geom="h2o.xyz"
 ```
 
 **Python**
@@ -121,18 +151,14 @@ tda-tddftb(nstate=3) geom="h2o.xyz" grad(T0) dftb(parameter_path="params.opdftb"
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP(project="h2o_tddftb_grad")
-job.molecule("h2o.xyz", charge=0)
-job.dftb(response_type="tddftb", nstate=3, parameter_path="params.opdftb")
-job.workflow.gradient(state=1)
+job = OpenQP(project="h2o_tddftb_opt")
+job.molecule("h2o.xyz")
+job.dftb(response_type="tddftb", nstate=3)
+job.workflow.optimize(istate=1)
 job.run()
 ```
 
-## Geometry optimization
-
-Optimize the `S1` excited-state minimum (`istate=1`):
-
-**`.inp`**
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -153,30 +179,10 @@ nstate=3
 [dftb]
 backend=native
 type=tddftb
-parameter_path=/path/to/params.opdftb
 
 [optimize]
 lib=oqp
 istate=1
-maxit=100
-```
-
-**`.oqp`**
-
-```text
-tddftb(nstate=3) geom="h2o.xyz" opt(S1) dftb(parameter_path="params.opdftb")
-```
-
-**Python**
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP(project="h2o_tddftb_opt")
-job.molecule("h2o.xyz", charge=0)
-job.dftb(response_type="tddftb", nstate=3, parameter_path="params.opdftb")
-job.workflow.optimize(istate=1, maxit=100)
-job.run()
 ```
 
 ## MECI
@@ -185,7 +191,27 @@ A minimum-energy conical intersection between two excited singlets of the same
 multiplicity — here `S1`/`S2` (`istate=1`, `jstate=2`) — using the penalty
 optimizer:
 
-**`.inp`**
+**`.oqp`**
+
+```text
+tddftb(nstate=3)
+meci(S1,S2)
+geom="guess.xyz"
+```
+
+**Python**
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="tddftb_meci")
+job.molecule("guess.xyz")
+job.dftb(response_type="tddftb", nstate=3)
+job.workflow.meci(istate=1, jstate=2, meci_search="penalty")
+job.run()
+```
+
+**Legacy `.inp`**
 
 ```ini
 [input]
@@ -203,7 +229,6 @@ nstate=3
 [dftb]
 backend=native
 type=tddftb
-parameter_path=/path/to/params.opdftb
 
 [optimize]
 lib=oqp
@@ -213,24 +238,6 @@ meci_search=penalty
 pen_sigma=1.0
 pen_incre=1.2
 energy_gap=1.0e-4
-```
-
-**`.oqp`**
-
-```text
-tddftb(nstate=3) geom="guess.xyz" meci(S1,S2) dftb(parameter_path="params.opdftb")
-```
-
-**Python**
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP(project="tddftb_meci")
-job.molecule("guess.xyz", charge=0)
-job.dftb(response_type="tddftb", nstate=3, parameter_path="params.opdftb")
-job.workflow.meci(istate=1, jstate=2, meci_search="penalty", maxit=100)
-job.run()
 ```
 
 !!! warning "Use MRSF-TDDFTB for S₀/S₁ intersections"

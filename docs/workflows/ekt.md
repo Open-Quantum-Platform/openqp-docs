@@ -3,7 +3,28 @@
 MRSF-EKT computes ionization-potential and electron-affinity channels from an
 MRSF-TDDFT reference.
 
-Input style:
+`.oqp`:
+
+```text
+mrsf(nstate=10)/bhhlyp/6-31g
+ekt(ip=true,ea=false)
+geom="h2o.xyz"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_mrsf_ekt", silent=1)
+job.molecule(geometry="water", charge=0)
+job.theory.mrsf(functional="bhhlyp", basis="6-31g", nstate=10)
+job.workflow.ekt(ip=True, ea=False)
+
+mol = job.run()
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -25,23 +46,12 @@ ip=True
 ea=False
 ```
 
-Python style:
+Runnable `.oqp` inputs:
 
-```python
-from oqp.openqp import OpenQP
+- [`examples/other/h2o_rohf_mrsf_ekt_ip_6-31g_bhhlyp.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/other/h2o_rohf_mrsf_ekt_ip_6-31g_bhhlyp.oqp)
+- [`examples/other/h2o_rohf_mrsf_ekt_ea_6-31g_bhhlyp.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/other/h2o_rohf_mrsf_ekt_ea_6-31g_bhhlyp.oqp)
 
-job = OpenQP("h2o_mrsf_ekt", silent=1)
-job.molecule(geometry="water", charge=0)
-job.theory.mrsf(functional="bhhlyp", basis="6-31g", nstate=10)
-job.workflow.ekt(ip=True, ea=False)
-
-mol = job.run()
-```
-
-Runnable inputs:
-
-- [`examples/other/h2o_rohf_mrsf_ekt_ip_6-31g_bhhlyp.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/other/h2o_rohf_mrsf_ekt_ip_6-31g_bhhlyp.inp)
-- [`examples/other/h2o_rohf_mrsf_ekt_ea_6-31g_bhhlyp.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/other/h2o_rohf_mrsf_ekt_ea_6-31g_bhhlyp.inp)
+Each has a same-stem legacy `.inp` companion.
 
 At least one of `[ekt] ip` or `[ekt] ea` must be true. Set both to true to run
 both channels in one job.

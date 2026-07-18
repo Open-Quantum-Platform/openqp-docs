@@ -16,16 +16,16 @@ ddPCM literature.
 
 ## Minimal Example
 
-```ini
-[pcm]
-enabled=true
-backend=ddx
-mode=reference_scf
-model=ddpcm
-epsilon=78.3553
+`.oqp`:
+
+```text
+hf/6-31g*
+energy
+pcm(epsilon=78.3553)
+geom="h2o.xyz"
 ```
 
-Python style:
+Python:
 
 ```python
 from oqp.openqp import OpenQP
@@ -33,13 +33,18 @@ from oqp.openqp import OpenQP
 job = OpenQP("pcm_keywords")
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory.hf(basis="6-31g*")
-job.workflow.pcm(
-    enabled=True,
-    backend="ddx",
-    mode="reference_scf",
-    model="ddpcm",
-    epsilon=78.3553,
-)
+job.workflow.pcm(epsilon=78.3553)
+```
+
+Legacy `.inp`:
+
+```ini
+[pcm]
+enabled=true
+backend=ddx
+mode=reference_scf
+model=ddpcm
+epsilon=78.3553
 ```
 
 ## Keywords

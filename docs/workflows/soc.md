@@ -8,26 +8,44 @@ singlet-triplet mixing is important. See the
 [References](../references.md#spin-orbit-coupling) page for OpenQP's
 relativistic MRSF-TDDFT SOC method and the mean-field SOC operator background.
 
-## One-line `.oqp`
+## `.oqp`
 
 Use one route count for equal singlet and triplet spaces:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" soc
+mrsf(nstate=3)/bhhlyp/6-31g*
+soc
+geom="h2o.xyz"
 ```
 
 This requests `S0`--`S2` and `T0`--`T2`. For unequal spaces, omit route
 `nstate` and specify both counts:
 
 ```text
-mrsf/bhhlyp/6-31g* geom="h2o.xyz" soc(ns=3,nt=5)
+mrsf/bhhlyp/6-31g*
+soc(ns=3,nt=5)
+geom="h2o.xyz"
 ```
 
 Do not combine the two forms. The canonical route also recognizes
 MRSF-TDHF and MRSF-TDDFTB SOC, subject to the selected backend being available;
 the detailed all-electron example below is MRSF-TDDFT.
 
-Input style:
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_soc", silent=1)
+job.molecule(geometry="water", charge=0)
+job.theory.mrsf(functional="bhhlyp", basis="6-31G(2df,p)", nstate=12)
+job.workflow.soc(soc_2e=1, scal_rel=2)
+
+mol = job.run()
+soc = mol.get_soc()
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
@@ -47,24 +65,12 @@ type=mrsf
 nstate=12
 ```
 
-Python style:
+Runnable `.oqp` inputs:
 
-```python
-from oqp.openqp import OpenQP
+- [`examples/SOC/H2O_BHHLYP_SOC.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SOC/H2O_BHHLYP_SOC.oqp)
+- [`examples/SOC/CH3Br-BHHLYP-SOC.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SOC/CH3Br-BHHLYP-SOC.oqp)
 
-job = OpenQP("h2o_soc", silent=1)
-job.molecule(geometry="water", charge=0)
-job.theory.mrsf(functional="bhhlyp", basis="6-31G(2df,p)", nstate=12)
-job.workflow.soc(soc_2e=1, scal_rel=2)
-
-mol = job.run()
-soc = mol.get_soc()
-```
-
-Runnable inputs:
-
-- [`examples/SOC/H2O_BHHLYP_SOC.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SOC/H2O_BHHLYP_SOC.inp)
-- [`examples/SOC/CH3Br-BHHLYP-SOC.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SOC/CH3Br-BHHLYP-SOC.inp)
+Each has a same-stem legacy `.inp` companion.
 
 ## SOC Terms
 

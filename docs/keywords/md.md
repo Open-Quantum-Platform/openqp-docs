@@ -34,6 +34,28 @@ operator.
 
 Gas-phase FSSH on MRSF-TDDFT states:
 
+`.oqp`:
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g*
+namd(S1,nstep=200,dt=0.5,init_temp=300.0)
+geom="molecule.xyz"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("molecule_namd")
+job.molecule("molecule.xyz")
+job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
+job.workflow.namd(init_state="S1", nstep=200, dt=0.5, init_temp=300.0)
+mol = job.run()
+```
+
+Legacy `.inp`:
+
 ```ini
 [input]
 runtype    = namd

@@ -121,17 +121,26 @@ custom layouts where Python and the OpenQP runtime tree are separated.
 OpenQP accepts the OpenMP thread count from the command line:
 
 ```bash
-openqp h2o.inp --omp 16
+openqp h2o.oqp --omp 16
 ```
 
-or from the input file:
+or from a top-level option in `.oqp`:
+
+```text
+hf/6-31g*
+omp_threads=16
+energy
+geom="h2o.xyz"
+```
+
+The legacy sectioned spelling is:
 
 ```ini
 [input]
 omp_threads=16
 ```
 
-Precedence is `--omp`, then `[input] omp_threads`, then `OMP_NUM_THREADS`, then
+Precedence is `--omp`, then `input.omp_threads`, then `OMP_NUM_THREADS`, then
 the built-in default.
 
 ## Test
@@ -148,5 +157,5 @@ standard `all` exclusions and explicit-directory policy.
 For a smaller first check:
 
 ```bash
-openqp examples/HF/H2O_RHF-HF_ENERGY.inp
+openqp examples/HF/H2O_RHF-HF_ENERGY.oqp
 ```

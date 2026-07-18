@@ -12,19 +12,44 @@ not a keyword in this section.
 
 ## Minimal Examples
 
-Conventional MP2:
+Conventional MP2 in `.oqp`:
+
+```text
+mp2/6-31g
+energy
+geom="h2o.xyz"
+```
+
+Python:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_mp2")
+job.molecule(geometry="water")
+job.theory.mp2(basis="6-31g")
+mol = job.run()
+```
+
+Legacy `.inp`:
 
 ```ini
 [input]
 method=mp2
 runtype=energy
 functional=
-
-[mp2]
-variant=mp2
 ```
 
-Spin-component-scaled MP2:
+For spin-component-scaled MP2, add an exact `.oqp` section call:
+
+```text
+mp2/6-31g
+energy
+mp2(variant=scs-mp2)
+geom="h2o.xyz"
+```
+
+The legacy section is:
 
 ```ini
 [mp2]

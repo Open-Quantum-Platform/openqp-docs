@@ -5,8 +5,15 @@ Users select a physical state and the calculation they want; there is no
 backend or `lib` keyword in this format.
 
 ```text
-dft/pbe0/def2-svp geom="h2o.xyz" opt(S0,maxit=50)
-mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,maxit=100)
+dft/pbe0/def2-svp
+opt
+geom="h2o.xyz"
+```
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g*
+meci(S0,S1)
+geom="guess.xyz"
 ```
 
 The native engine supports minima, transition states, two-state and BaekA
@@ -19,16 +26,33 @@ optimization.
 The shortest canonical input is:
 
 ```text
-dft/bhhlyp/6-31g* geom="h2o.xyz" opt
+dft/bhhlyp/6-31g*
+opt
+geom="h2o.xyz"
 ```
 
 `opt` defaults to `S0`. Add native controls directly when needed:
 
 ```text
-dft/bhhlyp/6-31g* geom="h2o.xyz" opt(S0,maxit=50,coordsys=tric,trust=0.2,trust_max=0.5)
+dft/bhhlyp/6-31g*
+opt(coordsys=tric,trust=0.2,trust_max=0.5)
+geom="h2o.xyz"
 ```
 
-The equivalent traditional sectioned `.inp` spelling remains supported:
+Python uses the native backend by default. Its explicit backend selector is
+retained for compatibility with existing scripts:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_opt", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.dft(functional="bhhlyp", basis="6-31g*")
+job.workflow.optimize(istate=0, coordsys="tric", trust=0.2)
+mol = job.run()
+```
+
+The equivalent legacy `.inp` spelling remains supported:
 
 ```ini
 [input]
@@ -44,7 +68,6 @@ multiplicity=1
 [optimize]
 lib=oqp
 istate=0
-maxit=50
 
 [oqp]
 coordsys=tric
@@ -52,21 +75,9 @@ trust=0.2
 trust_max=0.5
 ```
 
-Python also uses the native backend by default. Its explicit backend selector
-is retained for compatibility with existing scripts:
-
-```python
-from oqp.openqp import OpenQP
-
-job = OpenQP("h2o_opt", silent=1)
-job.molecule(geometry="water", charge=0, multiplicity=1)
-job.theory.dft(functional="bhhlyp", basis="6-31g*")
-job.workflow.optimize(istate=0, maxit=50, coordsys="tric", trust=0.2)
-mol = job.run()
-```
-
-Runnable traditional input:
-[`examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.inp).
+Runnable `.oqp`:
+[`examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.oqp).
+The same-stem `.inp` file is retained for legacy use.
 
 ## Native Transition State and IRC
 
@@ -74,7 +85,9 @@ Native TS optimization uses P-RFO. `follow` selects the initial mode index, and
 `hessian` selects how the starting Hessian is obtained:
 
 ```text
-dft/pbe0/def2-svp geom="ts_guess.xyz" ts(S0,follow=0,hessian=numerical,maxit=50)
+dft/pbe0/def2-svp
+ts(S0,follow=0,hessian=numerical)
+geom="ts_guess.xyz"
 ```
 
 `hessian=model` is the inexpensive default. `numerical` or `analytical`
@@ -93,8 +106,15 @@ workflows remain energy, MD, and NAMD.
 After locating a transition state, trace either native IRC branch explicitly:
 
 ```text
-dft/pbe0/def2-svp geom="ts.xyz" irc(S0,direction=forward,step=0.1,hessian=analytical,gtol=1e-4,maxit=30)
-dft/pbe0/def2-svp geom="ts.xyz" irc(S0,direction=backward,step=0.1,hessian=analytical,gtol=1e-4,maxit=30)
+dft/pbe0/def2-svp
+irc(S0,direction=forward,step=0.1,hessian=analytical,gtol=1e-4)
+geom="ts.xyz"
+```
+
+```text
+dft/pbe0/def2-svp
+irc(S0,direction=backward,step=0.1,hessian=analytical,gtol=1e-4)
+geom="ts.xyz"
 ```
 
 Native IRC projects mass-weighted translation and rotation modes, then requires
@@ -105,7 +125,9 @@ Native MEP uses the same gradient stopping threshold without requiring a
 transition-state Hessian:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g* geom="start.xyz" mep(S0,points=30,step=0.1,gtol=1e-4)
+mrsf(nstate=5)/bhhlyp/6-31g*
+mep(S0,points=30,step=0.1,gtol=1e-4)
+geom="start.xyz"
 ```
 
 ## Native NEB
@@ -115,7 +137,9 @@ NEB can align the endpoints, relax them, run climbing-image NEB, test both
 maximum and RMS force thresholds, and write the final band:
 
 ```text
-dft/pbe0/def2-svp geom="reactant.xyz" neb(S0,product="product.xyz",images=7,spring=0.05,climb=true,fmax=0.002,frms=0.001,dt=0.5,maxmove=0.2,align=true,opt_ends=true,end_fmax=0.001,output="reaction_path.xyz")
+dft/pbe0/def2-svp
+neb(S0,product="product.xyz",images=7,spring=0.05,climb=true,fmax=0.002,frms=0.001,dt=0.5,maxmove=0.2,align=true,opt_ends=true,end_fmax=0.001,output="reaction_path.xyz")
+geom="reactant.xyz"
 ```
 
 `climb`, `align`, and `opt_ends` are booleans. If `output` is omitted, OpenQP
@@ -129,11 +153,33 @@ before the final convergence threshold can be satisfied.
 Physical state labels replace internal state indices in `.oqp`:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,maxit=100)
-mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" mecp(S0,T0,maxit=100)
-mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,algorithm=baeka,maxit=100)
-mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,S2,algorithm=baeka,maxit=100)
-mrsf(nstate=6)/bhhlyp/6-31g* geom="guess.xyz" meci(S0,S1,S2,S3,algorithm=baeka,maxit=100)
+mrsf(nstate=5)/bhhlyp/6-31g*
+meci(S0,S1)
+geom="guess.xyz"
+```
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g*
+mecp(S0,T0)
+geom="guess.xyz"
+```
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g*
+meci(S0,S1,algorithm=baeka)
+geom="guess.xyz"
+```
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g*
+meci(S0,S1,S2,algorithm=baeka)
+geom="guess.xyz"
+```
+
+```text
+mrsf(nstate=6)/bhhlyp/6-31g*
+meci(S0,S1,S2,S3,algorithm=baeka)
+geom="guess.xyz"
 ```
 
 `algorithm=baeka` selects the Baek adaptive penalty-function method within the
@@ -156,7 +202,9 @@ Atom indices are one-based, and multiple constraints are separated by
 semicolons:
 
 ```text
-dft/bhhlyp/3-21g geom="hcn.xyz" opt(S0,freeze="distance(1,2)",coordsys=dlc,trust=0.05,trust_max=0.05)
+dft/bhhlyp/3-21g
+opt(freeze="distance(1,2)",coordsys=dlc,trust=0.05,trust_max=0.05)
+geom="hcn.xyz"
 ```
 
 The distance is fixed at its value in the input geometry. The native optimizer
@@ -188,7 +236,19 @@ Install the optional dependency first:
 pip install "openqp[geometric]"
 ```
 
-Then use the established sectioned input:
+The compatible Python spelling is:
+
+```python
+job.workflow.optimize(
+    lib="geometric",
+    istate=0,
+    coordsys="tric",
+    trust=0.1,
+    constraints_file="my.constraints",
+)
+```
+
+The legacy `.inp` spelling is:
 
 ```ini
 [input]
@@ -210,18 +270,6 @@ istate=0
 coordsys=tric
 trust=0.1
 constraints_file=my.constraints
-```
-
-The compatible Python spelling is also retained:
-
-```python
-job.workflow.optimize(
-    lib="geometric",
-    istate=0,
-    coordsys="tric",
-    trust=0.1,
-    constraints_file="my.constraints",
-)
 ```
 
 No standard shipped regression now depends on geomeTRIC. General minimum,

@@ -1,11 +1,13 @@
-# One-line `.oqp` Input
+# `.oqp` Input
 
-The `.oqp` format describes one calculation in one readable line. It has no
-leading `#` and no `[input]` or `[scf]` blocks.
+The `.oqp` format describes one calculation as a short readable sequence. Put
+each logical item on its own line, or put the same items on one line; both
+spellings are identical. It has no leading `#` and no `[input]` or `[scf]`
+blocks.
 
 !!! warning "Development / next-release input style"
 
-    One-line `.oqp` input is implemented on the current development branch and
+    `.oqp` input is implemented on the current development branch and
     is not part of the published OpenQP 1.2.0 release. Existing 1.2.0 users
     should continue to use sectioned `.inp` files until a release explicitly
     includes this parser.
@@ -15,22 +17,26 @@ leading `#` and no `[input]` or `[scf]` blocks.
 Put `h2o.xyz` beside a file named, for example, `h2o-opt.oqp`, and write:
 
 ```text
-mrsf/bhhlyp/6-31g* h2o.xyz opt
+mrsf/bhhlyp/6-31g*
+opt
+geom="h2o.xyz"
 ```
 
 For a keyword with no arguments, empty parentheses are optional: `opt` and
 `opt()` mean the same thing. The examples use the shorter form when possible.
-An `.xyz` or `.pdb` geometry may immediately follow the route in this short
-form. OpenQP normalizes it to the stable, explicit form:
+An `.xyz` or `.pdb` geometry may immediately follow the route in a one-line
+shorthand, but the readable form puts explicit `geom` last:
 
 ```text
-mrsf/bhhlyp/6-31g* geom="h2o.xyz" opt
+mrsf/bhhlyp/6-31g*
+opt
+geom="h2o.xyz"
 ```
 
 Use quotes for a path containing spaces, for example
 `geom="structures/water molecule.xyz"`.
 
-Read the line from left to right:
+Read the input from top to bottom:
 
 | Text | Meaning |
 | --- | --- |
@@ -60,7 +66,10 @@ To optimize a particular excited state with tighter controls, add details only
 where they are needed:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" charge=0 opt(S1,maxit=100) scf(conv=1e-8)
+mrsf(nstate=3)/bhhlyp/6-31g*
+opt(S1,maxit=100)
+scf(conv=1e-8)
+geom="h2o.xyz"
 ```
 
 This explicitly requests three states, the physical `S1` surface, at most 100
@@ -69,10 +78,27 @@ optimization steps, and an SCF convergence threshold of `1e-8`.
 ### Common MRSF calculations
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" energy
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" grad(S1)
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" opt(T0)
-mrsf(nstate=3)/bhhlyp/6-31g* geom="guess.xyz" meci(S1,S2)
+mrsf(nstate=3)/bhhlyp/6-31g*
+energy
+geom="h2o.xyz"
+```
+
+```text
+mrsf(nstate=3)/bhhlyp/6-31g*
+grad(S1)
+geom="h2o.xyz"
+```
+
+```text
+mrsf(nstate=3)/bhhlyp/6-31g*
+opt(T0)
+geom="h2o.xyz"
+```
+
+```text
+mrsf(nstate=3)/bhhlyp/6-31g*
+meci(S1,S2)
+geom="guess.xyz"
 ```
 
 ### Four rules to remember
@@ -89,7 +115,7 @@ mrsf(nstate=3)/bhhlyp/6-31g* geom="guess.xyz" meci(S1,S2)
 3. **Do not specify the internal reference for MRSF.** Write `opt(S0)` or
    `opt(T0)`, not `mult=...`, `spin=...`, or a ROHF multiplicity. OpenQP selects
    the required high-spin working reference automatically.
-4. **Existing `.inp` files still work unchanged.** Use the one-line syntax in
+4. **Existing `.inp` files still work unchanged.** Use the `.oqp` syntax in
    a new `.oqp` file. Keep the traditional sectioned syntax in `.inp`; do not
    mix the two formats in one file.
 
@@ -102,14 +128,18 @@ small hand-written subset.
 One count requests the same number of singlets and triplets:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" soc
+mrsf(nstate=3)/bhhlyp/6-31g*
+soc
+geom="h2o.xyz"
 ```
 
 This calculates `S0`--`S2` and `T0`--`T2`. To use different counts, put both
 counts in `soc(...)`:
 
 ```text
-mrsf/bhhlyp/6-31g* geom="h2o.xyz" soc(ns=3,nt=5)
+mrsf/bhhlyp/6-31g*
+soc(ns=3,nt=5)
+geom="h2o.xyz"
 ```
 
 This calculates `S0`--`S2` and `T0`--`T4`. Do not combine route `nstate` with
@@ -123,9 +153,11 @@ The complete pattern is:
 ROUTE GLOBAL... PRIMARY_DRIVER MODIFIER... SECTION_CALL...
 ```
 
-The route comes first and spaces separate the remaining parts. OpenQP converts
-the line to its established configuration and applies the same schema
-validation used for traditional input.
+The route comes first. Whitespace outside quotes and parentheses separates the
+remaining parts, so spaces and line breaks are interchangeable. The canonical
+layout writes one logical item per line and moves `geom`/`geom2` to the end.
+OpenQP converts either layout to its established configuration and applies the
+same schema validation used for traditional input.
 
 ## Route and Model Reference
 
@@ -165,10 +197,11 @@ compatibility aliases: `mrsf-tddft`, `mrsftddft`, `umrsf-tddft`,
 `mrsf-dftb`. Canonical rendering normalizes them to the routes in the table.
 
 The explicit-reference routes never silently change the requested reference.
-`rhf` and `rks` require `mult=1`; `rohf` and `roks` require an open-shell
-`mult` of at least 2. `uhf` and `uks` may also be used deliberately at
-`mult=1`. The TDHF-family routes contain no functional component, whereas the
-corresponding TDDFT-family routes do.
+`rhf` and `rks` use the default `mult=1`; writing it is unnecessary.
+`rohf` and `roks` require an open-shell `mult` of at least 2. `uhf` and `uks`
+may also be used deliberately with the omitted singlet default. The TDHF-family
+routes contain no functional component, whereas the corresponding
+TDDFT-family routes do.
 
 DFTB-family routes contain no functional or basis component. `dftb0` selects
 the non-SCC ground-state model. Conventional `tddftb` and `tda-tddftb` accept
@@ -185,9 +218,22 @@ preserved. SF- and MRSF-TDDFTB instead construct their required high-spin
 reference automatically.
 
 ```text
-dftb0 geom="h2o.xyz" energy dftb(backend=probe,parameter_path="minimal.opdftb")
-tda-tddftb(nstate=3) geom="h2o.xyz" grad(T0) dftb(parameter_path="minimal.opdftb")
-sf-tddftb(nstate=3) geom="h2o.xyz" grad(root=2) dftb(parameter_path="minimal.opdftb")
+dftb0
+energy
+dftb(backend=probe,parameter_path="minimal.opdftb")
+geom="h2o.xyz"
+```
+
+```text
+tda-tddftb(nstate=3)
+grad(S1)
+geom="h2o.xyz"
+```
+
+```text
+sf-tddftb(nstate=3)
+grad(root=2)
+geom="h2o.xyz"
 ```
 
 All response-route parentheses accept only `nstate`. Select a physical spin
@@ -198,7 +244,10 @@ spellings. Put advanced response controls in their exact section call, for
 example:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g* geom="h2o.xyz" energy(S0) tdhf(nvdav=30)
+mrsf(nstate=5)/bhhlyp/6-31g*
+energy(S0)
+tdhf(nvdav=30)
+geom="h2o.xyz"
 ```
 
 MP2 route parentheses likewise accept only `reference`, `variant`,
@@ -225,6 +274,31 @@ These common values follow the route without a section name:
 | `ispher=VALUE` | Spherical/Cartesian AO convention. |
 | `perf=N` | OpenQP performance preset. |
 | `omp_threads=N` | OpenMP threads per MPI rank. `threads=N` is an alias. |
+
+Put geometry last in a readable `.oqp` file. For an external coordinate file,
+use `geom="h2o.xyz"`. To keep coordinates inside the `.oqp` file, use a
+triple-quoted block; each atom occupies its own line:
+
+```text
+hf/sto-3g
+energy
+geom="""
+O   0.000000   0.000000   0.000000
+H   0.000000   0.000000   0.960000
+H   0.000000   0.750000  -0.240000
+"""
+```
+
+The same coordinates may stay on one source line by escaping atom separators:
+
+```text
+hf/sto-3g
+energy
+geom="O 0 0 0\nH 0 0 0.96\nH 0 0.75 -0.24"
+```
+
+The escaped one-line value and the triple-quoted multiline block are parsed
+identically. Canonical rendering chooses the multiline block for readability.
 
 `geometry`/`system` are accepted aliases for `geom`, and
 `geometry2`/`system2` for `geom2`. `basis=...` and `functional=...` are accepted
@@ -314,14 +388,18 @@ MRSF-TDDFT/MRSF-TDHF; use `prop(S1)` or omit the state for its `S0` default.
 For MRSF SOC, the route count is applied equally to singlets and triplets:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* geom="h2o.xyz" soc
+mrsf(nstate=3)/bhhlyp/6-31g*
+soc
+geom="h2o.xyz"
 ```
 
 This requests `S0`--`S2` and `T0`--`T2`. Use explicit counts when the two
 manifolds need different sizes:
 
 ```text
-mrsf/bhhlyp/6-31g* geom="h2o.xyz" soc(ns=3,nt=5)
+mrsf/bhhlyp/6-31g*
+soc(ns=3,nt=5)
+geom="h2o.xyz"
 ```
 
 `ns` and `nt` are inseparable, and `soc(ns=...,nt=...)` cannot be combined with
@@ -331,7 +409,10 @@ labels directly, for example `mecp(S0,T0,maxit=100)`.
 Two primary drivers never imply a sequence. This is an error:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g* geom="h2o.xyz" grad(S1) opt(S1)
+mrsf(nstate=5)/bhhlyp/6-31g*
+grad(S1)
+opt(S1)
+geom="h2o.xyz"
 ```
 
 Use separate `.oqp` files for separate calculation steps.
@@ -359,7 +440,9 @@ distances.
 Native NEB keeps backend details out of the command:
 
 ```text
-dft/pbe0/def2-svp geom="reactant.xyz" neb(S0,product="product.xyz",images=7,spring=0.08,climb=true,fmax=0.002,frms=0.001,align=true,output="path.xyz")
+dft/pbe0/def2-svp
+neb(S0,product="product.xyz",images=7,spring=0.08,climb=true,fmax=0.002,frms=0.001,align=true,output="path.xyz")
+geom="reactant.xyz"
 ```
 
 `climb`, `align`, and `opt_ends` are booleans. `fmax` and `frms` are the maximum
@@ -504,67 +587,97 @@ where a state-aware canonical workflow supports them.
 1. HF energy with a tighter SCF threshold:
 
     ```text
-    hf/6-31g* geom="h2o.xyz" charge=0 mult=1 energy scf(conv=1e-8)
+    hf/6-31g*
+    energy
+    scf(conv=1e-8)
+    geom="h2o.xyz"
     ```
 
 2. DFT-D4/PCM single point:
 
     ```text
-    dft/pbe0/def2-svp geom="h2o.xyz" charge=0 energy d4 pcm(water)
+    dft/pbe0/def2-svp
+    energy
+    d4
+    pcm(water)
+    geom="h2o.xyz"
     ```
 
 3. MRSF gradient on the physical first singlet excited state:
 
     ```text
-    mrsf(nstate=5)/bhhlyp/6-31g* geom="h2o.xyz" charge=0 grad(S1)
+    mrsf(nstate=5)/bhhlyp/6-31g*
+    grad(S1)
+    geom="h2o.xyz"
     ```
 
 4. MRSF optimization on the physical singlet ground state:
 
     ```text
-    mrsf(nstate=5)/bhhlyp/6-31g* geom="h2o.xyz" charge=0 opt(S0,maxit=100)
+    mrsf(nstate=5)/bhhlyp/6-31g*
+    opt
+    geom="h2o.xyz"
     ```
 
 5. BaekA multistate MRSF conical-intersection search:
 
     ```text
-    mrsf(nstate=5)/bhhlyp/6-31g* geom="guess.xyz" charge=0 meci(S0,S1,S2,algorithm=baeka,maxit=100)
+    mrsf(nstate=5)/bhhlyp/6-31g*
+    meci(S0,S1,S2,algorithm=baeka)
+    geom="guess.xyz"
     ```
 
 6. Ground-state QM/MM molecular dynamics:
 
     ```text
-    dft/pbe0/def2-svp geom="qm.xyz" charge=0 md qmmm(pdb_file="system.pdb",forcefield_files="amber14-all.xml",qm_atoms="0-2",n_steps=100)
+    dft/pbe0/def2-svp
+    md
+    qmmm(pdb_file="system.pdb",forcefield_files="amber14-all.xml",qm_atoms="0-2",n_steps=100)
+    geom="qm.xyz"
     ```
 
 7. QM/MM single-point energy with the QM atom selection in the PDB geometry:
 
     ```text
-    dft/pbe0/def2-svp geom="ala.pdb 9 10 17 18 19" energy qmmm(embedding=electrostatic)
+    dft/pbe0/def2-svp
+    energy
+    qmmm(embedding=electrostatic)
+    geom="ala.pdb 9 10 17 18 19"
     ```
 
 8. Ground-state NEB calculation:
 
     ```text
-    dft/pbe0/def2-svp geom="reactant.xyz" charge=0 neb(S0,product="product.xyz",images=7)
+    dft/pbe0/def2-svp
+    neb(S0,product="product.xyz",images=7)
+    geom="reactant.xyz"
     ```
 
 9. NMR shielding with the canonical GIAO default:
 
     ```text
-    dft/pbe0/def2-svp geom="h2o.xyz" charge=0 energy nmr
+    dft/pbe0/def2-svp
+    energy
+    nmr
+    geom="h2o.xyz"
     ```
 
 10. Analytic Hessian with IR and Raman intent:
 
     ```text
-    dft/pbe0/def2-svp geom="h2o.xyz" charge=0 hess(S0,type=analytical) ir raman
+    dft/pbe0/def2-svp
+    hess(S0,type=analytical)
+    ir
+    raman
+    geom="h2o.xyz"
     ```
 
 11. Forward native IRC:
 
     ```text
-    dft/pbe0/def2-svp geom="ts.xyz" charge=0 irc(S0,direction=forward,step=0.1,maxit=30,hessian=analytical)
+    dft/pbe0/def2-svp
+    irc(S0,direction=forward,step=0.1,hessian=analytical)
+    geom="ts.xyz"
     ```
 
 Run any canonical file normally:
@@ -581,7 +694,7 @@ them as prose. Common corrections are:
 | Error | Correction |
 | --- | --- |
 | `# mrsf/...` | Remove the leading `#`. It is not a route marker in `.oqp`. |
-| `[input]` or `[scf]` in an `.oqp` file | Keep sectioned input in a `.inp` file, or rewrite it as one line. |
+| `[input]` or `[scf]` in an `.oqp` file | Keep sectioned input in a `.inp` file, or rewrite it in compact `.oqp` syntax. |
 | `grad(S1) opt(S1)` | Put the two primary calculations in separate `.oqp` files. |
 | `mrsf/... mult=3` | Remove `mult`; choose the physical target in the driver, such as `opt(T0)`. |
 | `sf/... grad(S1)` | Use an unlabeled response root, for example `grad(root=1)`. |
@@ -603,7 +716,7 @@ rejected. Canonical-looking text with a syntax error is reported as a syntax
 error rather than reinterpreted as prose.
 
 For reproducible production work, inspect and retain the resolved canonical
-line or write the canonical form directly.
+file or write the canonical form directly.
 
 ## MRSF Log Presentation
 
