@@ -105,6 +105,37 @@ current openqp-dftb wheel: the bundled OB2W0PT3 set (official shell-resolved
 the DFTB method (the Slater–Koster minimal basis is used regardless of its
 value), but a value must be present to satisfy the generic input checker.
 
+## Python API
+
+OpenQP provides one explicit helper for each DFTB calculation family:
+
+| Calculation family | Helper |
+| --- | --- |
+| Ground-state SCC-DFTB | `job.ground_dftb(...)` |
+| Conventional TD-DFTB | `job.tddftb(...)` |
+| SF-TDDFTB | `job.sf_tddftb(...)` |
+| MRSF-TDDFTB | `job.mrsf_tddftb(...)` |
+
+The same helpers are available through `job.theory`. They accept the usual
+`nstate`, `parameter_path`, and `[dftb]` keyword arguments, then combine with
+`job.workflow.energy()`, `.gradient(...)`, `.optimize(...)`, or another
+compatible workflow. For example:
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP(project="h2o_tddftb")
+job.molecule("h2o.xyz")
+job.tddftb(nstate=3, state_to_state_spectrum=True)
+job.workflow.energy()
+job.run()
+```
+
+The general `job.dftb(response_type=...)` builder remains available. For
+backward compatibility its omitted `response_type` still selects MRSF-TDDFTB;
+use the explicit helpers in new scripts when the calculation family should be
+immediately visible.
+
 ## Keywords
 
 ### `backend`
@@ -136,6 +167,43 @@ plain energy/gradient.
 Selects the DFTB response family. `auto` derives it from the workflow and
 [`[tdhf] type`](tdhf.md#type), defaulting to a ground-state DFTB energy when no
 excited state is requested.
+
+### `print_level`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `1` |
+| Values | `0`, `1`, `2` |
+| Used by | native SCC, response, and gradient progress logging |
+
+Controls structured progress from the native OpenQP-DFTB kernels. Level `0`
+is quiet, level `1` records stage and completion summaries, and level `2` adds
+iteration-level residuals. OpenQP captures the native output and places it in
+the normal calculation log; temporary trace settings and file-descriptor state
+are restored after every native call.
+
+Structured progress is an optional native-library capability. An older ABI-1,
+ABI-2, or ABI-3 library that does not advertise it remains usable: OpenQP logs
+that the requested trace is unavailable instead of enabling an unsafe hook.
+
+### `state_to_state_spectrum`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `True` |
+| Used by | excited-state energy calculations |
+
+Requests all upward root-pair oscillator strengths for TD-DFTB, SF-TDDFTB, and
+MRSF-TDDFTB energy calculations. Historical ground/first-root transition
+values are preserved; additional excited-state pairs use the unrelaxed
+TDA/state-interaction density approximation. Set this to `False` to suppress
+the table.
+
+The all-pair spectrum is also an optional native-library capability. OpenQP
+reports it as unavailable when the loaded library predates that capability,
+without rejecting the otherwise supported calculation.
 
 ### `model`
 

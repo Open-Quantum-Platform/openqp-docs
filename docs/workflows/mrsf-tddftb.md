@@ -368,10 +368,14 @@ embedding is not yet wired for the DFTB method.
 
 ## Python API
 
-The `.dftb(...)` builder accepts `response_type` values `ground`, `dftb0`,
-`tddftb`, `sf`, and `mrsf`, along with any `[dftb]` keyword (for example
-`lc_gamma`, `omega`, `scc_mixer`). The run type is set either with `runtype=...`
-on the builder or through `job.workflow.energy()`, `.gradient(state=N)`,
+Use `job.mrsf_tddftb(...)` for an explicit MRSF-TDDFTB request. The matching
+helpers for the other families are `job.ground_dftb(...)`, `job.tddftb(...)`,
+and `job.sf_tddftb(...)`; all four are also available through `job.theory`.
+The general `.dftb(...)` builder remains available and accepts `response_type`
+values `ground`, `dftb0`, `tddftb`, `sf`, and `mrsf`, along with any `[dftb]`
+keyword (for example `lc_gamma`, `omega`, `scc_mixer`, `print_level`, or
+`state_to_state_spectrum`). The run type is set either with `runtype=...` on
+the builder or through `job.workflow.energy()`, `.gradient(state=N)`,
 `.optimize(istate=N)`, and `.meci(...)`:
 
 ```python
@@ -379,7 +383,7 @@ from oqp.openqp import OpenQP
 
 job = OpenQP(project="thymine_dftb")
 job.molecule("thymine.xyz")
-job.dftb(response_type="mrsf", nstate=3)
+job.mrsf_tddftb(nstate=3, print_level=1)
 job.workflow.gradient(state=2)
 job.run()
 ```
