@@ -211,11 +211,19 @@ without rejecting the otherwise supported calculation.
 | --- | --- |
 | Type | string |
 | Default | *(empty)* |
-| Values | `dtcam-tb` |
+| Values | `dtcam`, `dtcam2` / `dtcam-erf`, `ob2` |
 | Used by | published operator presets (native backend only) |
 
 Applies a complete, published operator preset, resolved inside openqp-dftb
-(single source of truth, so inputs cannot drift from the paper). `dtcam-tb`
+(single source of truth, so inputs cannot drift from the paper). See
+[DTCAM](../workflows/dtcam.md) for the full preset table.
+
+The former spellings `dtcam-tb`, `dtcam-tb2` / `dtcam-tb-erf` and `dftb+`
+remain accepted aliases, so existing inputs keep working; the names above are
+canonical. (`dftb+` was renamed because DFTB+ is a separate program, whereas
+this preset is the conventional OB2 / LC-DFTB2 protocol.)
+
+`dtcam`
 selects the DTCAM-TB operator: reference LC erf(0, 0.04, 0.30 a₀⁻¹) with an
 LC ground state, independent response LC (0, 1.0125, 0.2625 a₀⁻¹), official
 OB2 spin-W at strengths (1.00, 0.6375), SPC channels (1.025, 0.25, 0.2625),
