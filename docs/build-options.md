@@ -50,6 +50,8 @@ see [Python Package Build Defaults](#python-package-build-defaults).
 | `ENABLE_PYTHON` | `ON` | `ON` | `ON`, `OFF` | Build the Python CFFI extension and install Python runtime files. |
 | `ENABLE_OPENMP` | `OFF` | `ON` | `ON`, `OFF` | Enable OpenMP parallel kernels. |
 | `ENABLE_MPI` | `OFF` | `OFF` | `ON`, `OFF` | Enable MPI support. Requires MPI and usually MPI compiler wrappers. |
+| `ENABLE_AFQMC` | Auto | Auto | `ON`, `OFF` | Build and package the external native OpenMP AFQMC runner when an AFQMC checkout is detected. |
+| `OPENQP_AFQMC_SOURCE_DIR` | Auto-detected | Auto-detected | Path | AFQMC checkout. When unset, OpenQP checks `external/afqmc` and then a sibling directory named `afqmc`. |
 
 ## Integral, Optimizer, and Solvent Backends
 
