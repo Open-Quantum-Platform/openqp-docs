@@ -32,8 +32,8 @@ options are rejected.
 | `omp_threads` | `threads` | integer | `1` | OpenMP threads used by the native runner. |
 | `stabilize_every` | — | integer | `5` | Walker orthonormalization interval. |
 | `population_control_every` | — | integer | `5` | Population-control interval. |
-| `estimate_every` | — | integer | `25` | Energy-estimator sampling interval. |
-| `accumulate_after` | — | integer | `100` | Equilibration steps discarded before accumulation; smaller than `nsteps`. |
+| `estimate_every` | — | integer | `25` | Energy-estimator sampling interval; no larger than `nsteps`. |
+| `accumulate_after` | — | integer | `100` | Equilibration steps discarded before accumulation; zero is allowed and the value must be smaller than `nsteps`. |
 | `force_bias_bound` | — | float | `1.0` | Component-wise force-bias bound. |
 
 ## Python API

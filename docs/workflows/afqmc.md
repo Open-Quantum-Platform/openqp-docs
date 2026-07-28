@@ -62,8 +62,10 @@ Without `--prepare-only`, the command performs these steps:
 5. Launch native AFQMC using the controls in [`[afqmc]`](../keywords/afqmc.md).
 
 The output directory contains `HAMILTONIAN`, `FCIDUMP`, `TRIAL` or the selected
-multideterminant trial, `OOORBDAT`, `AFQMC.json`, `AFQMC.KEYWORDS`, and the
-OpenQP log.
+multideterminant trial, `OOORBDAT`, `AFQMC.json`, and the OpenQP log.
+`AFQMC.KEYWORDS` is also written when the target has nonnegative `MS2`; the
+legacy `MULT` convention cannot encode negative target `MS2`, but this does not
+prevent native preparation or propagation.
 
 ## Multideterminant Trials
 
