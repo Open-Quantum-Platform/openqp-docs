@@ -11,6 +11,7 @@ specific input contract.
 | --- | --- |
 | HF and DFT | RHF, ROHF, and UHF references. |
 | MP2 | Energy-only standalone MP2 on RHF, UHF, and ROHF references, with spin-scaled variants. |
+| Coupled cluster | Energy-only CCSD and CCSD(T) on RHF, UHF, and ROHF references, with a frozen core. In-core integrals; the open-shell path is a spin-orbital solver for small systems. |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
 | SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
 | UMRSF-TDDFT | Energy-only UHF-reference workflow. |
@@ -58,5 +59,8 @@ constraint types that the concise grammar does not yet support.
   part of the first ddX energy path.
 - MP2 gradients, Hessians, RI/Laplace/local MP2 kernels, and periodic MP2 are
   not part of the documented standalone MP2 path.
+- Coupled-cluster gradients and derivative workflows are not implemented, and
+  there is no integral-direct, density-fitted, or disk-based coupled-cluster
+  mode; the integrals are held in memory.
 - UMRSF-TDDFT gradients and Hessians are not part of the documented production
   surface yet.
