@@ -177,8 +177,8 @@ projected convergence interpretation.
 - Start from a geometry reasonably close to the desired intersection seam.
 - The optimizer follows selected response-root indices. It does not track
   electronic character or relabel roots during the geometry search.
-- `penalty`, `ubp`, and `hybrid` remain the established two-state MECI
-  algorithms. Select `algorithm=baeka` when the additive independent-gap
+- `auglag` is the two-state default, and `penalty`, `ubp`, and `hybrid` remain
+  available. Select `algorithm=baeka` when the additive independent-gap
   formulation is intended, including for a two-state calculation.
 
 ## Python and Legacy `.inp` Configuration
