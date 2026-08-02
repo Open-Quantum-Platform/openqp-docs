@@ -53,6 +53,7 @@ nav:
       - DTCAM: workflows/dtcam.md
       - MRSF Analysis and Interoperability: workflows/mrsf-analysis.md
       - Hessian and Frequencies: workflows/hessian.md
+      - Orbital and Vibrational Output: workflows/orbital-vibrational-output.md
       - Optimization: workflows/optimization.md
       - BaekA Multistate MECI: workflows/baeka-multistate-meci.md
       - Spin-Orbit Coupling: workflows/soc.md

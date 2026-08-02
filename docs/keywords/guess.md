@@ -64,11 +64,12 @@ information. If it is omitted, NACME can instead use `[input] system2`.
 | --- | --- |
 | Type | boolean |
 | Default | `False` |
-| Used by | restart/debug workflows |
+| Used by | restart, orbital export, and inspection workflows |
 
-Requests saving molecular data for later restart or inspection. Leave it off
-for ordinary production inputs unless a workflow explicitly needs a JSON
-restart.
+Requests saving molecular data for later restart or inspection. Supported
+bases also add portable AO basis, molecular-orbital, vibrational, and
+state-specific Dyson data for visualization. See
+[Orbital and Vibrational Output](../workflows/orbital-vibrational-output.md).
 
 ### `continue_geom`
 

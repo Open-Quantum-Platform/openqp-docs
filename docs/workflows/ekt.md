@@ -55,3 +55,9 @@ Each has a same-stem legacy `.inp` companion.
 
 At least one of `[ekt] ip` or `[ekt] ea` must be true. Set both to true to run
 both channels in one job.
+
+With `[guess] save_mol=True`, the full JSON contains state-specific Dyson AO
+coefficients, labels, electron binding energies, and pole strengths. With
+`[scf] save_molden=True`, OpenQP also writes a dedicated state-labeled Dyson
+Molden file after the EKT calculation. See
+[Orbital and Vibrational Output](orbital-vibrational-output.md).
