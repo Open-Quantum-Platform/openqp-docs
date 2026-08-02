@@ -138,7 +138,8 @@ set `energy_gap=1.0e-4`. See the
 Selects the MECI search strategy. `auglag`, `penalty`, `ubp`, and `hybrid` use
 the traditional `istate`/`jstate` pair. `baeka` accepts the two-or-more-root
 [`states`](#states) list and selects the additive BaekA independent-gap
-objective. The concise equivalent is `algorithm=auglag` inside `meci(...)`.
+objective. Each maps to `algorithm=<name>` inside `meci(...)`, so BaekA is
+`algorithm=baeka` and the augmented Lagrangian is `algorithm=auglag`.
 
 `auto` resolves to `auglag` for two states and to `baeka` for three or more.
 With the native optimizer, BaekA is also held back as a rescue on the recovery

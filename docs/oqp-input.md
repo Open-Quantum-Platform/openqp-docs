@@ -322,7 +322,9 @@ In the signatures, `OPT` means the common native controls `maxit`, `rmsd_grad`,
 BaekA convergence set `maxit`, `rmsd_grad`, `energy_shift`, and `init_scf`;
 BaekA does not terminate on `rmsd_step`, `max_step`, or `max_grad`. `BAEKA`
 means the public adaptive-penalty controls `sigma`,
-`alpha`, `delta_beta`, `beta_schedule`, and `gap`. The MECI `algorithm` option
+`alpha`, `delta_beta`, `beta_schedule`, and `gap`. The MECI and MECP
+`algorithm` options map to `meci_search` and `mecp_search`, and `gap_sigma`
+scales the `auglag` gap term. The MECI `algorithm` option
 lowers to the traditional
 [`meci_search`](keywords/optimize.md#meci_search) selector. The BaekA controls
 lower respectively to `pen_sigma`, `pen_alpha`, `pen_delta`, `pen_jump`, and
@@ -345,9 +347,9 @@ means the current `[md]` controls `nstep`,
 | <code>energy([S0&#124;T0&#124;Q0])</code> | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet. |
 | `grad([STATE],td_prop=...,export=...,title=...)` | Gradient target plus concise `[properties]` controls. Default target is `S0`, except that SF routes require `root=N`. |
 | `opt([STATE],OPT...,ENGINE...,freeze="distance(i,j)")` | Native minimum optimization. Default target is `S0`, except that SF routes require `root=N`. `freeze` holds one or more semicolon-separated atom-pair distances at their initial values. |
-| <code>meci(STATE1,STATE2,[algorithm=penalty&#124;ubp&#124;hybrid],OPT...,ENGINE...)</code><br><code>meci(STATE1,STATE2[,STATE3...],algorithm=baeka,BAEKA_OPT...,BAEKA...,ENGINE...)</code> | Native intersection search for states of the same multiplicity. A two-state call defaults to `penalty`; a call with three or more states selects `baeka`, the only N-state algorithm. Writing `algorithm=baeka` explicitly is recommended and also selects BaekA for two states. State order is normalized. Use public `gap` rather than the internal `energy_gap` spelling in a BaekA call, and do not supply both. See [BaekA Multistate MECI](workflows/baeka-multistate-meci.md). |
+| <code>meci(STATE1,STATE2,[algorithm=auglag&#124;penalty&#124;ubp&#124;hybrid],[gap_sigma=...],OPT...,ENGINE...)</code><br><code>meci(STATE1,STATE2[,STATE3...],algorithm=baeka,BAEKA_OPT...,BAEKA...,ENGINE...)</code> | Native intersection search for states of the same multiplicity. A two-state call defaults to `auglag`, the augmented Lagrangian, whose gap term is scaled by `gap_sigma` (default `10.0`); a call with three or more states selects `baeka`, the only N-state algorithm. Writing `algorithm=baeka` explicitly is recommended and also selects BaekA for two states. State order is normalized. Use public `gap` rather than the internal `energy_gap` spelling in a BaekA call, and do not supply both. See [BaekA Multistate MECI](workflows/baeka-multistate-meci.md). |
 | `tci(STATE1,STATE2,STATE3,OPT...,TCI...,ENGINE...)` | Backward-compatible three-state adaptive-penalty driver. It preserves the established `pen_sigma`/`pen_alpha`/multiplicative `pen_incre` behavior and is not an alias for BaekA. New work should select the intended MECI algorithm explicitly. |
-| `mecp(STATE1,STATE2,OPT...,ENGINE...)` | Native crossing search for two states of different multiplicity. |
+| <code>mecp(STATE1,STATE2,[algorithm=auglag&#124;ubp&#124;penalty&#124;quad],[gap_sigma=...],OPT...,ENGINE...)</code> | Native crossing search for two states of different multiplicity. Defaults to `algorithm=auglag`, whose gap term is scaled by `gap_sigma` (default `10.0`). `quad` is the legacy fixed-weight quadratic penalty; it settles at a residual gap of order `1/gap_weight` and is kept only to reproduce older runs. |
 | <code>mep([STATE],maxit=...&#124;points=...,step=...,gtol=...)</code> | Native minimum-energy path with a path limit, step size, and gradient stopping threshold. |
 | <code>ts([STATE],OPT...,ENGINE...,follow=N,hessian=model&#124;numerical&#124;analytical)</code> | Native P-RFO transition-state search. `follow` chooses the initial mode and `hessian` chooses the initial Hessian policy. |
 | <code>irc([STATE],maxit=...,direction=forward&#124;backward,step=...,hessian=numerical&#124;analytical,gtol=...)</code> | Native IRC with an explicit branch, step size, Hessian type, and gradient stopping threshold. |
