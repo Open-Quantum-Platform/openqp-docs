@@ -92,9 +92,12 @@ conv=1.0e-7
 ```
 
 Runnable inputs:
-[`examples/CC/`](https://github.com/Open-Quantum-Platform/openqp/tree/main/examples/CC)
+[`examples/CC/`](https://github.com/karmachoi/openqp/tree/claude/ccsd-t-parallel-lnoacw/examples/CC)
 holds each calculation as both a `.oqp` line and a same-stem legacy `.inp`
-deck.
+deck. The link points at the preview branch of PR
+[#302](https://github.com/Open-Quantum-Platform/openqp/pull/302), because that
+directory does not exist on `main` yet; it becomes a `main` link once the
+implementation merges.
 
 Running the `.inp` deck shown above (`examples/CC/h2o_ccsd_t_6-31g.inp`)
 reports:
