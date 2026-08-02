@@ -161,16 +161,16 @@ stationary point sits at a finite gap, so on its own it stalls above
 | --- | --- |
 | Type | string |
 | Default | `auglag` |
-| Values | `auglag`, `ubp`, `penalty`, `quad` |
+| Values | `auglag`, `penalty`, `quad` |
 | Used by | MECP (spin-crossing) search algorithm |
 
 Selects the MECP search strategy. The two states differ in spin multiplicity,
 so the derivative coupling vanishes and the branching space is the single
 gradient-difference direction.
 
-`auglag` is the same augmented Lagrangian described above; `ubp` names the same
-objective, and with `gap_sigma=1` it is the plain Bearpark gradient projection.
-`penalty` is the Levine-Martinez smooth penalty.
+`auglag` is the same augmented Lagrangian described above; with `gap_sigma=1`
+its converged form is the plain Bearpark gradient projection. `penalty` is the
+Levine-Martinez smooth penalty.
 
 `quad` is the legacy fixed-weight quadratic penalty
 `0.5 (E_i + E_j) + gap_weight (E_j - E_i)^2`. Its stationary condition balances
