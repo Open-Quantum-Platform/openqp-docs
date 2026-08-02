@@ -7,6 +7,11 @@ cases and numerical Hessians for broader workflows.
 Frequency, IR, Raman, and thermochemistry analysis are built from Hessian data
 when the selected workflow produces the required derivatives.
 
+The generated `.hess.json` and `.freq.molden` files contain portable normal
+modes and, for supported bases, the SCF molecular orbitals needed to view MO
+surfaces and vibrational animation together. See
+[Orbital and Vibrational Output](orbital-vibrational-output.md).
+
 In Python scripts, start from a compact HF, DFT, or MRSF-TDDFT theory setup and
 then select the Hessian workflow with `job.workflow.hessian(...)`.
 

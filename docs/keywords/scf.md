@@ -341,7 +341,10 @@ Convergence threshold for the initial SCF stage.
 | Default | `True` |
 | Used by | Molden output |
 
-Writes Molden orbital files when supported.
+Writes Molden orbital files when supported. Hessian calculations combine SCF
+orbitals and normal modes in the frequency Molden file. MRSF-EKT calculations
+also write a state-labeled Dyson Molden file after the EKT kernel completes.
+See [Orbital and Vibrational Output](../workflows/orbital-vibrational-output.md).
 
 ### `rstctmo`
 
