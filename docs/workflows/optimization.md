@@ -182,6 +182,28 @@ meci(S0,S1,S2,S3,algorithm=baeka)
 geom="guess.xyz"
 ```
 
+Two-state MECI and MECP both default to `algorithm=auglag`, an augmented
+Lagrangian. A least-squares multiplier removes the mean-gradient component
+along the gap direction, so what remains is a gap term and a projected mean
+gradient that are orthogonal to each other. Orthogonal terms cannot cancel, so
+a vanishing total gradient forces the energy gap to zero.
+
+This matters because a plain penalty cannot do that. Its stationary condition
+balances the mean gradient against the gap term, and since those two are not
+orthogonal they cancel at a residual gap of order `1/weight`, leaving the
+optimizer converged onto a point that is not a crossing. Raising the weight
+shrinks the residual only as `1/weight` and never removes it. The legacy MECP
+`algorithm=quad` behaves this way and is kept only for reproducing older runs.
+
+Use [`gap_sigma`](../keywords/optimize.md#gap_sigma) to scale the gap term;
+`gap_sigma=1` recovers the plain Bearpark gradient projection.
+
+```text
+mrsf(nstate=5)/bhhlyp/6-31g*
+mecp(S0,T0,algorithm=auglag,gap_sigma=10.0)
+geom="guess.xyz"
+```
+
 `algorithm=baeka` selects the Baek adaptive penalty-function method within the
 ordinary MECI driver. It accepts two or more states from one spin manifold,
 uses the independent adjacent energy gaps, and updates the penalty strength

@@ -286,10 +286,10 @@ minimum-energy conical-intersection searches run through the shared
 no separate DFTB entry point. Because MRSF has the correct S₀/S₁ intersection
 topology, DTCAM-TB is the DFTB operator to use for conical intersections.
 
-`[optimize] meci_search` accepts `auto` (the default), `penalty`, `ubp`,
-`hybrid`, and `baeka`. For two states `auto` starts with the cheap penalty walk
-and escalates to BaekA only if the penalty phase does not converge; with three
-or more states it selects BaekA directly.
+`[optimize] meci_search` accepts `auto` (the default), `auglag`, `penalty`,
+`ubp`, `hybrid`, and `baeka`. For two states `auto` runs the augmented
+Lagrangian and escalates to BaekA only if that does not meet the convergence
+criteria; with three or more states it selects BaekA directly.
 
 ### Two-state seam: S₁/S₀ of ethylene
 
