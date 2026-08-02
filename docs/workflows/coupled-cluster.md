@@ -1,5 +1,13 @@
 # Coupled Cluster (CCSD, CCSD(T))
 
+!!! warning "Development preview"
+    Coupled cluster targets OpenQP PR
+    [#302](https://github.com/Open-Quantum-Platform/openqp/pull/302) and is not
+    part of OpenQP 1.2.0. An installed 1.2.0 release does not recognize
+    `method=ccsd` or `method=ccsd(t)` and rejects them as unknown methods.
+    Build from that branch, or wait for the release that includes it, before
+    using anything on this page.
+
 OpenQP supports ground-state coupled cluster with `[input] method=ccsd` and
 `[input] method=ccsd(t)`. The calculation converges a Hartree-Fock reference
 first, then adds the coupled-cluster singles and doubles correlation energy;

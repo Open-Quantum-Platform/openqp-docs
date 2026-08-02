@@ -14,7 +14,7 @@ scripts organized around six top-level ideas.
 | Top-level call | Purpose |
 | --- | --- |
 | `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
-| `job.theory.<model>(...)` | Quantum theory: HF, DFT, MP2, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
+| `job.theory.<model>(...)` | Quantum theory: HF, DFT, MP2, CCSD, CCSD(T), TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. CCSD and CCSD(T) are a development preview, not part of OpenQP 1.2.0. |
 | `job.workflow.*(...)` | Calculation type: gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, NAMD, and related job workflows. Plain energy calculations need no workflow call. |
 | `job.qmmm(...)` | Enable ESPF QM/MM embedding: sets `[input] qmmm_flag=true` and the `[qmmm]` section (PDB, force field, QM atoms, cutoff, embedding). |
 | `job.control(...)` | Hardware and runtime controls such as `usempi` and `omp_threads`. |
@@ -112,6 +112,34 @@ job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2", conv=1.0e-10)
 mol = job.run()
 print("MP2 total energy:", mol.get_results()["energy"])
 ```
+
+## Minimal Coupled-Cluster Script
+
+!!! warning "Development preview"
+    `job.theory.ccsd(...)` and `job.theory.ccsd_t(...)` target OpenQP PR
+    [#302](https://github.com/Open-Quantum-Platform/openqp/pull/302) and are not
+    part of OpenQP 1.2.0.
+
+Coupled cluster also uses an HF reference and is also energy-only.
+`job.theory.ccsd_t(...)` adds the perturbative triples correction;
+`job.theory.ccsd(...)` is the same helper without it.
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_ccsd_t", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.ccsd_t(basis="6-31g", reference="rhf", nfzc=1, conv=1.0e-7)
+
+mol = job.run()
+print("CCSD(T) total energy:", mol.get_results()["energy"])
+```
+
+`nfzc`, `conv`, `maxit`, and `ndiis` are the coupled-cluster controls and route
+to [`[cc]`](keywords/cc.md); the SCF keeps its own `conv` and `maxit`, so any
+other keyword passed here routes to `[scf]` as usual. See
+[Coupled Cluster](workflows/coupled-cluster.md) for the reference types and
+their cost.
 
 ## Theory, Workflow, And Settings
 

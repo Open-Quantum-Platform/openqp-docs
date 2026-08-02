@@ -11,7 +11,7 @@ specific input contract.
 | --- | --- |
 | HF and DFT | RHF, ROHF, and UHF references. |
 | MP2 | Energy-only standalone MP2 on RHF, UHF, and ROHF references, with spin-scaled variants. |
-| Coupled cluster | Energy-only CCSD and CCSD(T) on RHF, UHF, and ROHF references, with a frozen core. In-core integrals; the open-shell path is a spin-orbital solver for small systems. |
+| Coupled cluster | Development preview in OpenQP PR [#302](https://github.com/Open-Quantum-Platform/openqp/pull/302), not OpenQP 1.2.0. Energy-only CCSD and CCSD(T) on RHF, UHF, and ROHF references, with a frozen core. In-core integrals; the open-shell path is a spin-orbital solver for small systems. See [Coupled Cluster](workflows/coupled-cluster.md). |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
 | SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
 | UMRSF-TDDFT | Energy-only UHF-reference workflow. |

@@ -83,6 +83,7 @@ previous geometry.
 | `[guess]` | Initial orbitals and restart data. |
 | `[scf]` | RHF/ROHF/UHF reference and SCF convergence controls. |
 | `[mp2]` | Standalone MP2 spin-scaling controls. |
+| `[cc]` | Coupled-cluster frozen core and solver controls (development preview, not part of OpenQP 1.2.0). |
 | `[dftgrid]` | DFT functional/grid controls. |
 | `[tdhf]` | TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, and UMRSF settings. |
 | `[dftb]` | DFTB backend, SCC, response, and MRSF-TDDFTB controls. |
