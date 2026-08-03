@@ -532,15 +532,19 @@ flushed, and atomically replaced.
 Restart the trajectory from a saved state.
 
 Every canonical `.oqp` NAMD run also writes a directly runnable file named
-`restart.oqp` beside the main log. It preserves the original request and adds
-`restart=true` plus explicit checkpoint, trajectory, and NACME-audit paths.
-Run `restart.oqp` to continue toward the original final `nstep`; `nstep` is not
-interpreted as an additional number of steps. The compact `restart.oqp` and its
-NPZ numerical checkpoint must remain together. Because the manifest name is
-exactly `restart.oqp`, simultaneous trajectories must use separate directories.
+`<project>.namd.restart.oqp` beside the main log. It preserves the original
+request, resolves input-owned paths against the original input directory, and
+adds `restart=true` plus explicit checkpoint, trajectory, and NACME-audit
+paths. Run this manifest to continue toward the original final `nstep`;
+`nstep` is not interpreted as an additional number of steps. The manifest and
+its NPZ numerical checkpoint must remain together. Deriving the manifest name
+from the project/log stem prevents simultaneous trajectories in one output
+directory from overwriting each other.
 
-Restart currently supports same-spin gas-phase and QM/MM NAMD. SOC-NAMD rejects
-`restart=true` until its additional spin-adiabatic/MCH histories are included.
+Restart, packed trajectory/checkpoint/audit output, NVE gating, and NACME
+comparison currently support same-spin gas-phase and QM/MM NAMD. SOC-NAMD
+rejects these requested controls until its additional spin-adiabatic/MCH
+histories and record format are included.
 
 ## SOC-NAMD (Intersystem Crossing)
 

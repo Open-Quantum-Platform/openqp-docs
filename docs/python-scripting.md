@@ -253,9 +253,10 @@ use `nacme_gate="error"` only after calibrating the absolute and relative
 tolerances for the target system. The same gate accepts a signed, phase-aligned
 analytic `d_IJ . v` reference when that provider is connected in a later release.
 
-NAMD writes a dense appendable, packed-binary `<project>.namd.trj`, an atomic
-compressed checkpoint, and a directly runnable `restart.oqp`. The trajectory
-is designed for NumPy memory mapping rather than human reading. Use
+Same-spin NAMD writes a dense appendable, packed-binary `<project>.namd.trj`,
+an atomic compressed checkpoint, and a directly runnable
+`<project>.namd.restart.oqp`. The trajectory is designed for NumPy memory
+mapping rather than human reading. Use
 `trajectory_interval` to trade temporal resolution for file size; strict NVE
 gate failures are retained even between regular output points:
 
@@ -277,6 +278,10 @@ job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=2)
 job.workflow.namd(nstep=100, dt=0.5, active=1)
 mol = job.run()
 ```
+
+SOC-NAMD does not yet write this dense same-spin record format and therefore
+rejects explicit trajectory/checkpoint/audit controls, restart, the NVE gate,
+and the NACME comparison gate instead of silently ignoring them.
 
 Nonadiabatic QM/MM dynamics currently supports whole-molecule QM regions; see the
 [SOC-NAMD-QMMM workflow](workflows/soc-namd-qmmm.md), the [`[md]`](keywords/md.md)
