@@ -38,7 +38,7 @@ Gas-phase FSSH on MRSF-TDDFT states:
 
 ```text
 mrsf(nstate=5)/bhhlyp/6-31g*
-namd(S1,nstep=200)
+namd(S1)
 geom="molecule.xyz"
 ```
 
@@ -50,7 +50,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("molecule_namd")
 job.molecule("molecule.xyz")
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
-job.workflow.namd(init_state="S1", nstep=200)
+job.workflow.namd(init_state="S1")
 mol = job.run()
 ```
 
