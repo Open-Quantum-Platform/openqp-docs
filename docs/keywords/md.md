@@ -258,15 +258,15 @@ nominally independent trajectories.
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `2` |
+| Default | `1` |
 | Used by | electronic propagation and stochastic hopping |
 
 First physical nuclear step at which electronic propagation and the FSSH hop
-decision are performed. The default follows the KNU-GAMESS/TLF2 initialization
-convention: step 1 establishes the first inter-geometry record, and step 2 is
-the first hopping decision. A skipped step does not consume a hopping random
-number. Set `first_hop_step=1` only when the selected overlap protocol defines
-and intentionally uses the first interval.
+decision are performed. The default preserves historical OpenQP behavior at
+step 1. Set `first_hop_step=2` explicitly for the KNU-GAMESS/TLF2
+initialization convention: step 1 establishes the first inter-geometry record,
+and step 2 is the first hopping decision. A skipped step does not consume a
+hopping random number.
 
 For a strict OpenQP/KNU comparison, use the same full-precision random tape and
 the same `first_hop_step`; rounded values copied from ordinary text output can
@@ -441,13 +441,13 @@ integrator drift.
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `1` |
+| Default | `0` (automatic, approximately 10 fs) |
 | Used by | dense NAMD trajectory |
 
-Write every Nth MD step to the dense binary trajectory. The default stores
-every step and is recommended for NACME validation. Larger values such as `10`
-reduce long-ensemble file size. A point that triggers the strict NVE gate is
-written even when it is not on the configured interval.
+Positive values write every Nth MD step to the dense binary trajectory. Zero
+chooses `round(10 fs / dt)`, with a minimum of one step. The final point and a
+point that triggers either strict NACME or NVE validation are written even when
+they are not on the regular interval.
 
 ### `trajectory_file`
 
@@ -480,32 +480,26 @@ print(trajectory["active"])
 print(trajectory["overlap_tdc_au"][:, 0, 1])
 ```
 
-On restart, OpenQP validates the trajectory schema and calculation identity,
+The human-readable NACME validation table is written to the main log; no
+separate tabulated NACME file is produced. On restart, OpenQP validates the
+trajectory schema and calculation identity,
 removes only records newer than the last atomic checkpoint, and appends the
 continued trajectory. Committed records are not rewritten.
-
-### `nacme_audit_file`
-
-| Field | Value |
-| --- | --- |
-| Type | string |
-| Default | `<project>.namd.nacme.tsv` |
-| Used by | compact NACME gate summary |
-
-Tab-separated one-row-per-gate summary for quick plotting. The complete
-matrices and tracking data remain in the dense trajectory.
 
 ### `restart_interval`
 
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `1` |
+| Default | `0` (automatic, approximately 10 fs) |
 | Used by | atomic NAMD checkpoint |
 
-Write the restart checkpoint every Nth step. The default commits every step.
-Increasing this value reduces checkpoint I/O but also increases the maximum
-amount of accepted dynamics that must be recomputed after an error.
+Positive values write the restart checkpoint every Nth step. Zero chooses
+`round(10 fs / dt)`, with a minimum of one step. The final MD step is always
+saved. Increasing the effective interval reduces checkpoint I/O but also
+increases the maximum amount of accepted dynamics that must be recomputed after
+an error. The generated restart input is written once because its contents do
+not change between checkpoints.
 
 ### `restart_file`
 

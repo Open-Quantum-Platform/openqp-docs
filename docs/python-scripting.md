@@ -245,7 +245,8 @@ mol = job.run()
 For an ensemble, keep one campaign `seed` and assign a distinct `rng_stream`
 to each trajectory. Hopping random numbers are then reproducible functions of
 the campaign seed, trajectory stream, and physical MD step. The default
-`first_hop_step=2` follows the KNU-GAMESS/TLF2 initialization convention.
+`first_hop_step=1` preserves historical OpenQP behavior. Set
+`first_hop_step=2` explicitly for a KNU-GAMESS/TLF2 initialization comparison.
 Set `nacme_check="baeck_an"` to log an independent energy-curvature estimate
 beside the overlap/TLF TDC. The comparison is magnitude-only because TD-BA has
 no wavefunction phase information. `nacme_gate="warn"` is the safe validation
@@ -257,8 +258,10 @@ Same-spin NAMD writes a dense appendable, packed-binary `<project>.namd.trj`,
 an atomic compressed checkpoint, and a directly runnable
 `<project>.namd.restart.oqp`. The trajectory is designed for NumPy memory
 mapping rather than human reading. Use `trajectory_interval` to trade temporal
-resolution for file size; strict NVE gate failures are retained even between
-regular output points:
+resolution for file size. Zero, the default, selects an interval of
+approximately 10 fs from `dt`; positive values are step counts. The final point
+and strict NACME or NVE failures are retained even between regular output
+points. The human-readable NACME validation table remains in the main log:
 
 ```python
 from oqp.library.namd import read_namd_trajectory
