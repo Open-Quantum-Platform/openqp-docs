@@ -209,25 +209,50 @@ Notes on the deck:
   active-root MCH gradients and selects `NAMD_SOC_MCH_QMMM`. Use
   `soc_basis=adiabatic` to test the spin-adiabatic weighted-gradient path and
   its optional correction flags.
-- **Gap gate.** [`thrshe=0.1`](../keywords/md.md#thrshe) is the recommended
-  SOC-NAMD value; the large default would allow spurious S0 hops at the
-  Franck-Condon geometry.
+- **Gap gate.** [`thrshe=0.1`](../keywords/md.md#thrshe) is the default for
+  both same-spin and SOC dynamics and blocks large-gap transitions outside the
+  intended local crossing region.
 - **QM region.** [`qm_atoms`](../keywords/qmmm.md#qm_atoms) must be a whole
   molecule (see [Scope and limitations](#scope-and-limitations)).
 - **Periodicity.** [`cutoff=PME`](../keywords/qmmm.md#cutoff) selects the
   periodic ESPF-PME branch for a solvated box; use `NoCutoff` for an isolated
   cluster.
 
-## Outputs and energy conservation
+## Production records, restart, and energy conservation
 
-The run writes a trajectory log with, per nuclear step, the time, the active
-state, the MCH/spin-adiabatic state energies, the total energy `E_tot`
-(potential + kinetic, including the ESPF embedding energy), and hopping events.
+SOC-NAMD writes the same restartable production record family as same-spin
+NAMD:
 
-Under NVE dynamics with the default full-ESPF electrostatics, `E_tot` should be
-**flat** (no systematic drift) — this is the main check that the trajectory is
-physically meaningful. To verify, plot `E_tot` versus time from the trajectory
-log and confirm it fluctuates around a constant with no trend.
+- `<project>.namd.trj` is an appendable packed binary trajectory intended for
+  memory-mapped analysis. Besides geometry, velocity, energy, population, hop,
+  and full-precision random fields, SOC records contain the complex
+  spin-adiabatic overlap and anti-Hermitian TDC as real/imaginary components and
+  identify the active `adiabatic` or `mch` representation.
+- `<project>.namd.restart.npz` is an atomic numerical checkpoint. It preserves
+  the previous SOC eigensystem and singlet/triplet response vectors required for
+  the next overlap and rejects incompatible shapes, dtypes, or non-finite data.
+- `<project>.namd.restart.oqp` is a directly runnable continuation input. It
+  freezes a date-derived random seed and reconnects the checkpoint and packed
+  trajectory without treating `nstep` as an additional step count.
+
+The main log prints a concise energy-conservation table. The default
+`nve_gate=warn` applies to SOC as well as same-spin NVE trajectories; use
+`nve_gate=error` only after tolerances have been calibrated. Under NVE dynamics
+with the default full-ESPF electrostatics, `E_tot` should show no systematic
+drift. Read the packed record without loading it fully:
+
+```python
+from oqp.library.namd import read_namd_trajectory
+
+metadata, trj = read_namd_trajectory("chromophore_socnamd_qmmm.namd.trj")
+time = trj["time_fs"]
+energy = trj["e_tot_hartree"]
+soc_tdc = trj["overlap_tdc_au"] + 1j * trj["overlap_tdc_imag_au"]
+```
+
+The independent TD-Baeck–An NACME magnitude diagnostic is defined only for
+same-spin state pairs. Its global default is therefore contextually disabled
+for SOC; the SOC record itself retains the complete complex overlap/TDC.
 
 If a SOC force path produces a slow drift,
 [`econs=true`](../keywords/md.md#econs) rescales velocities each step to conserve

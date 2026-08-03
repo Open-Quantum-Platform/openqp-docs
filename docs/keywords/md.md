@@ -38,7 +38,7 @@ Gas-phase FSSH on MRSF-TDDFT states:
 
 ```text
 mrsf(nstate=5)/bhhlyp/6-31g*
-namd(S1,nstep=200,dt=0.5,init_temp=300.0)
+namd(S1,nstep=200)
 geom="molecule.xyz"
 ```
 
@@ -50,7 +50,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("molecule_namd")
 job.molecule("molecule.xyz")
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
-job.workflow.namd(init_state="S1", nstep=200, dt=0.5, init_temp=300.0)
+job.workflow.namd(init_state="S1", nstep=200)
 mol = job.run()
 ```
 
@@ -154,12 +154,12 @@ used when `decoherence=edc`.
 | Field | Value |
 | --- | --- |
 | Type | float (Ha) |
-| Default | `1.0e9` |
+| Default | `0.1` |
 | Used by | hop gating |
 
 Energy-gap gate for hops: a hop is blocked when the state gap exceeds `thrshe`.
-The large default effectively disables the gate. **Set `thrshe=0.1` for
-SOC-NAMD** to block spurious large-gap hops to S0 at the Franck-Condon geometry.
+The `0.1` Ha default applies to both same-spin and SOC dynamics and blocks
+large-gap transitions outside the intended local crossing region.
 
 ### `tdc`
 
@@ -179,12 +179,13 @@ pending.
 | Field | Value |
 | --- | --- |
 | Type | boolean |
-| Default | `True` |
+| Default | `False` |
 | Used by | trivial-crossing handling |
 
 Enable trivial- (weakly avoided) crossing detection and diabatic following, so
 the active surface tracks state character through sharp crossings instead of
-hopping.
+hopping. This is an opt-in heuristic rather than part of standard FSSH; leave
+it off unless the chosen protocol has been validated with it.
 
 ### `trivial_thresh`
 
@@ -230,11 +231,13 @@ one independently sampled geometry/velocity pair per trajectory.
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `1` |
+| Default | `0` (resolved once to the local date as `YYYYMMDD`) |
 | Used by | trajectory counter-RNG |
 
 Seed for the resident Fortran counter-RNG that draws Maxwell initial velocities
-and hopping random numbers. Fix it for reproducible trajectories. A hopping
+and hopping random numbers. The zero sentinel is resolved once when a run starts,
+and the resulting integer is frozen in the generated restart manifest. Set an
+explicit nonzero campaign seed for reproducible ensembles. A hopping
 draw is a pure function of `(seed, rng_stream, physical MD step)`, so worker
 scheduling and unrelated calls cannot shift the hopping sequence.
 
@@ -243,7 +246,7 @@ scheduling and unrelated calls cannot shift the hopping sequence.
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `0` |
+| Default | `1` |
 | Used by | initial velocities and hopping counter-RNG |
 
 Non-negative trajectory stream identifier. Use a distinct value for every
@@ -258,15 +261,16 @@ nominally independent trajectories.
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `1` |
+| Default | `2` |
 | Used by | electronic propagation and stochastic hopping |
 
 First physical nuclear step at which electronic propagation and the FSSH hop
-decision are performed. The default preserves historical OpenQP behavior at
-step 1. Set `first_hop_step=2` explicitly for the KNU-GAMESS/TLF2
-initialization convention: step 1 establishes the first inter-geometry record,
-and step 2 is the first hopping decision. A skipped step does not consume a
-hopping random number.
+decision are performed. Step 0 is the initial electronic structure. Step 1
+propagates the nuclei and establishes the first inter-geometry MO/root/phase,
+overlap, and NACME history, but does not propagate electronic coefficients or
+attempt a hop. Step 2 is therefore the first valid hopping decision, matching
+the two-geometry initialization required by TLF2. A skipped step does not
+consume a hopping random number.
 
 For a strict OpenQP/KNU comparison, use the same full-precision random tape and
 the same `first_hop_step`; rounded values copied from ordinary text output can
@@ -277,7 +281,7 @@ change a hop when the probability lies close to the random threshold.
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `off` |
+| Default | `baeck_an` for same-spin NAMD; contextually `off` for SOC-NAMD |
 | Values | `off`, `baeck_an` |
 | Used by | independent NACME validation |
 
@@ -293,8 +297,11 @@ signed NACME gauge. Treat it as an independent check of coupling magnitude and
 peak location, not as an oracle or a replacement for TLF. It is based on a
 two-state near-crossing approximation and may overestimate couplings, especially
 outside its intended region. The current implementation supports same-spin
-NAMD; SOC-NAMD rejects this option rather than silently skipping the check. See
-the [Baeck-An references](../references.md#nonadiabatic-dynamics).
+NAMD. SOC-NAMD records its full complex spin-adiabatic overlap and anti-Hermitian
+TDC instead, so its inherited default is disabled contextually. An explicit
+non-`off` request through the Python workflow API is rejected rather than
+silently ignored. See the
+[Baeck-An references](../references.md#nonadiabatic-dynamics).
 
 ### `ba_gap_max`
 
@@ -314,7 +321,7 @@ coupling, electronic propagation, or hopping probabilities.
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `warn` |
+| Default | `off` |
 | Values | `off`, `warn`, `error` |
 | Used by | MD NACME validation policy |
 
@@ -381,11 +388,12 @@ non-finite failures are not delayed.
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `off` |
+| Default | `warn` for NVE; contextually `off` for NVT |
 | Values | `off`, `warn`, `error` |
 | Used by | same-spin NVE/FSSH energy validation |
 
-Validate the nominally microcanonical same-spin gas-phase or QM/MM trajectory.
+Validate the nominally microcanonical gas-phase or QM/MM trajectory, including
+same-spin and SOC drivers.
 The driver records total-energy drift from step zero, the change from the
 previous step, the energy discontinuity at a successful hop or trivial state
 change, and drift per femtosecond. `warn` prints the NVE table without stopping;
@@ -465,7 +473,9 @@ populations, complex electronic coefficients, hop decision and full-precision
 random value, state overlap, overlap TDC, the active reference TDC/mask, gate
 metrics, and root/phase tracking order, phase, matched overlap, and margin. It
 also stores the NVE drift, step change, transition jump, drift rate, verdict,
-and failure streak. It is not an NPZ/ZIP archive: those formats cannot be
+and failure streak. SOC records additionally retain the complex spin-adiabatic
+overlap and anti-Hermitian TDC as real/imaginary components plus the active
+representation (`adiabatic` or `mch`). It is not an NPZ/ZIP archive: those formats cannot be
 appended safely without rewriting the complete trajectory and cannot be
 memory-mapped record by record. Compress a completed trajectory only as an
 archival/post-processing step.
@@ -512,8 +522,11 @@ not change between checkpoints.
 Compressed, non-pickle numerical checkpoint containing coordinates, velocities,
 acceleration, electronic coefficients, the previous electronic-structure tag
 bundle required by MO/root/phase tracking, counter-RNG identity, NACME gate
-streak, and TD-BA three-point history. The file is written to a temporary file,
-flushed, and atomically replaced.
+streak, and TD-BA three-point history. SOC checkpoints additionally contain the
+previous SOC eigensystem and singlet/triplet response vectors needed for the
+next spin-adiabatic overlap. Their exact shapes, dtypes, and finite values are
+validated before restoration. The file is written to a temporary file, flushed,
+and atomically replaced.
 
 ### `restart`
 
@@ -528,17 +541,17 @@ Restart the trajectory from a saved state.
 Every canonical `.oqp` NAMD run also writes a directly runnable file named
 `<project>.namd.restart.oqp` beside the main log. It preserves the original
 request, resolves input-owned paths against the original input directory, and
-adds `restart=true` plus explicit checkpoint, trajectory, and NACME-audit
-paths. Run this manifest to continue toward the original final `nstep`;
+adds `restart=true` plus explicit checkpoint and trajectory paths and freezes a
+date-derived seed. Run this manifest to continue toward the original final `nstep`;
 `nstep` is not interpreted as an additional number of steps. The manifest and
 its NPZ numerical checkpoint must remain together. Deriving the manifest name
 from the project/log stem prevents simultaneous trajectories in one output
 directory from overwriting each other.
 
-Restart, packed trajectory/checkpoint/validation output, NVE gating, and NACME
-comparison currently support same-spin gas-phase and QM/MM NAMD. SOC-NAMD
-rejects these requested controls until its additional spin-adiabatic/MCH
-histories and record format are included.
+Restart, packed trajectory/checkpoint output, and NVE gating support all four
+same-spin/SOC and gas-phase/QM/MM driver combinations. The independent TD-BA
+NACME comparison remains same-spin only; SOC stores its complex overlap/TDC but
+does not reinterpret TD-BA as a spin-adiabatic reference.
 
 ## SOC-NAMD (Intersystem Crossing)
 
