@@ -44,6 +44,7 @@ nav:
   - Workflows:
       - HF and DFT: workflows/hf-dft.md
       - MP2: workflows/mp2.md
+      - AFQMC: workflows/afqmc.md
       - TDDFT and TDHF: workflows/tddft.md
       - SF-TDDFT: workflows/sf-tddft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
@@ -68,6 +69,7 @@ nav:
       - guess: keywords/guess.md
       - scf: keywords/scf.md
       - mp2: keywords/mp2.md
+      - afqmc: keywords/afqmc.md
       - dftb: keywords/dftb.md
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md
