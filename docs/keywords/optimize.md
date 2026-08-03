@@ -160,17 +160,35 @@ stationary point sits at a finite gap, so on its own it stalls above
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `auglag` |
-| Values | `auglag`, `penalty`, `quad` |
+| Default | `auto` |
+| Values | `auto`, `sqp`, `auglag`, `penalty`, `quad` |
 | Used by | MECP (spin-crossing) search algorithm |
 
 Selects the MECP search strategy. The two states differ in spin multiplicity,
 so the derivative coupling vanishes and the branching space is the single
 gradient-difference direction.
 
+`auto` selects `sqp` with the native optimizer and `auglag` on the backends
+that supply their own, since SQP replaces the optimizer rather than providing
+an objective to it.
+
+`sqp` solves the KKT equations of the constrained problem
+
+```
+minimise 0.5 (E_i + E_j)   subject to   E_j - E_i = 0
+```
+
+for the step and the multiplier together, using a damped BFGS approximation to
+the Hessian of the Lagrangian started from the native model Hessian. The
+multiplier is therefore a result rather than a formula, and there is no penalty
+parameter: [`gap_sigma`](#gap_sigma) is not read. It works in delocalized
+internal coordinates, so [`coordsys`](oqp.md) applies to the native optimizer
+and not to this search, and it requires `lib=oqp`.
+
 `auglag` is the same augmented Lagrangian described above; with `gap_sigma=1`
-its converged form is the plain Bearpark gradient projection. `penalty` is the
-Levine-Martinez smooth penalty.
+its converged form is the plain Bearpark gradient projection. It is what `auto`
+selects on the scipy and geomeTRIC backends. `penalty` is the Levine-Martinez
+smooth penalty.
 
 `quad` is the legacy fixed-weight quadratic penalty
 `0.5 (E_i + E_j) + gap_weight (E_j - E_i)^2`. Its stationary condition balances
