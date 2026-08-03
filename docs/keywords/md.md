@@ -221,7 +221,9 @@ Temperature for Maxwell-Boltzmann initial velocities (used when
 
 Initial velocity source: `maxwell` samples a Maxwell-Boltzmann distribution at
 `init_temp`, `zero` starts from rest, or a file path reads velocities from a
-file.
+file. `maxwell` is a classical distribution, not a vibrational Wigner sample.
+One `.oqp` NAMD request uses one initial geometry; a Wigner ensemble must supply
+one independently sampled geometry/velocity pair per trajectory.
 
 ### `seed`
 
@@ -229,10 +231,295 @@ file.
 | --- | --- |
 | Type | integer |
 | Default | `1` |
-| Used by | random-number generator |
+| Used by | trajectory counter-RNG |
 
-Seed for the RNG that draws initial velocities and hopping random numbers. Fix
-it for reproducible trajectories.
+Seed for the resident Fortran counter-RNG that draws Maxwell initial velocities
+and hopping random numbers. Fix it for reproducible trajectories. A hopping
+draw is a pure function of `(seed, rng_stream, physical MD step)`, so worker
+scheduling and unrelated calls cannot shift the hopping sequence.
+
+### `rng_stream`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `0` |
+| Used by | initial velocities and hopping counter-RNG |
+
+Non-negative trajectory stream identifier. Use a distinct value for every
+trajectory in one ensemble while keeping `seed` fixed as the campaign seed.
+It separates both Maxwell initial velocities and hopping draws. The same
+`(seed, rng_stream, step)` triple always gives the same full-precision uniform
+value, which permits exact two-code replay. Do not reuse one stream for two
+nominally independent trajectories.
+
+### `first_hop_step`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `2` |
+| Used by | electronic propagation and stochastic hopping |
+
+First physical nuclear step at which electronic propagation and the FSSH hop
+decision are performed. The default follows the KNU-GAMESS/TLF2 initialization
+convention: step 1 establishes the first inter-geometry record, and step 2 is
+the first hopping decision. A skipped step does not consume a hopping random
+number. Set `first_hop_step=1` only when the selected overlap protocol defines
+and intentionally uses the first interval.
+
+For a strict OpenQP/KNU comparison, use the same full-precision random tape and
+the same `first_hop_step`; rounded values copied from ordinary text output can
+change a hop when the probability lies close to the random threshold.
+
+### `nacme_check`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `off` |
+| Values | `off`, `baeck_an` |
+| Used by | independent NACME audit |
+
+Enable an energy-only time-dependent Baeck–An (TD-BA) diagnostic alongside the
+overlap/TLF coupling used by NAMD. With `baeck_an`, OpenQP uses three consecutive
+energy points to evaluate the nonuniform central curvature of every energy gap.
+It compares the resulting TD-BA coupling magnitude with the overlap-derived TDC
+interpolated to the same central time and logs both matrices plus RMS and maximum
+magnitude errors.
+
+TD-BA does not use wavefunctions and therefore cannot check MO/root phase or the
+signed NACME gauge. Treat it as an independent check of coupling magnitude and
+peak location, not as an oracle or a replacement for TLF. It is based on a
+two-state near-crossing approximation and may overestimate couplings, especially
+outside its intended region. The current implementation supports same-spin
+NAMD; SOC-NAMD rejects this option rather than silently skipping the check. See
+the [Baeck-An references](../references.md#nonadiabatic-dynamics).
+
+### `ba_gap_max`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Ha) |
+| Default | `0.0734986443513` (2 eV) |
+| Used by | TD-Baeck–An NACME audit |
+
+Maximum central energy gap included in the TD-BA diagnostic. Pairs above this
+gap, or pairs without a positive TD-BA curvature radicand, are not evaluated by
+the reference-comparison gate. This setting does not modify the overlap/TLF
+coupling, electronic propagation, or hopping probabilities.
+
+### `nacme_gate`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `warn` |
+| Values | `off`, `warn`, `error` |
+| Used by | MD NACME validation policy |
+
+Policy applied to the common resident-Fortran NACME gate. The gate always
+reports matrix invariants and reference-comparison metrics when a check is
+enabled. `off` records diagnostics only, `warn` logs failed gates without
+stopping dynamics, and `error` stops immediately for a finite-value or matrix
+invariant failure and stops after `nacme_gate_consecutive` consecutive reference
+failures.
+
+The exact invariants are a zero diagonal and antisymmetry of both the MD TDC and
+the supplied reference. TD-BA is compared by magnitude. A future phase-aligned
+analytic NAC reference can use the same gate in signed mode after contracting
+the analytic vector with the nuclear velocity, `d_IJ . v`, at the matching time.
+
+### `nacme_gate_invariant_tol`
+
+| Field | Value |
+| --- | --- |
+| Type | float (au^-1) |
+| Default | `1.0e-10` |
+| Used by | diagonal and antisymmetry checks |
+
+Absolute tolerance for exact NACME matrix invariants.
+
+### `nacme_gate_abs_tol`
+
+| Field | Value |
+| --- | --- |
+| Type | float (au^-1) |
+| Default | `1.0e-4` |
+| Used by | reference comparison |
+
+Absolute component of the pair acceptance threshold.
+
+### `nacme_gate_rel_tol`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `1.0` |
+| Used by | reference comparison |
+
+Relative component of the pair acceptance threshold. Pair `IJ` passes when
+`error <= nacme_gate_abs_tol + nacme_gate_rel_tol * abs(reference_IJ)`.
+The deliberately broad default reflects that TD-BA is an approximation; choose
+thresholds from a validated system before using `nacme_gate=error` for a
+production campaign.
+
+### `nacme_gate_consecutive`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `3` |
+| Used by | `nacme_gate=error` |
+
+Number of consecutive time points with at least one failed reference pair
+required before aborting. A passing point resets the count. Exact invariant or
+non-finite failures are not delayed.
+
+### `nve_gate`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `off` |
+| Values | `off`, `warn`, `error` |
+| Used by | same-spin NVE/FSSH energy audit |
+
+Audit the nominally microcanonical same-spin gas-phase or QM/MM trajectory.
+The driver records total-energy drift from step zero, the change from the
+previous step, the energy discontinuity at a successful hop or trivial state
+change, and drift per femtosecond. `warn` prints the NVE table without stopping;
+`error` records the failing point and then aborts for a failed transition-energy
+check or after `nve_gate_consecutive` consecutive drift/step failures. The
+restart checkpoint is not advanced past the rejected point.
+
+This is a quantum-classical FSSH energy audit, not a claim that the electronic
+subsystem alone is microcanonical. Decoherence, frustrated hops, finite time
+steps, and electronic-structure convergence can contribute to drift. The
+current surface-hopping QM/MM driver uses OpenMM for forces but performs its own
+velocity-Verlet + SHAKE/RATTLE propagation; the ground-state
+[`[qmmm] ensemble`](qmmm.md#ensemble) NVT/NPT integrators do not control NAMD.
+
+### `nve_gate_abs_tol`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Ha) |
+| Default | `5.0e-3` |
+| Used by | total drift from the initial energy |
+
+### `nve_gate_step_tol`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Ha) |
+| Default | `1.0e-3` |
+| Used by | change in total energy between saved MD steps |
+
+### `nve_gate_transition_tol`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Ha) |
+| Default | `1.0e-6` |
+| Used by | same-geometry energy discontinuity across a state change |
+
+This local quantity is evaluated immediately before and after hop velocity
+rescaling (or trivial state following), so it is a stricter check than ordinary
+integrator drift.
+
+### `nve_gate_consecutive`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `3` |
+| Used by | `nve_gate=error` drift/step policy |
+
+### `trajectory_interval`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `1` |
+| Used by | dense NAMD trajectory |
+
+Write every Nth MD step to the dense binary trajectory. The default stores
+every step and is recommended for NACME auditing. Larger values such as `10`
+reduce long-ensemble file size. A point that triggers the strict NVE gate is
+written even when it is not on the configured interval.
+
+### `trajectory_file`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `<project>.namd.trj` |
+| Used by | dense NAMD trajectory |
+
+Appendable, packed fixed-record binary trajectory for machine analysis. Numeric
+values are stored directly rather than expanded as repeated decimal text, so it
+is substantially more compact and faster to scan than a text trajectory holding
+the same matrices. Every record
+contains coordinates, velocities, energies, populations, complex electronic
+coefficients, hop decision and full-precision random value, state overlap,
+overlap TDC, the active reference TDC/mask, gate metrics, and root/phase
+tracking order, phase, matched overlap, and margin. It also stores the NVE
+drift, step change, transition jump, drift rate, verdict, and failure streak.
+It is not an NPZ/ZIP archive: those formats cannot be appended safely without
+rewriting the complete trajectory and cannot be memory-mapped record by record.
+Compress a completed trajectory only as an archival/post-processing step.
+
+Read it without loading the complete trajectory into memory:
+
+```python
+from oqp.library.namd import read_namd_trajectory
+
+header, trajectory = read_namd_trajectory("job.namd.trj")
+print(trajectory["active"])
+print(trajectory["overlap_tdc_au"][:, 0, 1])
+```
+
+On restart, OpenQP validates the trajectory schema and calculation identity,
+removes only records newer than the last atomic checkpoint, and appends the
+continued trajectory. Committed records are not rewritten.
+
+### `nacme_audit_file`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `<project>.namd.nacme.tsv` |
+| Used by | compact NACME gate summary |
+
+Tab-separated one-row-per-gate summary for quick plotting. The complete
+matrices and tracking data remain in the dense trajectory.
+
+### `restart_interval`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `1` |
+| Used by | atomic NAMD checkpoint |
+
+Write the restart checkpoint every Nth step. The default commits every step.
+Increasing this value reduces checkpoint I/O but also increases the maximum
+amount of accepted dynamics that must be recomputed after an error.
+
+### `restart_file`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `<project>.namd.restart.npz` |
+| Used by | exact NAMD continuation |
+
+Compressed, non-pickle numerical checkpoint containing coordinates, velocities,
+acceleration, electronic coefficients, the previous electronic-structure tag
+bundle required by MO/root/phase tracking, counter-RNG identity, NACME gate
+streak, and TD-BA three-point history. The file is written to a temporary file,
+flushed, and atomically replaced.
 
 ### `restart`
 
@@ -243,6 +530,17 @@ it for reproducible trajectories.
 | Used by | trajectory restart |
 
 Restart the trajectory from a saved state.
+
+Every canonical `.oqp` NAMD run also writes a directly runnable file named
+`restart.oqp` beside the main log. It preserves the original request and adds
+`restart=true` plus explicit checkpoint, trajectory, and NACME-audit paths.
+Run `restart.oqp` to continue toward the original final `nstep`; `nstep` is not
+interpreted as an additional number of steps. The compact `restart.oqp` and its
+NPZ numerical checkpoint must remain together. Because the manifest name is
+exactly `restart.oqp`, simultaneous trajectories must use separate directories.
+
+Restart currently supports same-spin gas-phase and QM/MM NAMD. SOC-NAMD rejects
+`restart=true` until its additional spin-adiabatic/MCH histories are included.
 
 ## SOC-NAMD (Intersystem Crossing)
 

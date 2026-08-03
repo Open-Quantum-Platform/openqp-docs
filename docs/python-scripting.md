@@ -242,6 +242,31 @@ job.workflow.namd(soc=True, soc_basis="mch", nstep=200, dt=0.5, init_state="S1")
 mol = job.run()
 ```
 
+For an ensemble, keep one campaign `seed` and assign a distinct `rng_stream`
+to each trajectory. Hopping random numbers are then reproducible functions of
+the campaign seed, trajectory stream, and physical MD step. The default
+`first_hop_step=2` follows the KNU-GAMESS/TLF2 initialization convention.
+Set `nacme_check="baeck_an"` to log an independent energy-curvature estimate
+beside the overlap/TLF TDC. The comparison is magnitude-only because TD-BA has
+no wavefunction phase information. `nacme_gate="warn"` is the safe audit mode;
+use `nacme_gate="error"` only after calibrating the absolute and relative
+tolerances for the target system. The same gate accepts a signed, phase-aligned
+analytic `d_IJ . v` reference when that provider is connected in a later release.
+
+NAMD writes a dense appendable, packed-binary `<project>.namd.trj`, an atomic
+compressed checkpoint, and a directly runnable `restart.oqp`. The trajectory
+is designed for NumPy memory mapping rather than human reading. Use
+`trajectory_interval` to trade temporal resolution for file size; strict NVE
+gate failures are retained even between regular output points:
+
+```python
+from oqp.library.namd import read_namd_trajectory
+
+metadata, trj = read_namd_trajectory("job.namd.trj")
+s1_s0_tdc = trj["overlap_tdc_au"][:, 0, 1]
+phase_margin = trj["tracking_margin"]
+```
+
 Dropping `job.qmmm(...)` gives gas-phase dynamics, and dropping `soc=True` gives
 internal-conversion FSSH:
 
