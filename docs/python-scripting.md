@@ -242,6 +242,32 @@ job.workflow.namd(soc=True, soc_basis="mch", nstep=200, dt=0.5, init_state="S1")
 mol = job.run()
 ```
 
+For an ensemble, keep one campaign `seed` and assign a distinct `rng_stream`
+to each trajectory. Hopping random numbers are then reproducible functions of
+the campaign seed, trajectory stream, and physical MD step. The default
+`first_hop_step=2` follows the KNU-GAMESS/TLF2 initialization convention.
+Set `nacme_check="baeck_an"` to log an independent energy-curvature estimate
+beside the overlap/TLF TDC. The comparison is magnitude-only because TD-BA has
+no wavefunction phase information. `nacme_gate="warn"` is the safe validation
+mode; use `nacme_gate="error"` only after calibrating the absolute and relative
+tolerances for the target system. The same gate accepts a signed, phase-aligned
+analytic `d_IJ . v` reference when that provider is connected in a later release.
+
+Same-spin NAMD writes a dense appendable, packed-binary `<project>.namd.trj`,
+an atomic compressed checkpoint, and a directly runnable
+`<project>.namd.restart.oqp`. The trajectory is designed for NumPy memory
+mapping rather than human reading. Use `trajectory_interval` to trade temporal
+resolution for file size; strict NVE gate failures are retained even between
+regular output points:
+
+```python
+from oqp.library.namd import read_namd_trajectory
+
+metadata, trj = read_namd_trajectory("job.namd.trj")
+s1_s0_tdc = trj["overlap_tdc_au"][:, 0, 1]
+phase_margin = trj["tracking_margin"]
+```
+
 Dropping `job.qmmm(...)` gives gas-phase dynamics, and dropping `soc=True` gives
 internal-conversion FSSH:
 
@@ -252,6 +278,10 @@ job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=2)
 job.workflow.namd(nstep=100, dt=0.5, active=1)
 mol = job.run()
 ```
+
+SOC-NAMD does not yet write this dense same-spin record format and therefore
+rejects explicit trajectory/checkpoint/validation controls, restart, the NVE
+gate, and the NACME comparison gate instead of silently ignoring them.
 
 Nonadiabatic QM/MM dynamics currently supports whole-molecule QM regions; see the
 [SOC-NAMD-QMMM workflow](workflows/soc-namd-qmmm.md), the [`[md]`](keywords/md.md)
