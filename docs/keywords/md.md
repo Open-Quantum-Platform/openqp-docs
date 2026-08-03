@@ -261,20 +261,23 @@ nominally independent trajectories.
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `2` |
-| Used by | electronic propagation and stochastic hopping |
+| Default | `1` |
+| Used by | active-state transitions and hopping RNG |
 
-First physical nuclear step at which electronic propagation and the FSSH hop
-decision are performed. Step 0 is the initial electronic structure. Step 1
-propagates the nuclei and establishes the first inter-geometry MO/root/phase,
-overlap, and NACME history, but does not propagate electronic coefficients or
-attempt a hop. Step 2 is therefore the first valid hopping decision, matching
-the two-geometry initialization required by TLF2. A skipped step does not
-consume a hopping random number.
+First physical nuclear step at which an active-state transition is permitted.
+Step 0 is the initial electronic structure; step 1 has both endpoint structures
+and therefore defines the first overlap/TLF2 interval. Electronic coefficients
+and hop probabilities are propagated at every such interval, beginning at step
+1. With the default `first_hop_step=1`, the first FSSH decision is also made at
+step 1. If `first_hop_step=2` is selected explicitly, step 1 still propagates
+the electronic coefficients but cannot change the active state, rescale the
+velocity, or consume a hopping random number.
 
 For a strict OpenQP/KNU comparison, use the same full-precision random tape and
-the same `first_hop_step`; rounded values copied from ordinary text output can
-change a hop when the probability lies close to the random threshold.
+the same `first_hop_step`; note that a code which labels the initial structure
+as step 1 may call OpenQP's first interval “step 2.” Rounded values copied from
+ordinary text output can change a hop when the probability lies close to the
+random threshold.
 
 ### `nacme_check`
 

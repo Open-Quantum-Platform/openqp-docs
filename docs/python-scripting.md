@@ -246,9 +246,11 @@ For an ensemble, keep one campaign `seed` and assign a distinct `rng_stream`
 to each trajectory. Hopping random numbers are then reproducible functions of
 the campaign seed, trajectory stream, and physical MD step. By default,
 `seed=0` resolves once to the local `YYYYMMDD` date, `rng_stream=1`, and
-`first_hop_step=2`. The latter uses step 1 to establish the first
-inter-geometry MO/root/phase, overlap, and NACME history; step 2 is the first
-electronic-coefficient propagation and hopping decision, matching TLF2.
+`first_hop_step=1`. Step 1 already has the initial and propagated structures,
+so it is the first TLF2 interval and the first electronic-coefficient
+propagation and hopping decision. Setting `first_hop_step=2` explicitly delays
+only the active-state transition and hopping RNG: step 1 still propagates the
+coefficients and computes hop probabilities.
 Same-spin NAMD defaults to `nacme_check="baeck_an"`, which logs an independent
 energy-curvature estimate beside the overlap/TLF TDC. The comparison is
 magnitude-only because TD-BA has no wavefunction phase information. The default
