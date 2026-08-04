@@ -123,14 +123,22 @@ ranks and OpenMP within each. This is the path to use for production work.
 **Open shell (UHF, ROHF).** A spin-orbital solver. It stores the full
 `(2*nmo)^4` antisymmetrised integral tensor -- sixteen times the spatial one --
 and is OpenMP-threaded but not MPI-distributed, so every rank would repeat the
-same work. Use it for small systems. The module prints its projected peak
-memory before allocating and refuses above 32 GB.
+same work. Use it for small systems.
 
-Both paths hold their integrals in memory. There is no integral-direct,
-density-fitted, or disk-based mode; the closed-shell driver prints the storage
-it needs and refuses above 64 GB. In practice that puts the ceiling at a few
-hundred basis functions for the closed-shell path, and far lower for the
-open-shell one.
+The closed-shell path can also hold the ladder integrals as Cholesky vectors
+instead of an explicit `v^4` array, and can build those vectors straight from
+recomputed AO integrals rather than from a stored list. Both are decided on
+memory rather than on speed, because both cost arithmetic to save it -- see
+[`cholesky`](../keywords/cc.md#cholesky) and
+[`cholesky_direct`](../keywords/cc.md#cholesky_direct). There is no disk-based
+mode: whichever representation is chosen is held in memory.
+
+Neither path uses a fixed memory ceiling. Each prints the storage it projects
+and refuses when that exceeds what the machine can actually give, measured at
+run time from physical RAM, the kernel's `MemAvailable`, and the cgroup limit --
+so the same binary sizes itself correctly on a laptop and on a large node, and
+sees a SLURM allocation rather than the whole node. In practice the closed-shell
+path reaches a few hundred basis functions, and the open-shell one far fewer.
 
 ## Frozen Core
 
