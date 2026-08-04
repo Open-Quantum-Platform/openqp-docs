@@ -1,5 +1,10 @@
 # `[afqmc]`
 
+!!! warning "Companion development build required"
+    The `[afqmc]` section is provided by the
+    [`openqp-afqmc` development branch](https://github.com/Open-Quantum-Platform/openqp-afqmc/pull/1),
+    not by the OpenQP 1.2.0 package from PyPI.
+
 The `[afqmc]` section controls phaseless auxiliary-field quantum Monte Carlo
 calculations selected with `[input] method=afqmc`. OpenQP can use a mean-field
 trial, read an SF/MRSF-CSF trial from a file, or build a trial directly from an
@@ -76,6 +81,39 @@ other target multiplicities are rejected rather than silently reinterpreted.
 
 Path to the external trial representation.
 
+This is a legacy raw Slater-component interface. The first record contains
+three integers,
+
+```text
+NCOMP  NALPHA  NBETA
+```
+
+and each of the following `NCOMP` records contains
+
+```text
+REAL(C)  IMAG(C)  A1 ... A_NALPHA  B1 ... B_NBETA
+```
+
+Orbital indices are one-based canonical-MO indices. Alpha occupations precede
+beta occupations, and their column order fixes the component phase. OpenQP
+normalizes the complete coefficient vector after reading it. Duplicate or
+out-of-range occupations are rejected.
+
+For example, the following two-component file represents one linked open-shell
+singlet CSF in a two-orbital, one-alpha/one-beta space:
+
+```text
+2 1 1
+0.7071067811865475 0.0  1  2
+0.7071067811865475 0.0  2  1
+```
+
+For `trial=mrsf`, every paired CSF must already appear as its complete linked
+set of components with the intended relative phase. The file reader does not
+infer or repair a missing partner. Prefer `trial=mrsf_state` when the trial is
+an OpenQP MRSF root, because that path starts from the native CSF coefficients
+and materializes the partners consistently.
+
 ### `state`
 
 | Field | Value |
@@ -97,7 +135,8 @@ physical `S0`, root 2 is `S1`, and so on.
 
 Drops a whole CSF when `|X_I|` is at or below the threshold. Thresholding and
 normalization occur before the fixed Slater components are materialized, so
-the linked components of one CSF cannot be selected independently.
+the linked components of one CSF cannot be selected independently. The value
+must be nonnegative.
 
 ## MRSF CSF space
 
@@ -172,6 +211,44 @@ estimator is the AFQMC energy returned by the calculation.
 | `low_max` | float | `0.0` | Lower-state overlap threshold. |
 | `low_cap` | float | `10.0` | Cap applied by lower-state control. |
 | `low_start` | integer | `0` | Step at which lower-state control begins. |
+
+### `oo_file` format
+
+The first record is `NMO NSPIN_BLOCKS`, where `NSPIN_BLOCKS` is either `1` for
+one shared spatial rotation or `2` for separate alpha and beta rotations. It is
+followed by `NMO*NMO` complex matrix elements per spin block, one
+`REAL(C_PQ) IMAG(C_PQ)` pair per record, with row index `P` varying fastest
+inside each column `Q`. The matrix rotates the canonical MO basis and must be
+unitary to within `1e-7`.
+
+A two-orbital identity rotation shared by both spins is:
+
+```text
+2 1
+1.0 0.0
+0.0 0.0
+0.0 0.0
+1.0 0.0
+```
+
+### `low_file` format
+
+The first record is `NLOW NCOMP`; both values must match the current AFQMC
+input and trial expansion. Each of the next `NLOW` records contains `2*NCOMP`
+numbers, written as real/imaginary pairs for every coefficient in exactly the
+same component order as the target trial. OpenQP orthonormalizes the supplied
+lower-state span before projecting it from the target coefficients.
+
+For one lower state in a two-component trial:
+
+```text
+1 2
+1.0 0.0  0.0 0.0
+```
+
+These file controls are advanced interfaces. They do not by themselves prove
+excited-state orthogonality during stochastic propagation; convergence and
+state-collapse diagnostics remain required.
 
 See the [AFQMC workflow](../workflows/afqmc.md) for method details, CSF
 materialization, exact H2 validation, and production convergence checks.

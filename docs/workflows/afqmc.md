@@ -1,5 +1,13 @@
 # AFQMC
 
+!!! warning "Companion development build required"
+    This workflow is not part of the OpenQP 1.2.0 package installed by
+    `pip install openqp`. It requires the companion
+    [`openqp-afqmc` development branch](https://github.com/Open-Quantum-Platform/openqp-afqmc/pull/1).
+    Clone that repository and build the branch documented by the pull request
+    before running the examples on this page. The normal OpenQP 1.2.0 executable
+    does not recognize `[input] method=afqmc` or the `afqmc(...)` section call.
+
 OpenQP implements phaseless auxiliary-field quantum Monte Carlo (ph-AFQMC) as
 an energy workflow. The calculation rewrites the two-electron interaction as a
 sum over Cholesky vectors, samples the resulting auxiliary fields with a walker
@@ -66,7 +74,7 @@ geom="butadiene.xyz"
 ```
 
 The current in-memory `mrsf_state` route is fail-closed for non-singlet target
-roots. It also does not impose an expected ordering between states; state
+roots and does not accept UMRSF roots. It also does not impose an expected ordering between states; state
 ordering is a calculated result.
 
 ## Selecting OO, CO, OV, and CV

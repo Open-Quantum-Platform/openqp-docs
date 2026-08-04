@@ -47,6 +47,7 @@ full bibliographies inside each keyword entry.
 | [`[guess]`](guess.md) | Initial orbitals, restart files, and MO swaps. |
 | [`[scf]`](scf.md) | Reference type, convergence controls, pFON, TRAH, fallback manager. |
 | [`[mp2]`](mp2.md) | Standalone MP2 spin-scaling controls. |
+| [`[afqmc]`](afqmc.md) | Trial construction, CSF-space selection, and AFQMC propagation controls. |
 | [`[dftb]`](dftb.md) | DFTB backend, SCC, response, spin, and MRSF-TDDFTB controls. |
 | [`[dftgrid]`](dftgrid.md) | DFT quadrature and hybrid/range-separated functional controls. |
 | [`[tdhf]`](tdhf.md) | TDHF/TDDFT/SF/MRSF/UMRSF response settings. |
