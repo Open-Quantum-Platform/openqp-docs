@@ -62,6 +62,7 @@ nav:
       - PCM/ddX: workflows/pcm.md
       - MRSF-EKT: workflows/ekt.md
       - NMR, IR, and Raman: workflows/nmr-ir-raman.md
+      - Molecular Symmetry: workflows/symmetry.md
   - Keywords:
       - Overview: keywords/index.md
       - input: keywords/input.md
