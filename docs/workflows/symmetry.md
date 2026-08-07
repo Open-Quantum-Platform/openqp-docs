@@ -44,7 +44,10 @@ Nothing about the run looks wrong when this happens. It converges cleanly, to
 the requested tolerance, in a normal number of iterations. But the surviving
 Ritz values are renumbered 1, 2, 3, …, so every state index shifts — and every
 result selected by state index follows it: excited-state gradients, geometry
-optimization, MECP/MECI searches, the z-vector solve, NAMD and NMR.
+optimization, MECP/MECI searches, the z-vector solve, NACME and NAMD.
+
+(NMR shielding is not affected: it is a reference-SCF property requested with
+`[properties] scf_prop=nmr` and carries no state index.)
 
 With detection on, the initial trial set is chosen to cover every symmetry
 block that has configurations in it, so the missing root is found.

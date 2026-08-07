@@ -7,14 +7,16 @@ reductions are disabled.
 !!! note "Detection is on by default"
 
     `enabled` defaults to `true`. Detection and labeling are active unless you
-    turn them off. The two keywords that change the *computation* —
+    turn them off. The two *reduction* keywords —
     [`use_integral_symmetry`](#use_integral_symmetry) and
     [`use_response_symmetry`](#use_response_symmetry) — remain `False` by
-    default, so the geometry is not reoriented and the full integral list is
-    still used.
+    default, so the geometry is not reoriented, the full integral list is still
+    used, and ground-state energies are unchanged.
 
-    Detection is not purely cosmetic, however: the detected irreps are what let
-    the excited-state solver reach every symmetry block. See
+    Detection is **not** purely cosmetic, though. The detected irreps are what
+    let the excited-state solver reach every symmetry block, so excited-state
+    results can differ from a run with detection off — and where they do, the
+    difference is a correction. See
     [Molecular symmetry](../workflows/symmetry.md).
 
 ## Keywords
@@ -131,7 +133,9 @@ complete point group (a larger reduction, accurate to roughly 1e-7).
 
     When a functional is set, OpenQP therefore falls back to the exact Abelian
     tier and says so in the symmetry log block. You still get the reduction,
-    just the tier that is exact. Use `method=hf` if you need the full group.
+    just the tier that is exact. Remove the `[input] functional` if you need
+    the full group — OpenQP selects DFT with `method=hf` *plus* a functional,
+    so `method=hf` alone is not what distinguishes the two.
 
 The fallback is never silent: if the reduction is requested but does not engage
 for any reason, the log states that the run used the full (C1) integral list.
