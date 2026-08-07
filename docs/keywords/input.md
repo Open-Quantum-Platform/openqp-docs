@@ -76,7 +76,7 @@ chosen reference type physically consistent.
 | --- | --- |
 | Type | string |
 | Default | `hf` |
-| Values | `hf`, `tdhf`, `mp2`, `afqmc`, `dftb`, `xtb` |
+| Values | `hf`, `tdhf`, `mp2`, `dftb`, `xtb`; `afqmc` on the companion `openqp-afqmc` development build |
 | Used by | workflow dispatch |
 
 Selects the electronic-structure driver. Use `method=hf` for HF and DFT

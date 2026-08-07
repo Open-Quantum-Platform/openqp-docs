@@ -181,7 +181,7 @@ roots.
 | SF-TDHF | `sf-tdhf(nstate=N)/BASIS` |
 | MRSF-TDHF | `mrsf-tdhf(nstate=N)/BASIS` |
 | UMRSF-TDHF | `umrsf-tdhf(nstate=N)/BASIS` |
-| AFQMC with a mean-field trial | `afqmc/BASIS` |
+| AFQMC with a mean-field trial | `afqmc/BASIS` (requires the companion `openqp-afqmc` development build; not recognized by OpenQP itself) |
 | Ground-state SCC-DFTB | `dftb` |
 | Ground-state non-SCC DFTB0 | `dftb0`; `dftb-noscc` and `dftb-nonscc` are accepted input aliases |
 | TD-DFTB | `tddftb(nstate=N)` |
@@ -502,7 +502,8 @@ tdhf(nvdav=30,zvconv=1e-7)
 
 Advanced exact calls include non-driver sections such as `input`, `guess`,
 `scf`, `mp2`, `dftgrid`, `tdhf`, `properties`, `oqp`, `pcm`, `symmetry`, `qmmm`,
-`dftb`, `afqmc`, `json`, and `tests`. When a schema section is represented by a primary
+`dftb`, `json`, and `tests`, plus `afqmc` on the companion `openqp-afqmc`
+development build. When a schema section is represented by a primary
 driver, put its public controls in that driver instead. The established schema
 remains authoritative for keyword spelling, type, allowed values, and
 cross-section constraints.
