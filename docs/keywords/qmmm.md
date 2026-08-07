@@ -566,9 +566,12 @@ dipeptide, QM = the C-terminal amide cutting the `ALA C–CA` bond,
 OpenQP ships no tight-binding QM/MM example deck. Converting that AO deck to a
 DFTB or xTB run takes more than `[input] method`: `functional=` must be emptied
 (the tight-binding paths reject a functional), `basis=` becomes a
-required-but-ignored placeholder, and the backend needs its `parameter_path`
-and native library. See [DFTB](../workflows/dftb.md) and [`[xtb]`](xtb.md) for
-the full set of required keys.
+required-but-ignored placeholder, and the backend's native library must be
+installed. Parameters differ between the two — DFTB falls back to bundled
+Slater–Koster data, so `[dftb] parameter_path` is only an override, while xTB
+ships none and *requires* an explicit converter-generated `.opxtb` file via
+`[xtb] parameter_path` or `OPENQP_XTB_PARAMETER_PATH`. See
+[DFTB](../workflows/dftb.md) for the full set of required keys.
 
 ## Link atoms
 
