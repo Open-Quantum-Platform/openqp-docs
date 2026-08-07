@@ -52,8 +52,11 @@ z-vector solve, NACME and NAMD.
 (NMR shielding is not affected: it is a reference-SCF property requested with
 `[properties] scf_prop=nmr` and carries no state index.)
 
-With detection on, the initial trial set is chosen to cover every symmetry
-block that has configurations in it, so the missing root is found.
+With detection on, OpenQP *attempts* to cover every symmetry block that has
+configurations in it, reassigning trial vectors so the otherwise-missing root
+is found. It is an attempt rather than a guarantee: when no trial vector can be
+safely reassigned, some blocks stay unseeded and OpenQP prints a warning naming
+how many. See [Limits worth knowing](#limits-worth-knowing) below.
 
 ### A worked example
 
