@@ -15,12 +15,14 @@ theory.
     This section documents the NAMD implementation branch in
     OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205).
     The validation and restart controls below — `rng_stream`, `first_hop_step`,
-    the `nacme_gate*` and `nve_gate*` families, and the trajectory/restart
-    records — arrived later, with OpenQP PR
+    the `nacme_gate*` and `nve_gate*` families, and the same-spin
+    trajectory/restart records — arrived later, with OpenQP PR
     [#313](https://github.com/Open-Quantum-Platform/openqp/pull/313); a
-    checkout of #205 alone will reject them as unknown keys. Neither is part of
-    OpenQP 1.2.0; `runtype=namd` requires a source branch that includes both,
-    or a later release.
+    checkout of #205 alone will reject them as unknown keys. The SOC
+    trajectory and restart records came later still, with OpenQP PR
+    [#316](https://github.com/Open-Quantum-Platform/openqp/pull/316). None of
+    these is part of OpenQP 1.2.0; `runtype=namd` requires a source branch that
+    includes all three, or a later release.
 
 ## Background
 
@@ -430,7 +432,12 @@ performs its own velocity-Verlet + SHAKE/RATTLE propagation; the ground-state
 | --- | --- |
 | Type | float (Ha) |
 | Default | `1.0e-3` |
-| Used by | change in total energy between saved MD steps |
+| Used by | change in total energy between adjacent integration steps |
+
+The comparison is made at every physical MD step, not between saved trajectory
+records — `trajectory_interval` does not widen it. Calibrate the tolerance
+against one integration step, or an `error` gate will be far more permissive
+than intended once the automatic ~10 fs write cadence is resolved.
 
 ### `nve_gate_transition_tol`
 
