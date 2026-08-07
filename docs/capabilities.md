@@ -60,7 +60,10 @@ constraint types that the concise grammar does not yet support.
 - MP2 gradients, Hessians, RI/Laplace/local MP2 kernels, and periodic MP2 are
   not part of the documented standalone MP2 path.
 - Coupled-cluster gradients and derivative workflows are not implemented, and
-  there is no integral-direct, density-fitted, or disk-based coupled-cluster
-  mode; the integrals are held in memory.
+  there is no density-fitted or disk-based coupled-cluster mode; the CC
+  iteration itself is not integral-direct and its integrals are held in memory.
+  The closed-shell Cholesky path can still *build* its vectors directly from
+  recomputed AO integrals, skipping the packed AO store — see
+  [`cholesky_direct`](keywords/cc.md#cholesky_direct).
 - UMRSF-TDDFT gradients and Hessians are not part of the documented production
   surface yet.
