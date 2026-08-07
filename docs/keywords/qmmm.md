@@ -563,8 +563,12 @@ and parameter data.
 A runnable deck is `examples/QMMM/ala-dipeptide_BHHLYP-QMMM-MD-RCD.inp` (alanine
 dipeptide, QM = the C-terminal amide cutting the `ALA C–CA` bond,
 `frontier_scheme=rcd`); see [QM/MM examples](../examples/index.md#qmmm-examples).
-OpenQP ships no tight-binding QM/MM example deck, so build a DFTB or xTB
-covalent-boundary run from the AO deck by swapping `[input] method`.
+OpenQP ships no tight-binding QM/MM example deck. Converting that AO deck to a
+DFTB or xTB run takes more than `[input] method`: `functional=` must be emptied
+(the tight-binding paths reject a functional), `basis=` becomes a
+required-but-ignored placeholder, and the backend needs its `parameter_path`
+and native library. See [DFTB](../workflows/dftb.md) and [`[xtb]`](xtb.md) for
+the full set of required keys.
 
 ## Link atoms
 
