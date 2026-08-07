@@ -42,9 +42,12 @@ that receives no initial trial vector is never reached at all: its roots are
 
 Nothing about the run looks wrong when this happens. It converges cleanly, to
 the requested tolerance, in a normal number of iterations. But the surviving
-Ritz values are renumbered 1, 2, 3, …, so every state index shifts — and every
-result selected by state index follows it: excited-state gradients, geometry
-optimization, MECP/MECI searches, the z-vector solve, NACME and NAMD.
+Ritz values are renumbered 1, 2, 3, …, so every index **at or above the first
+missing root** shifts down by one — roots below it keep their numbering, which
+is why the worked example below moves state 3 while states 1 and 2 stay put.
+Every result selected by an affected state index follows the shift:
+excited-state gradients, geometry optimization, MECP/MECI searches, the
+z-vector solve, NACME and NAMD.
 
 (NMR shielding is not affected: it is a reference-SCF property requested with
 `[properties] scf_prop=nmr` and carries no state index.)
