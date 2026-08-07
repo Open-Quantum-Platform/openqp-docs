@@ -43,9 +43,11 @@ that receives no initial trial vector is never reached at all: its roots are
 Nothing about the run looks wrong when this happens. It converges cleanly, to
 the requested tolerance, in a normal number of iterations. But the surviving
 Ritz values are renumbered 1, 2, 3, …, so every index **at or above the first
-missing root** shifts down by one — roots below it keep their numbering, which
-is why the worked example below moves state 3 while states 1 and 2 stay put.
-Every result selected by an affected state index follows the shift:
+missing root** shifts down by the number of omissions preceding it — one if a
+single root is missing, more when an unseeded block holds several. Roots below
+the first omission keep their numbering, which is why the worked example below
+moves state 3 while states 1 and 2 stay put. Every result selected by an
+affected state index follows the shift:
 excited-state gradients, geometry optimization, MECP/MECI searches, the
 z-vector solve, NACME and NAMD.
 
