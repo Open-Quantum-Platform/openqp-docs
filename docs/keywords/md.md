@@ -14,7 +14,12 @@ theory.
 !!! warning "Development preview"
     This section documents the NAMD implementation branch in
     OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205).
-    It is not part of OpenQP 1.2.0; `runtype=namd` requires that source branch
+    The validation and restart controls below — `rng_stream`, `first_hop_step`,
+    the `nacme_gate*` and `nve_gate*` families, and the trajectory/restart
+    records — arrived later, with OpenQP PR
+    [#313](https://github.com/Open-Quantum-Platform/openqp/pull/313); a
+    checkout of #205 alone will reject them as unknown keys. Neither is part of
+    OpenQP 1.2.0; `runtype=namd` requires a source branch that includes both,
     or a later release.
 
 ## Background
