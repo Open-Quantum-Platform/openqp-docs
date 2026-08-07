@@ -560,10 +560,11 @@ classical coupling force, so the link-atom projection and MM reaction force are
 shared with the AO path. DFTB and xTB require their optional native libraries
 and parameter data.
 
-Runnable decks include
-`examples/QMMM/ala-dipeptide_BHHLYP-QMMM-MD-RCD.inp` for AO-based DFT and
-`examples/QMMM/alanine_DFTB-QMMM-MD.inp` for a one-step DFTB covalent-boundary
-run; see [QM/MM examples](../examples/index.md#qmmm-examples).
+A runnable deck is `examples/QMMM/ala-dipeptide_BHHLYP-QMMM-MD-RCD.inp` (alanine
+dipeptide, QM = the C-terminal amide cutting the `ALA C–CA` bond,
+`frontier_scheme=rcd`); see [QM/MM examples](../examples/index.md#qmmm-examples).
+OpenQP ships no tight-binding QM/MM example deck, so build a DFTB or xTB
+covalent-boundary run from the AO deck by swapping `[input] method`.
 
 ## Link atoms
 
