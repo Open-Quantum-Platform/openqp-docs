@@ -165,28 +165,23 @@ print(report["orbital_character"]["fractions"])
 print(report["orbital_character"]["label"])
 ```
 
-Let $T^{0I}_{\mathrm{AO}}$ be the physical-root state-interaction 1-TDM. The
-code forms
+Let `T` be the physical-root state-interaction 1-TDM in the AO basis. The code
+Loewdin-orthogonalizes it with the AO overlap `S` and partitions the squared
+elements of the result:
 
-\[
-\widetilde T^{0I}=S^{1/2}T^{0I}_{\mathrm{AO}}S^{1/2}
-\]
+```text
+Ttilde   = S^(1/2) T S^(1/2)
 
-and partitions its squared elements as
-
-\[
-\Omega_{AB}=\sum_{\nu\in A}^{\mathrm{hole}}
-             \sum_{\mu\in B}^{\mathrm{particle}}
-             |\widetilde T^{0I}_{\mu\nu}|^2 .
-\]
+Omega[A,B] = sum over nu in A (hole), mu in B (particle) of |Ttilde[mu,nu]|^2
+```
 
 Rows of `Omega` are therefore hole fragments and columns are particle
 fragments. The reported local-excitation fraction is
 
-\[
-f_{\mathrm{LE}}=\frac{\sum_A\Omega_{AA}}{\sum_{AB}\Omega_{AB}},
-\qquad f_{\mathrm{CT}}=1-f_{\mathrm{LE}}.
-\]
+```text
+f_LE = sum_A Omega[A,A] / sum_AB Omega[A,B]
+f_CT = 1 - f_LE
+```
 
 The orbital analysis SVDs the same physical-root 1-TDM and performs a symmetric
 Loewdin population analysis of each NTO pair. It returns all six fractions
@@ -245,10 +240,12 @@ fragment does not define molecular donor-to-acceptor CT.
 MRSF-derived densities.
 
 ```python
-from oqp.interop import CubeExporter, attachment_detachment, nto_excitation
+from oqp.interop import CubeExporter, attachment_detachment, nto_transition
 
 target = 1
-nto = nto_excitation(states, target)
+# Physical-root S0 -> Sn NTOs, matching the transition the cubes are meant to
+# show.  nto_excitation would give the auxiliary high-spin-reference orbitals.
+nto = nto_transition(states, 0, target)
 ad = attachment_detachment(states, target)
 cubes = CubeExporter(states, padding=5.0, spacing=0.15)
 
