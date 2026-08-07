@@ -258,5 +258,10 @@ keys as `[dftb]`: `scc_tolerance`, `scc_mixer`, `scc_mixing`, `scc_history`,
 shift controls `spc`, `spc_coco`, `spc_ovov`, `spc_coov`,
 `mrsf_shift_oo`/`_co`/`_ov`/`_cv`, `spin_complete`, `reference_multiplicity`,
 and `target_multiplicity` mirror the `[tdhf]` MRSF options, and `timeout`
-bounds a single backend call in seconds. Each of these keeps its `[dftb]`
-default.
+bounds a single backend call in seconds.
+
+Each of these keeps its `[dftb]` default, documented per key in
+[`[dftb]`](dftb.md) — the values are identical in both sections, so that page
+is the reference for their types, defaults, and constraints. The one shared
+spelling whose default **differs** is `lc_gamma`: `[dftb]` defaults to
+`yukawa`, `[xtb]` to `ok`, as documented above.
