@@ -37,6 +37,7 @@ workflows and keywords.
 - [TDDFT and TDHF](workflows/tddft.md) energies and gradients
 - [SF-TDDFT](workflows/sf-tddft.md) spin-flip energies and gradients
 - [MRSF-TDDFT](workflows/mrsf-tddft.md) energies and gradients
+- [QMRSF-DK](workflows/qmrsf-dk.md) quintet-reference CAS(4,4) spectra
 - [Hessian and frequencies](workflows/hessian.md)
 - Geometry [optimization](workflows/optimization.md)
 - [Spin-orbit coupling](workflows/soc.md) and scalar relativistic DKH correction
