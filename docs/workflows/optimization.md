@@ -19,7 +19,12 @@ geom="guess.xyz"
 The native engine supports minima, transition states, two-state and BaekA
 multistate MECI, MECP, MEP, IRC, and NEB. It uses redundant internal, DLC,
 TRIC, or Cartesian coordinates as appropriate, with restricted-step RFO/P-RFO
-optimization.
+optimization. When `coordsys` is omitted or set to `auto`, every native
+geometry workflow starts in DLC. The DLC transformation is accepted only when
+it spans the complete molecular vibrational space; rank loss activates the
+Cartesian recovery route rather than silently removing a vibrational
+direction. For molecular complexes, OpenQP adds interfragment distances when
+needed to condition the internal-coordinate transformation.
 
 ## Native Minimum Search
 
@@ -48,7 +53,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("h2o_opt", silent=1)
 job.molecule(geometry="water", charge=0, multiplicity=1)
 job.theory.dft(functional="bhhlyp", basis="6-31g*")
-job.workflow.optimize(istate=0, coordsys="tric", trust=0.2)
+job.workflow.optimize(istate=0, trust=0.2)
 mol = job.run()
 ```
 
@@ -70,10 +75,12 @@ lib=oqp
 istate=0
 
 [oqp]
-coordsys=tric
 trust=0.2
 trust_max=0.5
 ```
+
+These examples use the automatic DLC default. Set `coordsys=tric`, `ric`, or
+`cart` only when that coordinate representation is intentionally required.
 
 Runnable `.oqp`:
 [`examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.oqp).

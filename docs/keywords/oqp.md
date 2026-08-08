@@ -12,10 +12,17 @@ still select it explicitly with `[optimize] lib=oqp`.
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `tric` |
+| Default | `auto` |
 | Used by | native optimizer coordinates |
 
-Coordinate system for the native optimizer. Examples use `tric` and `auto`.
+Coordinate system for the native optimizer. `auto` selects delocalized internal
+coordinates (DLC) for minimum, TS, MECI, MECP, TCI, NEB, IRC, and MEP
+calculations. The DLC basis must span the complete molecular vibrational space
+(`3N-6` for a non-linear isolated system); otherwise OpenQP uses its safer
+coordinate-recovery sequence. Molecular complexes are supplemented with
+interfragment distances when their primitive internal-coordinate metric is
+poorly conditioned. Explicit `tric`, `ric`, and Cartesian selections remain
+available as expert overrides.
 
 ### `trust`
 
