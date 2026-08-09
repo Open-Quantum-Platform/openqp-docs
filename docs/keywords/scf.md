@@ -84,7 +84,14 @@ high-precision properties or difficult state comparisons.
 | Default | `7` |
 | Used by | DIIS subspace |
 
-Maximum number of vectors kept in the DIIS extrapolation space.
+Maximum number of vectors kept in the DIIS extrapolation space. Set
+`maxdiis <= 13` whenever an active DIIS stage uses `ediis`, `adiis`, `vdiis`,
+or any nonzero `vshift`; those paths use the deterministic simplex solver,
+whose exact supported history limit is 13 states. The rule applies to the
+primary DIIS/`auto`/`ml` converger, to an enabled `init_scf` stage when its
+effective `init_converger` is DIIS, and to any DIIS stage selected through
+`escalation` or `alternative_scf`. A calculation using only `soscf` or `trah`,
+or unshifted `cdiis`, may use a larger history.
 
 ### `diis_type`
 
@@ -96,7 +103,8 @@ Maximum number of vectors kept in the DIIS extrapolation space.
 | Used by | DIIS convergence accelerator |
 
 Selects the DIIS variant. `cdiis` is the default. `vdiis` can be useful for
-difficult cases with level shifting.
+difficult cases with level shifting. Active `ediis`, `adiis`, and `vdiis`
+stages require `maxdiis <= 13`.
 
 ### `diis_reset_mod`
 
@@ -147,7 +155,9 @@ Threshold for VDIIS/level-shift switching.
 | Used by | virtual-orbital level shift |
 
 Applies a level shift during SCF. Larger values can stabilize convergence but
-may slow final convergence.
+may slow final convergence. For an active DIIS stage, any nonzero value selects
+the C-DIIS/E-DIIS/C-DIIS cascade regardless of `diis_type`, so `maxdiis` must
+not exceed 13.
 
 ### `incremental`
 
