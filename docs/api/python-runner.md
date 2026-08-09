@@ -58,6 +58,7 @@ The high-level API is organized around six top-level calls:
 | Call | Role |
 | --- | --- |
 | `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
+| `job.d4(...)` | Enable DFT-D4 with functional defaults or a complete explicit rational-damping parameter set. |
 | `job.theory.<model>(...)` | Quantum theory: method, functional, ordinary basis, reference, and response-state count. |
 | `job.workflow.*(...)` | Calculation type: energy, gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, and related workflows. |
 | `job.control(...)` | Hardware/runtime controls such as MPI and OpenMP threads. |
@@ -82,12 +83,26 @@ job.molecule([
 | Method | Returns | Use |
 | --- | --- | --- |
 | `molecule(system=None, system2=None, charge=None, multiplicity=None, unit="Angstrom", geometry=None, geometry2=None, source="auto", timeout=10, **kwargs)` | `OpenQP` | Writes molecular data into `[input]`, including explicit `system` text, optional `system2`, named `geometry`, charge, and the reference multiplicity. |
+| `d4(enabled=True, s6=..., s8=..., s9=..., a1=..., a2=..., alp=...)` | `OpenQP` | Enables DFT-D4 and optionally writes the complete explicit rational-damping set into `[d4]`. Omit all six damping values to use functional defaults. |
 
 Inline coordinates are Angstrom by default. Use `unit="Bohr"` for Bohr input
 coordinates. `geometry=...` accepts built-in small molecules first and can fall
 back to PubChem when `source="auto"` or `source="pubchem"` is used.
 For compatibility with earlier scripts, `molecule(...)` can still accept
 `basis=...`; new scripts should put basis in `theory(...)`.
+
+The molecular charge set by `job.molecule(..., charge=...)` is passed to the
+DFT-D4 charge model. For example:
+
+```python
+job = OpenQP("water_cation_d4")
+job.molecule(geometry="water", charge=1, multiplicity=2)
+job.theory.dft(functional="pbe", basis="6-31g*")
+job.d4(
+    s6=1.0, s8=0.95948085, s9=1.0,
+    a1=0.38574991, a2=4.80688534, alp=16.0,
+)
+```
 
 ### Theory, Workflow, and Control
 

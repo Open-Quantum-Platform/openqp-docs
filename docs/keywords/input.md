@@ -68,7 +68,9 @@ geometry when `[guess] file2` is not supplied.
 | Used by | electron count for all workflows |
 
 Sets the total molecular charge. Keep `charge`, `[scf] multiplicity`, and the
-chosen reference type physically consistent.
+chosen reference type physically consistent. When DFT-D4 is enabled, this same
+charge is passed to DFT-D4's charge model; charged systems are therefore no
+longer evaluated as neutral dispersion models.
 
 ### `method`
 
@@ -223,7 +225,35 @@ a workflow is validated for one convention.
 | Used by | DFT-D4 dispersion correction |
 
 Enables the DFT-D4 dispersion correction where supported. The input checker
-requires a DFT functional when `d4=true`.
+requires a DFT functional when `d4=true`. By default, DFT-D4 loads the published
+rational-damping parameters for that functional.
+
+To supply an explicit rational-damping parameter set, provide all six values in
+a `[d4]` section:
+
+```ini
+[input]
+functional=pbe
+d4=true
+
+[d4]
+s6=1.0
+s8=0.95948085
+s9=1.0
+a1=0.38574991
+a2=4.80688534
+alp=16.0
+```
+
+| `[d4]` keyword | Meaning |
+| --- | --- |
+| `s6`, `s8`, `s9` | two-body and three-body dispersion scale factors |
+| `a1`, `a2` | rational-damping length parameters |
+| `alp` | three-body damping exponent |
+
+The six values form one parameterization: specifying only a subset is an input
+error. All values must be finite. In concise `.oqp` input the equivalent form is
+`d4(s6=1.0,s8=0.95948085,s9=1.0,a1=0.38574991,a2=4.80688534,alp=16.0)`.
 
 ### `soc_2e`
 

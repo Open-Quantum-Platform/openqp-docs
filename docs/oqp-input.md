@@ -459,7 +459,7 @@ Modifiers may accompany the one primary driver:
 
 | Modifier | Meaning |
 | --- | --- |
-| `d4` | Enable DFT-D4. `d4()` is also accepted. |
+| `d4` | Enable DFT-D4. `d4()` uses functional defaults; `d4(s6=...,s8=...,s9=...,a1=...,a2=...,alp=...)` supplies a complete explicit rational-damping set. |
 | `pcm([SOLVENT], pcm...)` | Enable PCM and optionally name a solvent, for example `pcm(water)`. The current production path is an RHF/ROHF, ddX, reference-SCF single-point energy. |
 | `nmr([gauge=cgo|giao])` | Request NMR shielding. Bare `nmr` defaults to GIAO. |
 | `ir` | Record that IR intensities are requested; valid only with `hess(...)` or `thermo()`. |
@@ -468,6 +468,10 @@ Modifiers may accompany the one primary driver:
 
 The compatibility spellings `d4=true` and `qmmm=true` remain accepted, but
 `d4` and `qmmm(...)` are preferred in canonical files.
+
+DFT-D4 receives the molecular `charge` from the route or `[input]` section.
+Explicit damping requires all six named values; partial and non-finite sets are
+rejected before the calculation starts.
 
 In canonical `.oqp` input, `nmr` explicitly lowers to the GIAO gauge; use
 `nmr(gauge=cgo)` to request CGO. This canonical default does not alter the
