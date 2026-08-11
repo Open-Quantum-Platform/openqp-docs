@@ -67,6 +67,7 @@ nav:
       - input: keywords/input.md
       - guess: keywords/guess.md
       - scf: keywords/scf.md
+      - Wavefunction methods: keywords/wavefunction.md
       - mp2: keywords/mp2.md
       - dftb: keywords/dftb.md
       - dftgrid: keywords/dftgrid.md
