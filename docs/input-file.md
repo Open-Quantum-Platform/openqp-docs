@@ -80,6 +80,7 @@ previous geometry.
 | Section | Purpose |
 | --- | --- |
 | `[input]` | Charge, basis, method, run type, geometry, AO convention, threading. |
+| [`[d4]`](keywords/input.md#d4) | Complete explicit DFT-D4 rational-damping parameter set. |
 | `[guess]` | Initial orbitals and restart data. |
 | `[scf]` | RHF/ROHF/UHF reference and SCF convergence controls. |
 | `[mp2]` | Standalone MP2 spin-scaling controls. |
