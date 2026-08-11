@@ -97,7 +97,7 @@ DFT-D4 charge model. For example:
 ```python
 job = OpenQP("water_cation_d4")
 job.molecule(geometry="water", charge=1, multiplicity=2)
-job.theory.dft(functional="pbe", basis="6-31g*")
+job.theory.dft(functional="pbe", basis="6-31g*", reference="uhf")
 job.d4(
     s6=1.0, s8=0.95948085, s9=1.0,
     a1=0.38574991, a2=4.80688534, alp=16.0,
