@@ -53,7 +53,7 @@ OpenQP(
 The constructor is intentionally runtime-focused. Molecule and method setup use
 OpenQP-native methods after construction.
 
-The high-level API is organized around six top-level calls:
+The high-level API is organized around seven top-level calls:
 
 | Call | Role |
 | --- | --- |

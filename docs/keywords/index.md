@@ -44,6 +44,7 @@ full bibliographies inside each keyword entry.
 | Section | Purpose |
 | --- | --- |
 | [`[input]`](input.md) | Global calculation setup, geometry, run type, AO convention, threading. |
+| [`[d4]`](input.md#d4) | Complete explicit DFT-D4 rational-damping parameter set. |
 | [`[guess]`](guess.md) | Initial orbitals, restart files, and MO swaps. |
 | [`[scf]`](scf.md) | Reference type, convergence controls, pFON, TRAH, fallback manager. |
 | [`[mp2]`](mp2.md) | Standalone MP2 spin-scaling controls. |
