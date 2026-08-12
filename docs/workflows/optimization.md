@@ -19,9 +19,10 @@ geom="guess.xyz"
 The native engine supports minima, transition states, two-state and BaekA
 multistate MECI, MECP, MEP, IRC, and NEB. It uses redundant internal, DLC,
 TRIC, or Cartesian coordinates as appropriate, with restricted-step RFO/P-RFO
-optimization. When `coordsys` is omitted or set to `auto`, every native
-geometry workflow starts in DLC. The DLC transformation is accepted only when
-it spans the complete molecular vibrational space; rank loss activates the
+optimization. When `coordsys` is omitted or set to `auto`, OpenQP
+runtime-managed geometry workflows start in DLC. The DLC transformation is
+accepted only when it spans the complete molecular vibrational space; rank
+loss activates the
 Cartesian recovery route rather than silently removing a vibrational
 direction. For molecular complexes, OpenQP adds interfragment distances when
 needed to condition the internal-coordinate transformation.
