@@ -79,6 +79,29 @@ Labels vibrational modes by symmetry where possible.
 Enables petite-list/skeleton-Fock style reductions. The checker marks this as
 experimental and recommends validating against a C1 reference run.
 
+### `move_to_standard_frame`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `True` |
+| Used by | integral symmetry reduction |
+
+Controls whether a calculation with `use_integral_symmetry=true` is rotated and
+translated to a standard symmetry frame before the integral reduction is
+staged. Set this to `False` to keep the molecule in its input frame; OpenQP then
+uses the corresponding input-frame symmetry operators for the integral and
+gradient reductions. The no-move route is available for `energy` and `grad`
+calculations. As with every integral-symmetry calculation, validate new systems
+against a run with `use_integral_symmetry=false`.
+
+```ini
+[symmetry]
+enabled=true
+use_integral_symmetry=true
+move_to_standard_frame=false
+```
+
 ### `use_response_symmetry`
 
 | Field | Value |
