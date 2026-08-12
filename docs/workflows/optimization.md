@@ -105,10 +105,13 @@ coordinates, OpenQP removes whole-molecule translation/rotation zero-mode noise
 from a real Hessian and restores positive model curvature in those rigid
 directions before P-RFO mode selection; internal-only RIC/DLC modes are left
 unchanged. The standalone engine leaves this projection off by default so an
-external field can retain genuine lab-frame curvature. Active QM/MM OpenQP
-geometry and reaction-path jobs are currently rejected in preflight because
-their force backend is not connected to these optimizers; supported QM/MM
-workflows remain energy, MD, and NAMD.
+external field can retain genuine lab-frame curvature; its `auto` coordinate
+selection therefore uses full-rank TRIC rather than removing those physical
+translations and rotations through DLC. Explicit `coordsys=dlc` remains
+available when the standalone objective is known to be invariant. Active QM/MM
+OpenQP geometry and reaction-path jobs are currently rejected in preflight
+because their force backend is not connected to these optimizers; supported
+QM/MM workflows remain energy, MD, and NAMD.
 
 After locating a transition state, trace either native IRC branch explicitly:
 
