@@ -1,8 +1,8 @@
 # `[symmetry]`
 
-The `[symmetry]` section controls point-group metadata and optional experimental
-symmetry reductions. Labeling can be useful even when integral or response
-reductions are disabled.
+The `[symmetry]` section controls point-group metadata, the guarded abelian
+integral reduction, and optional experimental symmetry tiers. Labeling can be
+useful even when reductions are disabled.
 
 ## Keywords
 
@@ -11,12 +11,12 @@ reductions are disabled.
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `false` |
+| Default | `true` |
 | Values | `false`, `true`, `auto` |
 | Used by | symmetry detection |
 
-Controls symmetry detection. Use `auto` or `true` when symmetry metadata is
-desired.
+Controls symmetry detection. Set this to `false` to disable detection and all
+symmetry-dependent behavior.
 
 ### `point_group`
 
@@ -73,23 +73,28 @@ Labels vibrational modes by symmetry where possible.
 | Field | Value |
 | --- | --- |
 | Type | string/boolean-like |
-| Default | `False` |
+| Default | `True` |
 | Used by | integral symmetry reduction |
 
-Enables petite-list/skeleton-Fock style reductions. The checker marks this as
-experimental and recommends validating against a C1 reference run.
+Enables the guarded abelian petite-list/skeleton-Fock reduction for supported
+`energy` and `grad` calculations. The default route verifies the AO operator
+against the overlap matrix, verifies density invariance before each reduced
+build, and falls back to the complete integral path when a safety condition is
+not met. Set this to `False` to disable integral reduction. The value `full`
+requests the experimental non-abelian tier and should be validated against a
+C1 reference run.
 
 ### `move_to_standard_frame`
 
 | Field | Value |
 | --- | --- |
 | Type | boolean |
-| Default | `True` |
+| Default | `False` |
 | Used by | integral symmetry reduction |
 
 Controls whether a calculation with `use_integral_symmetry=true` is rotated and
 translated to a standard symmetry frame before the integral reduction is
-staged. Set this to `False` to keep the molecule in its input frame; OpenQP then
+staged. The default `False` keeps the molecule in its input frame; OpenQP then
 uses the corresponding input-frame symmetry operators for the integral and
 gradient reductions. The no-move route is available for `energy` and `grad`
 calculations and uses the abelian integral-symmetry tier. The non-abelian
