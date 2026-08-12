@@ -80,9 +80,11 @@ Enables the guarded abelian petite-list/skeleton-Fock reduction for supported
 `energy` and `grad` calculations. The default route verifies the AO operator
 against the overlap matrix, verifies density invariance before each reduced
 build, and falls back to the complete integral path when a safety condition is
-not met. Set this to `False` to disable integral reduction. The value `full`
-requests the experimental non-abelian tier and should be validated against a
-C1 reference run.
+not met. ROHF calculations using pFON also stay on the complete C1 integral
+path because fractional-occupation convergence can be sensitive to the changed
+summation order. Set this to `False` to disable integral reduction. The value
+`full` requests the experimental non-abelian tier and should be validated
+against a C1 reference run.
 
 ### `move_to_standard_frame`
 
