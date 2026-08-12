@@ -92,8 +92,11 @@ translated to a standard symmetry frame before the integral reduction is
 staged. Set this to `False` to keep the molecule in its input frame; OpenQP then
 uses the corresponding input-frame symmetry operators for the integral and
 gradient reductions. The no-move route is available for `energy` and `grad`
-calculations. As with every integral-symmetry calculation, validate new systems
-against a run with `use_integral_symmetry=false`.
+calculations and uses the abelian integral-symmetry tier. The non-abelian
+`use_integral_symmetry=full` tier requires `move_to_standard_frame=true`; OpenQP
+rejects `full` together with `move_to_standard_frame=false` instead of silently
+using a smaller group. As with every integral-symmetry calculation, validate new
+systems against a run with `use_integral_symmetry=false`.
 
 ```ini
 [symmetry]
