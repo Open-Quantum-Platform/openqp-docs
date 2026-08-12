@@ -104,6 +104,12 @@ state=0
 clean=True
 ```
 
+For a symmetric molecule, `symmetry_unique=True` can reduce the numerical
+finite-difference work to one displaced atom per symmetry-equivalent atom
+orbit. It is an opt-in feature and falls back to the full displacement set
+with an explanatory note whenever the current geometry or tolerance does not
+support a complete symmetry reconstruction.
+
 Runnable `.oqp`:
 [`examples/HESS/H2O_RHF-DFT_NUM_HESS.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_NUM_HESS.oqp).
 The same-stem `.inp` file is retained for legacy use.

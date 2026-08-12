@@ -98,3 +98,22 @@ be positive.
 | Used by | temporary Hessian files |
 
 Removes temporary Hessian files where supported.
+
+### `symmetry_unique`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | numerical Hessian displacements |
+
+When enabled for a symmetric molecule, displaces one atom from each
+symmetry-equivalent atom orbit and reconstructs the remaining numerical
+Hessian rows with the detected abelian symmetry operations. OpenQP detects the
+point group again at the current reference geometry and proves atom-orbit
+coverage before launching displaced-gradient jobs.
+
+If symmetry is absent, detection fails, the tolerance is too loose relative to
+`dx`, or complete orbit coverage cannot be established, OpenQP reports the
+reason and safely uses the full displacement set. The option does not enable
+integral symmetry reduction in the displaced child calculations.
