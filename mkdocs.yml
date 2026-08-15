@@ -45,6 +45,7 @@ nav:
       - HF and DFT: workflows/hf-dft.md
       - MP2: workflows/mp2.md
       - Coupled Cluster: workflows/coupled-cluster.md
+      - AFQMC: workflows/afqmc.md
       - TDDFT and TDHF: workflows/tddft.md
       - SF-TDDFT: workflows/sf-tddft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
@@ -70,6 +71,7 @@ nav:
       - scf: keywords/scf.md
       - mp2: keywords/mp2.md
       - cc: keywords/cc.md
+      - afqmc: keywords/afqmc.md
       - dftb: keywords/dftb.md
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md

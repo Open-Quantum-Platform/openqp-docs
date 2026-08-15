@@ -78,7 +78,7 @@ longer evaluated as neutral dispersion models.
 | --- | --- |
 | Type | string |
 | Default | `hf` |
-| Values | `hf`, `tdhf`, `mp2`, `ccsd`, `ccsd(t)`, `dftb`, `xtb` |
+| Values | `hf`, `tdhf`, `mp2`, `ccsd`, `ccsd(t)`, `dftb`, `xtb`; `afqmc` on the companion `openqp-afqmc` development build |
 | Used by | workflow dispatch |
 
 Selects the electronic-structure driver. Use `method=hf` for HF and DFT
@@ -88,7 +88,9 @@ coupled cluster on an HF reference, controlled by [`[cc]`](cc.md) (development
 preview in OpenQP PR
 [#302](https://github.com/Open-Quantum-Platform/openqp/pull/302), not part of
 OpenQP 1.2.0). Use `method=tdhf` for TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, SOC,
-NACME, and MRSF-EKT workflows. Use [`method=dftb`](dftb.md) for the OpenQP-DFTB
+NACME, and MRSF-EKT workflows. Use
+[`method=afqmc`](afqmc.md) for an AFQMC energy calculation configured by the
+`[afqmc]` section. Use [`method=dftb`](dftb.md) for the OpenQP-DFTB
 tight-binding backend (ground-state DFTB2, LC-DFTB2, and SF/MRSF-TDDFTB) and
 `method=xtb` for the LC-GFN1-xTB backend; both are optional external libraries
 that share the tight-binding dispatch and the SF/MRSF response plumbing
