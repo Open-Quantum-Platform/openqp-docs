@@ -14,7 +14,7 @@ scripts organized around six top-level ideas.
 | Top-level call | Purpose |
 | --- | --- |
 | `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
-| `job.theory.<model>(...)` | Quantum theory: HF, DFT, MP2, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
+| `job.theory.<model>(...)` | Quantum theory: HF, DFT, MP2, CCSD, CCSD(T), native wavefunction methods, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
 | `job.workflow.*(...)` | Calculation type: gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, NAMD, and related job workflows. Plain energy calculations need no workflow call. |
 | `job.qmmm(...)` | Enable ESPF QM/MM embedding: sets `[input] qmmm_flag=true` and the `[qmmm]` section (PDB, force field, QM atoms, cutoff, embedding). |
 | `job.control(...)` | Hardware and runtime controls such as `usempi` and `omp_threads`. |
@@ -45,10 +45,10 @@ After an MRSF energy run, the same Python script can continue into excited-state
 analysis and export through `oqp.interop`.
 
 ```python
-from oqp.interop import MRSFExcitedStates, nto_excitation
+from oqp.interop import MRSFExcitedStates, nto_transition
 
 states = MRSFExcitedStates(mol)
-nto = nto_excitation(states, 1)
+nto = nto_transition(states, 0, 1)
 
 print("S0 -> S1 oscillator strength:", states.oscillator_strength(0, 1))
 print("Leading NTO weight:", nto["weights"][0])
@@ -112,6 +112,29 @@ job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2", conv=1.0e-10)
 mol = job.run()
 print("MP2 total energy:", mol.get_results()["energy"])
 ```
+
+## Minimal Coupled-Cluster Script
+
+Coupled cluster also uses an HF reference and is also energy-only.
+`job.theory.ccsd_t(...)` adds the perturbative triples correction;
+`job.theory.ccsd(...)` is the same helper without it.
+
+```python
+from oqp.openqp import OpenQP
+
+job = OpenQP("h2o_ccsd_t", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.ccsd_t(basis="6-31g", reference="rhf", nfzc=1, conv=1.0e-7)
+
+mol = job.run()
+print("CCSD(T) total energy:", mol.get_results()["energy"])
+```
+
+`nfzc`, `conv`, `maxit`, and `ndiis` are the coupled-cluster controls and route
+to [`[cc]`](keywords/cc.md); the SCF keeps its own `conv` and `maxit`, so any
+other keyword passed here routes to `[scf]` as usual. See
+[Coupled Cluster](workflows/coupled-cluster.md) for the reference types and
+their cost.
 
 ## Theory, Workflow, And Settings
 
@@ -193,11 +216,6 @@ job.update({
 
 ## QM/MM and Nonadiabatic Dynamics
 
-!!! warning "Development preview"
-    `job.qmmm(...)` and `job.workflow.namd(...)` target the NAMD/QM/MM branch in
-    OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205)
-    and are not part of OpenQP 1.2.0.
-
 `job.qmmm(...)` enables ESPF QM/MM embedding, and `job.workflow.namd(...)` runs
 nonadiabatic (surface-hopping) molecular dynamics. They compose with the usual
 `job.molecule(...)` / `job.theory.*(...)` calls, so QM/MM, SOC-NAMD, and
@@ -241,6 +259,50 @@ job.qmmm(
 job.workflow.namd(soc=True, soc_basis="mch", nstep=200, dt=0.5, init_state="S1")
 mol = job.run()
 ```
+
+For an ensemble, keep one campaign `seed` and assign a distinct `rng_stream`
+to each trajectory. Hopping random numbers are then reproducible functions of
+the campaign seed, trajectory stream, and physical MD step. By default,
+`seed=0` resolves once to the local `YYYYMMDD` date, `rng_stream=1`, and
+`first_hop_step=1`. Step 1 already has the initial and propagated structures,
+so it is the first TLF2 interval and the first electronic-coefficient
+propagation and hopping decision. Setting `first_hop_step=2` explicitly delays
+only the active-state transition and hopping RNG: step 1 still propagates the
+coefficients and computes hop probabilities.
+Same-spin NAMD defaults to `nacme_check="baeck_an"`, which logs an independent
+energy-curvature estimate beside the overlap/TLF TDC. The comparison is
+magnitude-only because TD-BA has no wavefunction phase information. The default
+`nacme_gate="off"` records the diagnostic without enforcing it; use `warn` or
+`error` only after calibrating the absolute and relative
+tolerances for the target system. The same gate accepts a signed, phase-aligned
+analytic `d_IJ . v` reference when that provider is connected in a later release.
+
+All same-spin/SOC and gas-phase/QM/MM NAMD drivers write a dense appendable,
+packed-binary `<project>.namd.trj` and an atomic compressed checkpoint.
+Canonical `.oqp` runs additionally write a directly runnable
+`<project>.namd.restart.oqp`; Python-API and legacy `.inp` runs must restart by
+reusing their original configuration with `restart=true` and explicit
+checkpoint and trajectory paths. The trajectory is designed for NumPy memory
+mapping rather than human reading. Use `trajectory_interval` to trade temporal
+resolution for file size. Zero, the default, selects an interval of
+approximately 10 fs from `dt`; positive values are step counts. The final point
+and strict NACME or NVE failures are retained even between regular output
+points. The human-readable NACME validation table remains in the main log:
+
+```python
+from oqp.library.namd import read_namd_trajectory
+
+metadata, trj = read_namd_trajectory("job.namd.trj")
+s1_s0_tdc = trj["overlap_tdc_au"][:, 0, 1]
+phase_margin = trj["tracking_margin"]
+```
+
+For SOC trajectories, the packed record also contains the complex
+spin-adiabatic overlap and anti-Hermitian TDC as real/imaginary fields and the
+active representation. The restart checkpoint preserves the previous SOC
+eigensystem and singlet/triplet response vectors, validating their exact shapes
+and dtypes before continuation. TD-Baeck–An remains a same-spin diagnostic and
+is contextually disabled for SOC.
 
 Dropping `job.qmmm(...)` gives gas-phase dynamics, and dropping `soc=True` gives
 internal-conversion FSSH:

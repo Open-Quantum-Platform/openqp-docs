@@ -1,6 +1,6 @@
 # OpenQP Manual
 
-**Manual version:** 1.2.0; **OpenQP version:** 1.2.0
+**Manual version:** 1.3.0; **OpenQP version:** 1.3.0
 
 Open Quantum Platform (OpenQP) is a quantum chemistry package centered on
 HF/DFT, MP2, TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT, and related workflows for
@@ -37,6 +37,7 @@ workflows and keywords.
 - [TDDFT and TDHF](workflows/tddft.md) energies and gradients
 - [SF-TDDFT](workflows/sf-tddft.md) spin-flip energies and gradients
 - [MRSF-TDDFT](workflows/mrsf-tddft.md) energies and gradients
+- [QMRSF-DK](workflows/qmrsf-dk.md) quintet-reference CAS(4,4) spectra
 - [Hessian and frequencies](workflows/hessian.md)
 - Geometry [optimization](workflows/optimization.md)
 - [Spin-orbit coupling](workflows/soc.md) and scalar relativistic DKH correction

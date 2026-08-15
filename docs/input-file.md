@@ -84,9 +84,9 @@ previous geometry.
 | `[guess]` | Initial orbitals and restart data. |
 | `[scf]` | RHF/ROHF/UHF reference and SCF convergence controls. |
 | `[mp2]` | Standalone MP2 spin-scaling controls. |
+| `[cc]` | Coupled-cluster frozen core and solver controls. |
 | `[dftgrid]` | DFT functional/grid controls. |
 | `[tdhf]` | TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, and UMRSF settings. |
-| `[dftb]` | DFTB backend, SCC, response, and MRSF-TDDFTB controls. |
 | `[md]` | Nonadiabatic-dynamics controls used by `runtype=namd`. |
 | `[qmmm]` | OpenMM QM/MM system and molecular-dynamics controls. |
 | `[properties]` | Gradients, NAC, NMR, export, and property requests. |
@@ -113,7 +113,7 @@ Common `[input] runtype` values:
 | `hess` | Hessian/frequency workflow. |
 | `nac`, `bp` | Numerical nonadiabatic-coupling vector and branching-plane workflows. |
 | `nacme` | Time/geometric derivative coupling between MRSF states. |
-| `soc` | MRSF-TDDFT, MRSF-TDHF, or MRSF-TDDFTB spin-orbit coupling workflow. |
+| `soc` | MRSF-TDDFT or MRSF-TDHF spin-orbit coupling workflow. |
 | `ekt` | MRSF-EKT ionization-potential/electron-affinity workflow. |
 | `md` | Ground-state QM/MM molecular dynamics. The command-line runner dispatches this OpenMM path specially. |
 | `namd` | Nonadiabatic molecular dynamics using `[md]` controls. |

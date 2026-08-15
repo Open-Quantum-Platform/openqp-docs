@@ -19,15 +19,9 @@ qmmm(embedding=electrostatic)
 geom="ala.pdb 9 10 17 18 19"
 ```
 
-!!! warning "Development preview"
-    This section documents the QM/MM implementation branch in
-    OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205).
-    The covalent-boundary [`frontier_scheme`](#frontier_scheme) keyword and the
-    [Covalent QM/MM boundaries](#covalent-qmmm-boundaries) treatment are added
-    separately by PR
-    [#258](https://github.com/Open-Quantum-Platform/openqp/pull/258) — a checkout
-    of PR #205 alone will not have `frontier_scheme`. Neither is part of OpenQP
-    1.2.0; use a source branch (or later release) that includes them.
+!!! note "Available in OpenQP 1.3.0"
+    The QM/MM implementation and its covalent-boundary `frontier_scheme`
+    controls are included in OpenQP 1.3.0.
 
 ## Background
 

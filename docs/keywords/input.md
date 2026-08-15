@@ -78,20 +78,21 @@ longer evaluated as neutral dispersion models.
 | --- | --- |
 | Type | string |
 | Default | `hf` |
-| Values | `hf`, `tdhf`, `mp2`, `dftb`, `xtb` |
+| Values | `hf`, `tdhf`, `mp2`, `ccsd`, `ccsd(t)`, `fci`, `casci`, `casscf`, `sa-casscf`, `caspt2`, `ms-caspt2`, `xms-caspt2`, `mrmp2`, `mcqdpt2`, `xmcqdpt2` |
 | Used by | workflow dispatch |
 
 Selects the electronic-structure driver. Use `method=hf` for HF and DFT
 reference calculations. Use `method=mp2` for standalone ground-state MP2
-correlation. Use `method=tdhf` for TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, SOC,
-NACME, and MRSF-EKT workflows. Use [`method=dftb`](dftb.md) for the OpenQP-DFTB
-tight-binding backend (ground-state DFTB2, LC-DFTB2, and SF/MRSF-TDDFTB) and
-`method=xtb` for the LC-GFN1-xTB backend; both are optional external libraries
-that share the tight-binding dispatch and the SF/MRSF response plumbing
-(development preview, not part of OpenQP 1.2.0).
+correlation. Use [`method=ccsd` or `method=ccsd(t)`](cc.md) for energy-only
+coupled cluster on an HF reference, controlled by [`[cc]`](cc.md). Use
+`method=tdhf` for TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, SOC,
+NACME, and MRSF-EKT workflows. The native wavefunction methods and their
+required sections are summarized under [Wavefunction methods](wavefunction.md).
+XTB, DFTB, and AFQMC are not distributed or supported as OpenQP 1.3.0 methods.
 
 DFT calculations still use `method=hf`; the functional is selected separately
-with `functional`. MP2 calculations require `functional` to be empty.
+with `functional`. MP2, coupled-cluster, and native wavefunction calculations
+require `functional` to be empty.
 
 ### `functional`
 
@@ -186,12 +187,9 @@ Common values:
 | `ts`, `irc`, `neb`, `mep` | Reaction-path workflows. |
 | `prop`, `data` | Multi-state property/data workflows for downstream drivers. |
 
-!!! warning "Development preview"
-    `runtype=namd` is added by OpenQP PR
-    [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205). It is not
-    available in OpenQP 1.2.0. In that implementation branch, `namd` selects
-    surface-hopping molecular dynamics configured by the [`[md]`](md.md)
-    section and requires an MRSF-TDDFT setup.
+`runtype=namd` is available in OpenQP 1.3.0. It selects surface-hopping
+molecular dynamics configured by the [`[md]`](md.md) section and requires an
+MRSF-TDDFT setup.
 
 When `method=mp2`, `runtype` must be `energy`. MP2 gradients, Hessians, and
 optimization workflows are not wired in this release.
@@ -312,10 +310,7 @@ ground-state QM/MM molecular dynamics, and nonadiabatic
 [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md) dynamics (`runtype=namd` with
 `[md] soc=true`). Without `qmmm_flag=true` the `[qmmm]` section is ignored.
 
-!!! warning "Development preview"
-    `qmmm_flag` and the `[qmmm]` schema documented here are from OpenQP PR
-    [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205), not
-    OpenQP 1.2.0.
+`qmmm_flag` and the `[qmmm]` schema are available in OpenQP 1.3.0.
 
 ### `omp_threads`
 

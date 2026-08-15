@@ -48,7 +48,13 @@ full bibliographies inside each keyword entry.
 | [`[guess]`](guess.md) | Initial orbitals, restart files, and MO swaps. |
 | [`[scf]`](scf.md) | Reference type, convergence controls, pFON, TRAH, fallback manager. |
 | [`[mp2]`](mp2.md) | Standalone MP2 spin-scaling controls. |
-| [`[dftb]`](dftb.md) | DFTB backend, SCC, response, spin, and MRSF-TDDFTB controls. |
+| [`[cc]`](cc.md) | Coupled-cluster frozen core and solver controls. |
+| [`[fci]`](wavefunction.md#fci) | Full-CI active-space and eigensolver controls. |
+| [`[cas]`](wavefunction.md#cas) | CAS orbital partition shared by CASCI, CASSCF, and PT2. |
+| [`[ci]`](wavefunction.md#ci) | Active-space CI eigensolver controls. |
+| [`[casscf]`](wavefunction.md#casscf) | CASSCF orbital-optimization controls. |
+| [`[state_average]`](wavefunction.md#state_average) | State-averaged CASSCF roots and weights. |
+| [`[pt2]`](wavefunction.md#pt2) | CASPT2, NEVPT2, and QDPT controls. |
 | [`[dftgrid]`](dftgrid.md) | DFT quadrature and hybrid/range-separated functional controls. |
 | [`[tdhf]`](tdhf.md) | TDHF/TDDFT/SF/MRSF/UMRSF response settings. |
 | [`[md]`](md.md) | Nonadiabatic surface-hopping molecular dynamics (`runtype=namd`), including SOC-NAMD. |

@@ -4,7 +4,8 @@ The MRSF analysis toolkit turns a finished MRSF-TDDFT energy calculation into
 Python objects for excited-state analysis, visualization, and data exchange.
 Use it when you need natural transition orbitals, attachment/detachment
 densities, state-to-state transition densities, cube files, QCSchema payloads,
-FCIDUMP files, or comparison against external excited-state results.
+FCIDUMP files, LE/CT fractions, orbital-character fractions, or comparison
+against external excited-state results.
 
 The public import surface is `oqp.interop`. The lower-level implementation lives
 in `oqp.analysis`, `oqp.export`, and `oqp.quantum`, but user scripts should
@@ -30,10 +31,10 @@ Run the calculation with the high-level `OpenQP` wrapper, then wrap the returned
 ```python
 from oqp.openqp import OpenQP
 from oqp.interop import (
+    AOBasis,
     MRSFExcitedStates,
-    nto_excitation,
+    analyze_mrsf_transition,
     attachment_detachment,
-    participation_ratio,
 )
 
 job = OpenQP("formaldehyde_mrsf", silent=1)
@@ -55,10 +56,14 @@ target = 1
 print("S0 -> S1 dipole:", states.transition_dipole(0, target))
 print("S0 -> S1 oscillator strength:", states.oscillator_strength(0, target))
 
-nto = nto_excitation(states, target)
+ao = AOBasis(mol)
+# One fragment means LE=1 by definition.  Split donor/acceptor atoms into
+# separate fragments when a chemical CT partition is intended.
+report = analyze_mrsf_transition(states, ao, target, fragments=[[0, 1, 2, 3]])
 ad = attachment_detachment(states, target)
-print("Significant NTO pairs:", nto["n_significant"])
-print("NTO participation ratio:", participation_ratio(nto["weights"]))
+print("Orbital character:", report["orbital_character"]["label"])
+print("Orbital fractions:", report["orbital_character"]["fractions"])
+print("NTO participation ratio:", report["nto_participation_ratio"])
 print("Promoted charge:", ad["n_promoted"])
 ```
 
@@ -91,7 +96,7 @@ to the same `oqp.interop` functions:
 
 ```python
 from oqp.pyoqp import Runner
-from oqp.interop import MRSFExcitedStates, nto_excitation
+from oqp.interop import MRSFExcitedStates, nto_transition
 
 runner = Runner(
     project="formaldehyde_mrsf",
@@ -103,7 +108,7 @@ runner = Runner(
 runner.run()
 
 states = MRSFExcitedStates(runner.mol)
-nto = nto_excitation(states, 1)
+nto = nto_transition(states, 0, 1)
 ```
 
 ## Transition And State Densities
@@ -124,6 +129,77 @@ These densities are MRSF state-interaction objects. The MRSF `S0` is itself a
 response root, so standard closed-shell TDDFT reference-to-excited-state
 formulas should not be substituted for the `MRSFExcitedStates` API.
 
+Two NTO definitions are available and they must not be conflated:
+
+- `nto_transition(states, 0, n)` is the SVD of the genuine physical-root
+  `S0 -> Sn` state-interaction 1-TDM. Use it for spectroscopy and the state
+  analysis described below.
+- `nto_excitation(states, n)` is the SVD of root `n`'s spin-flip amplitude
+  relative to the auxiliary high-spin determinant. It remains useful for
+  inspecting the response-vector construction, but it is not an `S0 -> Sn`
+  transition NTO.
+
+## Physical-Root State Analysis
+
+`analyze_mrsf_transition` reports spatial charge-transfer character and orbital
+character separately. Both are evaluated for an explicit pair of physical MRSF
+roots; the default `ref=0` means `S0 -> Sn`, not high-spin-reference `-> Sn`.
+
+```python
+from oqp.interop import AOBasis, analyze_mrsf_transition
+
+ao = AOBasis(mol)
+fragments = [[0, 1], [2, 3]]  # chemically chosen donor and acceptor units
+report = analyze_mrsf_transition(
+    states,
+    ao,
+    n=1,
+    fragments=fragments,
+    ref=0,
+    # plane_normal=[1.0, 0.0, 0.0],  # set for a local/non-planar chromophore
+)
+
+print(report["fragment_ct"]["Omega"])
+print("LE:", report["le_fraction"], "CT:", report["ct_fraction"])
+print(report["orbital_character"]["fractions"])
+print(report["orbital_character"]["label"])
+```
+
+Let `T` be the physical-root state-interaction 1-TDM in the AO basis. The code
+Loewdin-orthogonalizes it with the AO overlap `S` and partitions the squared
+elements of the result:
+
+```text
+Ttilde   = S^(1/2) T S^(1/2)
+
+Omega[A,B] = sum over nu in A (hole), mu in B (particle) of |Ttilde[mu,nu]|^2
+```
+
+Rows of `Omega` are therefore hole fragments and columns are particle
+fragments. The reported local-excitation fraction is
+
+```text
+f_LE = sum_A Omega[A,A] / sum_AB Omega[A,B]
+f_CT = 1 - f_LE
+```
+
+The orbital analysis SVDs the same physical-root 1-TDM and performs a symmetric
+Loewdin population analysis of each NTO pair. It returns all six fractions
+`n->pi*`, `pi->pi*`, `sigma->pi*`, `n->sigma*`, `pi->sigma*`, and
+`sigma->sigma*`. The pi projection is the p population perpendicular to a
+molecular plane; the n projection is the in-plane population on heteroatoms.
+The plane is inferred only for a sufficiently planar geometry. Supply a local
+`plane_normal` for a non-planar molecule. If no unique plane is available,
+LE/CT and NTO results are still returned and the orbital label is
+`unclassified`.
+
+The compact label is `mixed` unless the largest channel fraction is at least
+0.55. Always retain the fractions in scientific reporting: assignments can be
+strongly mixed. In these labels, `*` identifies the particle NTO channel. It is
+not, by itself, a separate proof of an antibonding node or bond-order decrease;
+confirm that interpretation from the NTO shape or attachment/detachment cubes
+when it matters.
+
 ## Descriptors
 
 The descriptor helpers summarize excited-state character.
@@ -132,21 +208,21 @@ The descriptor helpers summarize excited-state character.
 from oqp.interop import (
     AOBasis,
     make_box_grid,
-    nto_excitation,
+    nto_transition,
     participation_ratio,
     tozer_lambda,
     fragment_ct_matrix,
 )
 
 ao = AOBasis(mol)
-nto = nto_excitation(states, 1)
+nto = nto_transition(states, 0, 1)
 
 origin, npts, dvec, points = make_box_grid(ao.coords, padding=5.0, spacing=0.15)
 dV = dvec[0] * dvec[1] * dvec[2]
 lambda_value, lambda_details = tozer_lambda(ao, nto, points, dV)
 
 fragments = [[0, 1], [2, 3]]
-omega = fragment_ct_matrix(states, ao, 1, fragments)
+omega = fragment_ct_matrix(states, ao, 1, fragments, ref=0)
 
 print("Participation ratio:", participation_ratio(nto["weights"]))
 print("Tozer Lambda:", lambda_value)
@@ -154,7 +230,9 @@ print("Charge-transfer fraction:", omega["ct_fraction"])
 ```
 
 Fragment atom indices are zero-based and follow the atom order in the OpenQP
-input.
+input. Fragments must be disjoint and must assign every AO-bearing atom. LE/CT
+fractions depend on this chemical partition; treating every atom as its own
+fragment does not define molecular donor-to-acceptor CT.
 
 ## Cube Export
 
@@ -162,10 +240,12 @@ input.
 MRSF-derived densities.
 
 ```python
-from oqp.interop import CubeExporter, attachment_detachment, nto_excitation
+from oqp.interop import CubeExporter, attachment_detachment, nto_transition
 
 target = 1
-nto = nto_excitation(states, target)
+# Physical-root S0 -> Sn NTOs, matching the transition the cubes are meant to
+# show.  nto_excitation would give the auxiliary high-spin-reference orbitals.
+nto = nto_transition(states, 0, target)
 ad = attachment_detachment(states, target)
 cubes = CubeExporter(states, padding=5.0, spacing=0.15)
 
@@ -257,6 +337,9 @@ only the shared prefix.
   UMRSF runs do not publish the MRSF state-interaction density tags.
 - Attachment/detachment densities are unrelaxed. They do not include orbital
   relaxation from the MRSF gradient Z-vector path.
+- Orbital-character labels use a global or user-supplied local molecular plane.
+  For non-planar or multi-chromophore systems, analyze each chromophore with an
+  appropriate local normal instead of forcing one global pi axis.
 - Cube generation currently uses the Python Cartesian-GTO evaluator. Use a
   Cartesian basis for cube export until pure spherical-grid support is added.
 - Optional validation paths may require extra Python packages such as

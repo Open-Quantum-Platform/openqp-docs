@@ -34,9 +34,41 @@ friendly dictionary with atoms, coordinates, total energy, symmetry metadata,
 TDDFT energies, gradients, NAC, SOC, Hessian data, MP2 correlated totals, and
 MRSF-EKT records when present.
 
+Wavefunction calculations additionally populate `get_results()["energies"]`
+with ordered total energies in Hartree. For FCI, CASCI, and CASSCF this is the
+per-root total-energy list; a state-averaged CASSCF calculation still reports
+the solved roots even though its scalar objective is a weighted average. For
+CASPT2, NEVPT2, and QDPT variants the values are the corrected total energies,
+not the perturbative corrections alone, ordered by the requested target roots
+(or by ascending eigenvalue for a diagonalized multistate model space).
+Corresponding native tags include `OQP::FCI_ENERGIES`, the CASCI/CASSCF energy
+tags, and `OQP::CASPT2_ENERGIES`; `mol.energies` is the source used for this
+portable result key.
+
 For `method=mp2`, the exported energy is the correlated MP2 total after the
 SCF reference energy and MP2 correlation are combined. The run log also prints
 the reference SCF energy plus same-spin and opposite-spin MP2 components.
+
+For `method=ccsd` and `method=ccsd(t)`, the exported energy follows the same
+rule: it is the correlated total, not the reference. `ccsd` exports
+`E(SCF) + E(CCSD correlation)`, and `ccsd(t)` exports
+`E(SCF) + E(CCSD correlation) + E((T) correction)` — so switching between them
+changes the value under the same key, and the key alone does not say which
+method produced it. The individual pieces are not exported separately; the run
+log prints them as a labelled table:
+
+| Log line | Meaning |
+| --- | --- |
+| `E(reference, SCF)` | The converged HF reference energy. |
+| `E(CCSD, correlation)` | The CCSD correlation energy alone. |
+| `E(CCSD, total)` | Reference plus CCSD correlation. |
+| `E((T), correction)` | The perturbative triples correction (`ccsd(t)` only). |
+| `E(CCSD(T), correlation)` | CCSD correlation plus triples (`ccsd(t)` only). |
+| `E(CCSD(T), total)` | The exported total for `ccsd(t)`. |
+
+Consumers that need the decomposition rather than the total should record
+which method they requested and read these lines. The exported keys may gain a
+dedicated coupled-cluster breakdown in a later release.
 
 When the corresponding property is requested via `[properties] scf_prop`,
 `get_results()` also includes the following (identically for file-based and
