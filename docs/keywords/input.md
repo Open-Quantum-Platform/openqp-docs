@@ -191,8 +191,10 @@ Common values:
 molecular dynamics configured by the [`[md]`](md.md) section and requires an
 MRSF-TDDFT setup.
 
-When `method=mp2`, `runtype` must be `energy`. MP2 gradients, Hessians, and
-optimization workflows are not wired in this release.
+With an RHF reference, `method=mp2` accepts `energy`, `grad`, `optimize`, `ts`,
+`mep`, and `irc`; the latter five use the analytic RHF-MP2 gradient. UHF and
+ROHF MP2 remain energy-only. MP2 Hessians and other derivative workflows are
+not implemented.
 
 ### `ispher`
 

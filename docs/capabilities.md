@@ -10,7 +10,7 @@ specific input contract.
 | Area | Status |
 | --- | --- |
 | HF and DFT | RHF, ROHF, and UHF references. |
-| MP2 | Energy-only standalone MP2 on RHF, UHF, and ROHF references, with spin-scaled variants. |
+| MP2 | RHF, UHF, and ROHF energies with spin-scaled variants; analytic RHF gradients and RHF gradient-driven geometry calculations. |
 | Coupled cluster | Energy-only CCSD and CCSD(T) on RHF, UHF, and ROHF references, with a frozen core. In-core integrals; the open-shell path is a spin-orbital solver for small systems. See [Coupled Cluster](workflows/coupled-cluster.md). |
 | Wavefunction methods | Native determinant-space FCI, CASCI, CASSCF, state-averaged CASSCF, CASPT2, NEVPT2, and QDPT-family energy workflows on an RHF reference. See [Wavefunction methods](keywords/wavefunction.md). |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
@@ -22,7 +22,7 @@ specific input contract.
 
 | Property | Status |
 | --- | --- |
-| Analytic gradients | Available for the supported HF/DFT and response workflows. |
+| Analytic gradients | Available for the supported HF/DFT, RHF MP2 and spin-scaled MP2, and response workflows. |
 | HF/DFT Hessians | Native analytic path for supported HF/DFT references. |
 | Numerical Hessians | Available through the Hessian workflow. |
 | NACME | MRSF-TDDFT state-coupling workflow. |
@@ -61,8 +61,8 @@ constraint types that the concise grammar does not yet support.
   QM/MM boundaries (link atoms) in dynamics are not yet available.
 - PCM gradients, PCM optimizations, and state-specific excited-state PCM are not
   part of the first ddX energy path.
-- MP2 gradients, Hessians, RI/Laplace/local MP2 kernels, and periodic MP2 are
-  not part of the documented standalone MP2 path.
+- Open-shell MP2 gradients, MP2 Hessians, RI/Laplace/local MP2 kernels, and
+  periodic MP2 are not part of the documented standalone MP2 path.
 - Coupled-cluster gradients and derivative workflows are not implemented, and
   there is no density-fitted or disk-based coupled-cluster mode; the CC
   iteration itself is not integral-direct and its integrals are held in memory.

@@ -135,6 +135,9 @@ OpenMM `QMMM_MD` driver. This applies after a concise `.oqp` request has been
 lowered as well as to a traditional sectioned `.inp`. Run it without MPI, for
 example `openqp file.oqp --nompi` or `openqp file.inp --nompi`.
 
-Standalone MP2 is selected with `[input] method=mp2`, uses only
-`runtype=energy`, and requires an empty `[input] functional`. Spin-scaled MP2
-variants are controlled by the optional `[mp2]` section.
+Standalone MP2 is selected with `[input] method=mp2` and requires an empty
+`[input] functional`. RHF references support `runtype=energy`, `grad`,
+`optimize`, `ts`, `mep`, and `irc`; the derivative runtypes use the analytic
+RHF-MP2 gradient. UHF and ROHF references remain energy-only. Spin-scaled MP2
+variants are controlled by the optional `[mp2]` section and use the same
+analytic derivative when the reference is RHF.

@@ -118,6 +118,7 @@ a same-stem legacy `.inp` companion.
 | MRSF-TDDFT energy | [`examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MRSF-TDDFT/H2O_BHHLYP-MRSFTDDFT_ENERGY.oqp) |
 | RHF energy | [`examples/HF/H2O_RHF-HF_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HF/H2O_RHF-HF_ENERGY.oqp) |
 | MP2 energy | [`examples/MP2/h2o_ump2_6-31g.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MP2/h2o_ump2_6-31g.oqp) |
+| Analytic RHF-MP2 gradient | [`examples/MP2/h2o_rmp2_6-31g_grad.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/MP2/h2o_rmp2_6-31g_grad.oqp) |
 | DFT gradient | [`examples/DFT/H2O_RHF-DFT_GRADIENT.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/DFT/H2O_RHF-DFT_GRADIENT.oqp) |
 | Analytic HF/DFT Hessian | [`examples/HESS/H2O_RHF-DFT_ANA_HESS.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.oqp) |
 | Native geometry optimization | [`examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/OPT/H2O_RHF-DFT_OPTIMIZE_OQP.oqp) |

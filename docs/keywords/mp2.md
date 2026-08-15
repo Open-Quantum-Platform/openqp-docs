@@ -4,9 +4,10 @@ The `[mp2]` section controls spin-component scaling for standalone
 `[input] method=mp2` calculations. Ordinary MP2 does not require this section;
 the defaults are conventional unscaled MP2.
 
-MP2 is a post-SCF energy workflow. It requires an HF reference, so
-`[input] functional` must be empty and `[input] runtype` must be `energy`.
-In concise input, select that reference with
+MP2 requires an HF reference, so `[input] functional` must be empty. RHF
+references support analytic nuclear gradients and gradient-driven geometry
+calculations; UHF and ROHF references remain energy-only. In concise input,
+select the reference with
 `mp2(reference=rhf|rohf|uhf)/BASIS`; the value lowers to `[scf] type` and is
 not a keyword in this section.
 
@@ -30,6 +31,18 @@ job.molecule(geometry="water")
 job.theory.mp2(basis="6-31g")
 mol = job.run()
 ```
+
+Analytic RHF-MP2 gradient in `.oqp`:
+
+```text
+mp2/6-31g
+grad(S0)
+geom="h2o.xyz"
+```
+
+The spin-scaling preset is applied to both the energy and its analytic
+gradient. For example, replace the first line with
+`mp2(variant=scs-mp2)/6-31g` for SCS-MP2.
 
 Legacy `.inp`:
 
@@ -74,7 +87,7 @@ opposite_spin_scale=1.10
 | Type | string |
 | Default | `mp2` |
 | Values | `mp2`, `conventional`, `scs-mp2`, `scs`, `sos-mp2`, `sos`, `os-mp2`, `os`, `opposite-spin`, `ss-mp2`, `ss`, `same-spin`, `sss-mp2`, `sss`, `scs-mi-mp2`, `scs-mi`, `custom` |
-| Used by | standalone MP2 energy |
+| Used by | standalone MP2 energy and RHF analytic gradient |
 
 Selects the MP2 spin-scaling preset. The scales multiply same-spin and
 opposite-spin correlation components:
@@ -123,10 +136,12 @@ scales.
 
 ## Notes
 
-- `method=mp2` accepts `runtype=energy` only.
+- RHF MP2 accepts `runtype=energy`, `grad`, `optimize`, `ts`, `mep`, and `irc`.
+- UHF and ROHF MP2 accept `runtype=energy` only; derivative requests stop
+  before the electronic-structure calculation.
 - `method=mp2` rejects non-empty `[input] functional` values.
 - The reference is selected through `[scf] type`; RHF, UHF, and ROHF references
-  are supported.
+  are supported for energies.
 - SOS and OS-only variants set the same-spin scale to zero and skip same-spin
   work.
 
