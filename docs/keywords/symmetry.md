@@ -11,7 +11,9 @@ useful even when reductions are disabled.
     [`use_integral_symmetry`](#use_integral_symmetry) and
     [`use_response_symmetry`](#use_response_symmetry) — remain `False` by
     default, so the geometry is not reoriented, the full integral list is still
-    used, and ground-state energies are unchanged.
+    used, and reference-SCF or ordinary HF/DFT ground-state energies are
+    unchanged. An MRSF physical `S0` remains a response root and can change
+    when symmetry information repairs response-block coverage.
 
     Detection is **not** purely cosmetic, though. The detected irreps are what
     let the excited-state solver reach every symmetry block, so excited-state

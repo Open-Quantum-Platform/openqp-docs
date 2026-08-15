@@ -34,6 +34,17 @@ friendly dictionary with atoms, coordinates, total energy, symmetry metadata,
 TDDFT energies, gradients, NAC, SOC, Hessian data, MP2 correlated totals, and
 MRSF-EKT records when present.
 
+Wavefunction calculations additionally populate `get_results()["energies"]`
+with ordered total energies in Hartree. For FCI, CASCI, and CASSCF this is the
+per-root total-energy list; a state-averaged CASSCF calculation still reports
+the solved roots even though its scalar objective is a weighted average. For
+CASPT2, NEVPT2, and QDPT variants the values are the corrected total energies,
+not the perturbative corrections alone, ordered by the requested target roots
+(or by ascending eigenvalue for a diagonalized multistate model space).
+Corresponding native tags include `OQP::FCI_ENERGIES`, the CASCI/CASSCF energy
+tags, and `OQP::CASPT2_ENERGIES`; `mol.energies` is the source used for this
+portable result key.
+
 For `method=mp2`, the exported energy is the correlated MP2 total after the
 SCF reference energy and MP2 correlation are combined. The run log also prints
 the reference SCF energy plus same-spin and opposite-spin MP2 components.
@@ -56,10 +67,8 @@ log prints them as a labelled table:
 | `E(CCSD(T), total)` | The exported total for `ccsd(t)`. |
 
 Consumers that need the decomposition rather than the total should record
-which method they requested and read these lines; coupled cluster is a
-development preview (OpenQP PR
-[#302](https://github.com/Open-Quantum-Platform/openqp/pull/302), not part of
-OpenQP 1.2.0), so the exported keys may still gain a dedicated breakdown.
+which method they requested and read these lines. The exported keys may gain a
+dedicated coupled-cluster breakdown in a later release.
 
 When the corresponding property is requested via `[properties] scf_prop`,
 `get_results()` also includes the following (identically for file-based and

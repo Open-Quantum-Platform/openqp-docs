@@ -123,7 +123,9 @@ type=qmrsf_dk
 
 The reference `alpha`, `beta`, and `mu` come from the functional. `[tdhf]
 cam_alpha`, `cam_beta`, and `cam_mu` override them for the kernel; a negative
-value inherits the reference one. An incomplete set is refused rather than used.
+value inherits the corresponding reference value independently. Only a
+resolved set that remains incomplete or invalid (for example, a nonpositive
+range parameter when range separation is active) is refused.
 
 Orientation dependence is *larger* with a range-separated reference than with a
 global hybrid, because more of the exchange operator carries the noncovariant
@@ -146,6 +148,9 @@ not reproduce a range-separated spectrum on its own.
 
 ## Limitations
 
+- QMRSF-DK is currently invoked through sectioned `.inp` input. The concise
+  `.oqp` grammar and the high-level `OpenQP` Python helpers do not yet expose
+  `[tdhf] type=qmrsf_dk`.
 - Energies only; gradients and other runtypes are not implemented.
 - The response covers the active `O -> O` space. Excitations that need
   correlation from outside the four frontier orbitals, such as the ionic

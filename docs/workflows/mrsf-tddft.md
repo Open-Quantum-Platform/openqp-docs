@@ -1,9 +1,9 @@
 # MRSF-TDDFT
 
-!!! tip "Recommended next-release `.oqp` input"
+!!! tip "Recommended `.oqp` input"
 
-    On a development build that includes the `.oqp` parser, start with the
-    physical calculation you want:
+    OpenQP 1.3.0 includes the `.oqp` parser. Start with the physical calculation
+    you want:
 
     ```text
     mrsf/bhhlyp/6-31g*

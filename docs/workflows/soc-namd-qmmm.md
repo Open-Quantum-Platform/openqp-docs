@@ -14,11 +14,8 @@ It is dispatched by `runtype=namd` with `[md] soc=true` and
 and [`[qmmm]`](../keywords/qmmm.md) sections. This page introduces the method and
 gives a complete, runnable input deck.
 
-!!! warning "Development preview"
-    This workflow documents the implementation branch in
-    OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205).
-    It is not part of OpenQP 1.2.0; use that source branch or a later release
-    that includes `runtype=namd`.
+!!! note "Available in OpenQP 1.3.0"
+    SOC-NAMD-QMMM and `runtype=namd` are included in OpenQP 1.3.0.
 
 ## Overview and theory
 

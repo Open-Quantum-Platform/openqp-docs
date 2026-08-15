@@ -5,12 +5,10 @@ each logical item on its own line, or put the same items on one line; both
 spellings are identical. It has no leading `#` and no `[input]` or `[scf]`
 blocks.
 
-!!! warning "Development / next-release input style"
+!!! note "Available in OpenQP 1.3.0"
 
-    `.oqp` input is implemented on the current development branch and
-    is not part of the published OpenQP 1.2.0 release. Existing 1.2.0 users
-    should continue to use sectioned `.inp` files until a release explicitly
-    includes this parser.
+    `.oqp` is a supported input style in OpenQP 1.3.0. Sectioned `.inp` files
+    remain supported for compatibility and advanced exact-section controls.
 
 ## Quick Start
 
@@ -171,8 +169,8 @@ roots.
 | Kohn--Sham DFT with automatic restricted/unrestricted reference | `dft/FUNCTIONAL/BASIS` |
 | Explicit KS reference | `rks/FUNCTIONAL/BASIS`, `uks/FUNCTIONAL/BASIS`, or `roks/FUNCTIONAL/BASIS` |
 | MP2 | <code>mp2(reference=rhf&#124;rohf&#124;uhf,variant=...,same_spin_scale=...,opposite_spin_scale=...)/BASIS</code> |
-| CCSD | <code>ccsd(reference=rhf&#124;rohf&#124;uhf)/BASIS</code> (development preview, not part of OpenQP 1.2.0) |
-| CCSD(T) | <code>ccsd_t(reference=rhf&#124;rohf&#124;uhf)/BASIS</code>; `ccsd-t` and `ccsdt` are accepted input aliases (development preview, not part of OpenQP 1.2.0) |
+| CCSD | <code>ccsd(reference=rhf&#124;rohf&#124;uhf)/BASIS</code> |
+| CCSD(T) | <code>ccsd_t(reference=rhf&#124;rohf&#124;uhf)/BASIS</code>; `ccsd-t` and `ccsdt` are accepted input aliases |
 | TDHF | `tdhf(nstate=N)/BASIS` |
 | TDDFT | `tddft(nstate=N)/FUNCTIONAL/BASIS` |
 | TDA-TDDFT | `tda(nstate=N)/FUNCTIONAL/BASIS` |
@@ -183,21 +181,14 @@ roots.
 | SF-TDHF | `sf-tdhf(nstate=N)/BASIS` |
 | MRSF-TDHF | `mrsf-tdhf(nstate=N)/BASIS` |
 | UMRSF-TDHF | `umrsf-tdhf(nstate=N)/BASIS` |
-| AFQMC with a mean-field trial | `afqmc/BASIS` (requires the companion `openqp-afqmc` development build; not recognized by OpenQP itself) |
-| Ground-state SCC-DFTB | `dftb` |
-| Ground-state non-SCC DFTB0 | `dftb0`; `dftb-noscc` and `dftb-nonscc` are accepted input aliases |
-| TD-DFTB | `tddftb(nstate=N)` |
-| TDA-TDDFTB | `tda-tddftb(nstate=N)`; `tda-dftb` and `tddftb-tda` are accepted input aliases |
-| SF-TDDFTB | `sf-tddftb(nstate=N)`; `sf-dftb` and `sftddftb` are accepted input aliases |
-| MRSF-TDDFTB | `mrsf-tddftb(nstate=N)` |
 
 The parenthesized route options are optional; omit the parentheses when none
 are needed.
 
 The table shows the canonical spellings. The parser also accepts these
 compatibility aliases: `mrsf-tddft`, `mrsftddft`, `umrsf-tddft`,
-`umrsftddft`, `sf-tddft`, `sftddft`, `td-dft`, `ks-dft`, `td-dftb`, and
-`mrsf-dftb`. Canonical rendering normalizes them to the routes in the table.
+`umrsftddft`, `sf-tddft`, `sftddft`, `td-dft`, and `ks-dft`. Canonical
+rendering normalizes them to the routes in the table.
 
 The explicit-reference routes never silently change the requested reference.
 `rhf` and `rks` use the default `mult=1`; writing it is unnecessary.
@@ -205,39 +196,6 @@ The explicit-reference routes never silently change the requested reference.
 may also be used deliberately with the omitted singlet default. The TDHF-family
 routes contain no functional component, whereas the corresponding
 TDDFT-family routes do.
-
-DFTB-family routes contain no functional or basis component. `dftb0` selects
-the non-SCC ground-state model. Conventional `tddftb` and `tda-tddftb`
-currently accept singlet targets only. For triplet calculations, use
-`sf-tddftb` or `mrsf-tddftb`. The character of an SF state is not known before
-diagonalization, so `sf-tddftb` uses `root=N`, for example `grad(root=2)`,
-rather than `S`/`T` labels. MRSF-TDDFTB uses zero-based `S0`/`T0` labels and
-does not support quintets.
-
-When `mult` is omitted from `dftb`, `dftb0`, `tddftb`, or `tda-tddftb`, the
-canonical lowering does not invent `dftb.reference_multiplicity`. This lets a
-probe backend apply its own default. An explicitly written `mult=N` is
-preserved. SF- and MRSF-TDDFTB instead construct their required high-spin
-reference automatically.
-
-```text
-dftb0
-energy
-dftb(backend=probe,parameter_path="minimal.opdftb")
-geom="h2o.xyz"
-```
-
-```text
-tda-tddftb(nstate=3)
-grad(S1)
-geom="h2o.xyz"
-```
-
-```text
-sf-tddftb(nstate=3)
-grad(root=2)
-geom="h2o.xyz"
-```
 
 All response-route parentheses accept only `nstate`. Select a physical spin
 manifold with the primary-driver state, not with a route option. Thus
@@ -260,8 +218,7 @@ deliberate UMP2 reference even when `mult=1`. Use physical state labels in the
 driver for state-specific work.
 `mrsf(...) energy` defaults to the singlet target manifold. `energy(T0)`
 selects the triplet manifold, and `energy(Q0)` selects the quintet manifold for
-all-electron MRSF. MRSF-TDDFTB supports singlet and triplet manifolds only. The
-high-spin working reference is supplied internally in every case.
+all-electron MRSF. The high-spin working reference is supplied internally.
 
 ## Top-Level Globals
 
@@ -272,7 +229,7 @@ These common values follow the route without a section name:
 | `geom="FILE"` | Required primary geometry. Relative paths are resolved from the `.oqp` file directory. |
 | `geom2="FILE"` | Previous or second geometry for workflows that require one. |
 | `charge=N` | Molecular charge; default `0`. |
-| `mult=N` | Ordinary SCF-reference multiplicity for non-mixed-reference models. It is forbidden for MRSF, UMRSF, SF, and MRSF-TDDFTB routes. |
+| `mult=N` | Ordinary SCF-reference multiplicity for non-mixed-reference models. It is forbidden for MRSF, UMRSF, and SF routes. |
 | `library=VALUE` | Basis-library mapping used by the established input schema. |
 | `ispher=VALUE` | Spherical/Cartesian AO convention. |
 | `perf=N` | OpenQP performance preset. |
@@ -393,8 +350,8 @@ same spin manifold. `nac` and `bp` support numerical finite differences only;
 analytical NAC is rejected. `nacme` accepts only its time-step/alignment
 controls and additionally requires a previous geometry through `geom2` or
 `guess(file2=...)`. Branching-plane analysis is not available for
-MRSF-TDDFTB. The `prop` driver is currently limited to all-electron
-MRSF-TDDFT/MRSF-TDHF; use `prop(S1)` or omit the state for its `S0` default.
+The `prop` driver is currently limited to all-electron MRSF-TDDFT/MRSF-TDHF;
+use `prop(S1)` or omit the state for its `S0` default.
 
 For MRSF SOC, the route count is applied equally to singlets and triplets:
 
@@ -515,8 +472,7 @@ tdhf(nvdav=30,zvconv=1e-7)
 
 Advanced exact calls include non-driver sections such as `input`, `guess`,
 `scf`, `mp2`, `cc`, `dftgrid`, `tdhf`, `properties`, `oqp`, `pcm`, `symmetry`,
-`dftb`, `json`, and `tests`, plus `afqmc` on the companion `openqp-afqmc`
-development build. When a schema section is represented by a primary
+`json`, and `tests`. When a schema section is represented by a primary
 driver, put its public controls in that driver instead. The established schema
 remains authoritative for keyword spelling, type, allowed values, and
 cross-section constraints.
@@ -544,20 +500,15 @@ State labels always describe the physical target:
 | Model and label | Physical meaning | Internal lowering |
 | --- | --- | --- |
 | HF/DFT `S0` | Ground-state SCF surface | State index 0 |
-| DFTB/DFTB0 `S0` | Ground-state DFTB surface | State index 0 |
 | Conventional TDDFT/TDHF `S0` | Ground-state DFT/HF surface for a state-specific derivative driver | State index 0 |
 | Conventional TDDFT/TDHF `Sn`, `n >= 1` | Singlet excited state `n` | Response root `n` |
 | Conventional TDDFT/TDHF `Tn`, `n >= 0` | Triplet response state `n` | Response root `n + 1`, target multiplicity 3 |
-| TD-DFTB/TDA-TDDFTB `Sn`, `n >= 1` | Singlet excited state `n` | Response root `n` |
-| TD-DFTB/TDA-TDDFTB `Tn`, `n >= 0` | Triplet response state `n` | Response root `n + 1`, target multiplicity 3 |
 | SF family `root=N` | Response root whose spin character is assigned after diagonalization | Response root `N` |
 | All-electron MRSF `Sn`, `Tn`, or `Qn`, `n >= 0` | State `n` within the selected singlet, triplet, or quintet manifold | Response root `n + 1`, target multiplicity 1, 3, or 5 |
-| MRSF-TDDFTB `Sn` or `Tn`, `n >= 0` | State `n` within the singlet or triplet manifold | Response root `n + 1`; quintet is rejected |
 
 Every available MRSF spin manifold is therefore zero-based. In all-electron
 MRSF, `S0`, `T0`, and `Q0` all lower to internal response root 1, while `S1`,
-`T1`, and `Q1` lower to root 2. MRSF-TDDFTB follows the same rule for its
-supported singlet and triplet manifolds.
+`T1`, and `Q1` lower to root 2.
 `opt(S0)` therefore lowers to internal `istate=1`. On non-SF routes, omitted
 states for `grad`, `opt`, `hess`, and similar state-specific drivers normally
 default to `S0`. SF routes are the exception and require an explicit `root=N`.
@@ -571,10 +522,9 @@ omitted NAMD state defaults to `S1`. Do not write the internal `active` or
 `init_state` selector alongside a physical driver state.
 
 SF-family state character cannot be assigned safely before diagonalization, so
-SF-TDDFT, SF-TDHF, and SF-TDDFTB state-specific drivers require `root=N`
+SF-TDDFT and SF-TDHF state-specific drivers require `root=N`
 instead of an `S` or `T` label.
 Conventional TD calculations accept `S` and `T` labels but reject `Q` labels;
-all DFTB routes also reject quintet targets.
 
 The following bookkeeping keys are reserved and cannot contradict the route or
 physical state syntax:
@@ -589,7 +539,6 @@ physical state syntax:
 | `hess.state`, `nac.states`, `md.active/init_state` | Corresponding state-aware driver |
 | `qmmm.istate` | No canonical equivalent; obsolete disconnected-path selector |
 | `tdhf.nstate_s/nstate_t`, `input.soc_2e` | `soc(ns=...,nt=...,soc_2e=...)`; do not combine the two sources |
-| DFTB `type`, `target_multiplicity`, `reference_multiplicity` | DFTB route and physical state label |
 
 An attempt such as `mrsf/... opt(S0) scf(multiplicity=1)` is rejected instead
 of allowing the last spelling to win.

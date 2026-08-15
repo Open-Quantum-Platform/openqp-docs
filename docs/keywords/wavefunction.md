@@ -43,6 +43,9 @@ controls:
 
 ```ini
 [input]
+system=
+  H  0.0  0.0  0.0
+  H  0.0  0.0  0.74
 method=casscf
 runtype=energy
 basis=sto-3g
@@ -192,7 +195,10 @@ normalized internally and must contain a positive total.
 | `max_memory` | `2048` | PT2 memory ceiling in MiB, combined with the tighter `[cas]` ceiling. |
 | `semi_canonical` | `true` | Semicanonicalize the reference orbitals. |
 
-Use `h0=dyall, contraction=strong` for strongly contracted NEVPT2. The
+Select NEVPT2 through `[input] method=caspt2` with `h0=dyall`; add
+`contraction=strong` for strongly contracted NEVPT2. The Python
+`job.nevpt2(...)` convenience helper lowers to this same sectioned form rather
+than introducing a separate `method=nevpt2` input value. The
 QDPT family (`mrmp2`, `mcqdpt2`, and `xmcqdpt2`) uses the diagonal-Fock direct
 engine and accepts `edshft`; `edshft` is mutually exclusive with real or
 imaginary level shifts.

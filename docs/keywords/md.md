@@ -4,25 +4,15 @@ The `[md]` section controls nonadiabatic molecular dynamics (`runtype=namd`):
 Tully fewest-switches surface hopping (FSSH) on MRSF states, optionally
 with spin-orbit-coupled intersystem crossing (SOC-NAMD) and ESPF QM/MM
 embedding. It is used together with [`[input] runtype=namd`](input.md#runtype)
-and an MRSF theory block — either all-electron MRSF-TDDFT (`method=tdhf`,
-`[tdhf] type=mrsf`) or the [MRSF-TDDFTB](../workflows/mrsf-tddftb.md) backend
-(`method=dftb`, `[dftb] type=mrsf`), which share the same FSSH driver — and, for
-embedded dynamics, the [`[qmmm]`](qmmm.md) section. See the
+and an all-electron MRSF-TDDFT theory block (`method=tdhf`,
+`[tdhf] type=mrsf`). For embedded dynamics, use the [`[qmmm]`](qmmm.md)
+section. See the
 [SOC-NAMD-QMMM workflow](../workflows/soc-namd-qmmm.md) for complete decks and
 theory.
 
-!!! warning "Development preview"
-    This section documents the NAMD implementation branch in
-    OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205).
-    The validation and restart controls below — `rng_stream`, `first_hop_step`,
-    the `nacme_gate*` and `nve_gate*` families, and the same-spin
-    trajectory/restart records — arrived later, with OpenQP PR
-    [#313](https://github.com/Open-Quantum-Platform/openqp/pull/313); a
-    checkout of #205 alone will reject them as unknown keys. The SOC
-    trajectory and restart records came later still, with OpenQP PR
-    [#316](https://github.com/Open-Quantum-Platform/openqp/pull/316). None of
-    these is part of OpenQP 1.2.0; `runtype=namd` requires a source branch that
-    includes all three, or a later release.
+!!! note "Available in OpenQP 1.3.0"
+    NAMD, validation gates, packed trajectory/restart records, and the SOC
+    trajectory/restart extensions are included in OpenQP 1.3.0.
 
 ## Background
 
@@ -398,7 +388,7 @@ non-finite failures are not delayed.
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `warn` for NVE; contextually `off` for NVT |
+| Default | `warn` for NAMD |
 | Values | `off`, `warn`, `error` |
 | Used by | same-spin NVE/FSSH energy validation |
 
@@ -414,7 +404,10 @@ restart checkpoint is not advanced past the rejected point.
 This is a quantum-classical FSSH energy validation, not a claim that the
 electronic subsystem alone is microcanonical. Decoherence, frustrated hops,
 finite time steps, and electronic-structure convergence can contribute to
-drift. The current surface-hopping QM/MM driver uses OpenMM for forces but
+drift. NAMD drivers always own their velocity-Verlet propagation and do not
+inherit `[qmmm] ensemble`; therefore the default remains `warn` even if that
+unrelated ground-state QM/MM setting says `NVT` or `NPT`. The current
+surface-hopping QM/MM driver uses OpenMM for forces but
 performs its own velocity-Verlet + SHAKE/RATTLE propagation; the ground-state
 [`[qmmm] ensemble`](qmmm.md#ensemble) NVT/NPT integrators do not control NAMD.
 

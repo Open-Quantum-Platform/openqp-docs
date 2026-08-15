@@ -14,7 +14,7 @@ scripts organized around six top-level ideas.
 | Top-level call | Purpose |
 | --- | --- |
 | `job.molecule(...)` | Molecular identity: geometry, charge, multiplicity, and optional second geometry. |
-| `job.theory.<model>(...)` | Quantum theory: HF, DFT, MP2, CCSD, CCSD(T), TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. CCSD and CCSD(T) are a development preview, not part of OpenQP 1.2.0. |
+| `job.theory.<model>(...)` | Quantum theory: HF, DFT, MP2, CCSD, CCSD(T), native wavefunction methods, TDHF, TDDFT, SF-TDDFT, MRSF-TDDFT, functional, basis, response states, and reference type. |
 | `job.workflow.*(...)` | Calculation type: gradient, Hessian, optimization, SOC, NACME, EKT, PCM, NMR, NAMD, and related job workflows. Plain energy calculations need no workflow call. |
 | `job.qmmm(...)` | Enable ESPF QM/MM embedding: sets `[input] qmmm_flag=true` and the `[qmmm]` section (PDB, force field, QM atoms, cutoff, embedding). |
 | `job.control(...)` | Hardware and runtime controls such as `usempi` and `omp_threads`. |
@@ -114,11 +114,6 @@ print("MP2 total energy:", mol.get_results()["energy"])
 ```
 
 ## Minimal Coupled-Cluster Script
-
-!!! warning "Development preview"
-    `job.theory.ccsd(...)` and `job.theory.ccsd_t(...)` target OpenQP PR
-    [#302](https://github.com/Open-Quantum-Platform/openqp/pull/302) and are not
-    part of OpenQP 1.2.0.
 
 Coupled cluster also uses an HF reference and is also energy-only.
 `job.theory.ccsd_t(...)` adds the perturbative triples correction;
@@ -221,11 +216,6 @@ job.update({
 
 ## QM/MM and Nonadiabatic Dynamics
 
-!!! warning "Development preview"
-    `job.qmmm(...)` and `job.workflow.namd(...)` target the NAMD/QM/MM branch in
-    OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205)
-    and are not part of OpenQP 1.2.0.
-
 `job.qmmm(...)` enables ESPF QM/MM embedding, and `job.workflow.namd(...)` runs
 nonadiabatic (surface-hopping) molecular dynamics. They compose with the usual
 `job.molecule(...)` / `job.theory.*(...)` calls, so QM/MM, SOC-NAMD, and
@@ -288,9 +278,11 @@ tolerances for the target system. The same gate accepts a signed, phase-aligned
 analytic `d_IJ . v` reference when that provider is connected in a later release.
 
 All same-spin/SOC and gas-phase/QM/MM NAMD drivers write a dense appendable,
-packed-binary `<project>.namd.trj`,
-an atomic compressed checkpoint, and a directly runnable
-`<project>.namd.restart.oqp`. The trajectory is designed for NumPy memory
+packed-binary `<project>.namd.trj` and an atomic compressed checkpoint.
+Canonical `.oqp` runs additionally write a directly runnable
+`<project>.namd.restart.oqp`; Python-API and legacy `.inp` runs must restart by
+reusing their original configuration with `restart=true` and explicit
+checkpoint and trajectory paths. The trajectory is designed for NumPy memory
 mapping rather than human reading. Use `trajectory_interval` to trade temporal
 resolution for file size. Zero, the default, selects an interval of
 approximately 10 fs from `dt`; positive values are step counts. The final point

@@ -27,8 +27,7 @@ soc(ns=3,nt=5)
 geom="h2o.xyz"
 ```
 
-Do not combine the two forms. The canonical route also recognizes
-MRSF-TDHF and MRSF-TDDFTB SOC, subject to the selected backend being available;
+Do not combine the two forms. The canonical route also recognizes MRSF-TDHF;
 the detailed all-electron example below is MRSF-TDDFT.
 
 Python:

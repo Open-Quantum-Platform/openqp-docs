@@ -11,7 +11,8 @@ specific input contract.
 | --- | --- |
 | HF and DFT | RHF, ROHF, and UHF references. |
 | MP2 | Energy-only standalone MP2 on RHF, UHF, and ROHF references, with spin-scaled variants. |
-| Coupled cluster | Development preview in OpenQP PR [#302](https://github.com/Open-Quantum-Platform/openqp/pull/302), not OpenQP 1.2.0. Energy-only CCSD and CCSD(T) on RHF, UHF, and ROHF references, with a frozen core. In-core integrals; the open-shell path is a spin-orbital solver for small systems. See [Coupled Cluster](workflows/coupled-cluster.md). |
+| Coupled cluster | Energy-only CCSD and CCSD(T) on RHF, UHF, and ROHF references, with a frozen core. In-core integrals; the open-shell path is a spin-orbital solver for small systems. See [Coupled Cluster](workflows/coupled-cluster.md). |
+| Wavefunction methods | Native determinant-space FCI, CASCI, CASSCF, state-averaged CASSCF, CASPT2, NEVPT2, and QDPT-family energy workflows on an RHF reference. See [Wavefunction methods](keywords/wavefunction.md). |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
 | SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
 | UMRSF-TDDFT | Energy-only UHF-reference workflow. |
@@ -27,8 +28,8 @@ specific input contract.
 | NACME | MRSF-TDDFT state-coupling workflow. |
 | SOC | MRSF-TDDFT one-electron and mean-field two-electron SOC. |
 | MRSF excited-state analysis | NTOs, attachment/detachment densities, state-to-state transition densities, cube export, QCSchema export, FCIDUMP export, and external-code comparisons through `oqp.interop`. |
-| Nonadiabatic MD (NAMD) | Development preview in OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205), not OpenQP 1.2.0. Covers Tully surface hopping, SOC-NAMD, and ESPF QM/MM embedding. See [SOC-NAMD-QMMM](workflows/soc-namd-qmmm.md). |
-| QM/MM | Development preview in OpenQP PR [#205](https://github.com/Open-Quantum-Platform/openqp/pull/205), not OpenQP 1.2.0. Covers ESPF electrostatic embedding for single-point energies, ground-state MD, and nonadiabatic dynamics. See [`[qmmm]`](keywords/qmmm.md). |
+| Nonadiabatic MD (NAMD) | Tully surface hopping, SOC-NAMD, and ESPF QM/MM embedding. See [SOC-NAMD-QMMM](workflows/soc-namd-qmmm.md). |
+| QM/MM | ESPF electrostatic embedding for single-point energies, ground-state MD, and nonadiabatic dynamics. See [`[qmmm]`](keywords/qmmm.md). |
 | Scalar relativistic correction | Spin-free DKH correction through `[scf] scal_rel=1` or `2`. |
 | PCM/ddX | Energy-only reference-SCF path for RHF/ROHF. |
 | NMR | Nuclear magnetic shielding via `[properties] scf_prop=nmr`. |
@@ -52,6 +53,9 @@ constraint types that the concise grammar does not yet support.
 
 ## Upcoming or Limited Areas
 
+- XTB, DFTB, and AFQMC backends are not distributed or supported as OpenQP
+  1.3.0 capabilities. Their separate implementation repositories and earlier
+  documentation proposals are outside this release's public support surface.
 - Electrostatic embedding QM/MM is an active development direction. Nonadiabatic
   QM/MM dynamics currently supports whole-molecule QM regions only; covalent
   QM/MM boundaries (link atoms) in dynamics are not yet available.

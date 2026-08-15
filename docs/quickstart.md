@@ -4,12 +4,9 @@ This quickstart runs a small MRSF-TDDFT calculation on water. The recommended
 starting point is the readable `.oqp` input. The same calculation is then shown
 with the Python API, followed by the legacy sectioned `.inp` format.
 
-!!! warning "Development input format"
-    The `.oqp` parser is available on the current development branch (see the
-    companion [OpenQP PR #282](https://github.com/Open-Quantum-Platform/openqp/pull/282)),
-    but it is not part of the published OpenQP 1.2.0 release. With OpenQP 1.2.0,
-    use the [legacy `.inp` example](#legacy-inp-input) below; otherwise build the
-    current development version before running this `.oqp` quickstart.
+The `.oqp` parser is included in OpenQP 1.3.0 and is the recommended input
+style for this quickstart. The [legacy `.inp` example](#legacy-inp-input)
+remains available for compatibility.
 
 ## `.oqp` Input
 

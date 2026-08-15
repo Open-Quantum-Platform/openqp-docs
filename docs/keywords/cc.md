@@ -1,9 +1,7 @@
 # `[cc]`
 
-!!! warning "Development preview"
-    `[cc]` targets OpenQP PR
-    [#302](https://github.com/Open-Quantum-Platform/openqp/pull/302) and is not
-    part of OpenQP 1.2.0.
+!!! note "Available in OpenQP 1.3.0"
+    Energy-only CCSD and CCSD(T) are included in OpenQP 1.3.0.
 
 The `[cc]` section controls the frozen core and the coupled-cluster solver for
 `[input] method=ccsd` and `[input] method=ccsd(t)`. The defaults are usable as

@@ -1,4 +1,4 @@
-site_name: OpenQP Manual 1.2.0
+site_name: OpenQP Manual 1.3.0
 site_description: User manual for the Open Quantum Platform
 site_url: https://open-quantum-platform.github.io/openqp-docs/
 repo_url: https://github.com/Open-Quantum-Platform/openqp-docs
@@ -6,8 +6,8 @@ repo_name: Open-Quantum-Platform/openqp-docs
 edit_uri: edit/main/docs/
 
 extra:
-  manual_version: "1.2.0"
-  openqp_version: "1.2.0"
+  manual_version: "1.3.0"
+  openqp_version: "1.3.0"
 
 theme:
   name: material
@@ -45,15 +45,10 @@ nav:
       - HF and DFT: workflows/hf-dft.md
       - MP2: workflows/mp2.md
       - Coupled Cluster: workflows/coupled-cluster.md
-      - AFQMC: workflows/afqmc.md
       - TDDFT and TDHF: workflows/tddft.md
       - SF-TDDFT: workflows/sf-tddft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
       - QMRSF-DK: workflows/qmrsf-dk.md
-      - DFTB (ground state): workflows/dftb.md
-      - TD-DFTB: workflows/tddftb.md
-      - MRSF-TDDFTB: workflows/mrsf-tddftb.md
-      - DTCAM: workflows/dtcam.md
       - MRSF Analysis and Interoperability: workflows/mrsf-analysis.md
       - Hessian and Frequencies: workflows/hessian.md
       - Orbital and Vibrational Output: workflows/orbital-vibrational-output.md
@@ -74,11 +69,8 @@ nav:
       - Wavefunction methods: keywords/wavefunction.md
       - mp2: keywords/mp2.md
       - cc: keywords/cc.md
-      - afqmc: keywords/afqmc.md
-      - dftb: keywords/dftb.md
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md
-      - xtb: keywords/xtb.md
       - md: keywords/md.md
       - qmmm: keywords/qmmm.md
       - properties: keywords/properties.md

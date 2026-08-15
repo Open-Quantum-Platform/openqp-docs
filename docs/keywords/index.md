@@ -49,11 +49,14 @@ full bibliographies inside each keyword entry.
 | [`[scf]`](scf.md) | Reference type, convergence controls, pFON, TRAH, fallback manager. |
 | [`[mp2]`](mp2.md) | Standalone MP2 spin-scaling controls. |
 | [`[cc]`](cc.md) | Coupled-cluster frozen core and solver controls. |
-| [`[afqmc]`](afqmc.md) | Trial construction, CSF-space selection, and AFQMC propagation controls. Requires the companion `openqp-afqmc` development build; not recognized by OpenQP itself. |
-| [`[dftb]`](dftb.md) | DFTB backend, SCC, response, spin, and MRSF-TDDFTB controls. |
+| [`[fci]`](wavefunction.md#fci) | Full-CI active-space and eigensolver controls. |
+| [`[cas]`](wavefunction.md#cas) | CAS orbital partition shared by CASCI, CASSCF, and PT2. |
+| [`[ci]`](wavefunction.md#ci) | Active-space CI eigensolver controls. |
+| [`[casscf]`](wavefunction.md#casscf) | CASSCF orbital-optimization controls. |
+| [`[state_average]`](wavefunction.md#state_average) | State-averaged CASSCF roots and weights. |
+| [`[pt2]`](wavefunction.md#pt2) | CASPT2, NEVPT2, and QDPT controls. |
 | [`[dftgrid]`](dftgrid.md) | DFT quadrature and hybrid/range-separated functional controls. |
 | [`[tdhf]`](tdhf.md) | TDHF/TDDFT/SF/MRSF/UMRSF response settings. |
-| [`[xtb]`](xtb.md) | Optional LC-GFN1-xTB tight-binding backend (`method=xtb`). |
 | [`[md]`](md.md) | Nonadiabatic surface-hopping molecular dynamics (`runtype=namd`), including SOC-NAMD. |
 | [`[qmmm]`](qmmm.md) | Hybrid QM/MM setup: QM region, force field, ESPF embedding, and link atoms. |
 | [`[properties]`](properties.md) | Gradients, NMR, export, and property requests. |

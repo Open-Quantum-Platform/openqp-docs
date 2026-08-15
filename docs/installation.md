@@ -39,10 +39,9 @@ as advanced constraint types beyond native frozen distances:
 pip install "openqp[geometric]"
 ```
 
-The `geometric` extra is introduced by the companion next-release core change
-in [OpenQP #273](https://github.com/Open-Quantum-Platform/openqp/pull/273).
-OpenQP 1.2.0 still lists geomeTRIC as a normal dependency, so its plain
-`pip install openqp` already includes that backend.
+OpenQP 1.3.0 provides the optional `geometric` extra introduced by
+[OpenQP #273](https://github.com/Open-Quantum-Platform/openqp/pull/273).
+Plain `pip install openqp` does not install this compatibility backend.
 
 See the [Build Options](build-options.md) reference for the full CMake option
 table, defaults, BLAS/LAPACK choices, external dependency cache behavior, and

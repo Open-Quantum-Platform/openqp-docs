@@ -16,8 +16,10 @@ Detection is **on by default** (`[symmetry] enabled`). The reductions are not.
 | `use_response_symmetry` — residual projection | `False` | Yes (experimental) |
 
 With only the default in force, the geometry is untouched, the full integral
-list is used, and ground-state energies are identical to a run with symmetry
-switched off.
+list is used, and reference-SCF or ordinary HF/DFT ground-state energies are
+identical to a run with symmetry switched off. An MRSF physical `S0` is a
+response root, not the reference-SCF energy, and can change when symmetry
+information repairs response-block coverage.
 
 Excited-state runs are the exception, and the difference is a **correction** —
 this is the reason detection is on by default.
