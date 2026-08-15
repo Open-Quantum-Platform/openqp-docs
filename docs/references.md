@@ -125,6 +125,13 @@ SOC, scalar relativistic correction, PCM/ddX, or related workflows.
 - Granucci G, Persico M, and Zoccante A. "Including quantum decoherence in
   surface hopping." Journal of Chemical Physics 133, 134111 (2010).
   [doi:10.1063/1.3489004](https://doi.org/10.1063/1.3489004)
+- Baeck KK and An H. "Practical approximation of the non-adiabatic coupling
+  terms for same-symmetry interstate crossings by using adiabatic potential
+  energies only." Journal of Chemical Physics 146, 064107 (2017).
+  [doi:10.1063/1.4975323](https://doi.org/10.1063/1.4975323)
+- do Casal MT, Toldo JMT, Pinheiro Jr M, and Barbatti M. "Fewest switches
+  surface hopping with Baeck-An couplings." Open Research Europe 1, 49 (2022).
+  [doi:10.12688/openreseurope.13624.2](https://doi.org/10.12688/openreseurope.13624.2)
 
 ## QM/MM (ESPF) Embedding
 

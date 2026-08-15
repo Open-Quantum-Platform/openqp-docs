@@ -270,6 +270,48 @@ job.workflow.namd(soc=True, soc_basis="mch", nstep=200, dt=0.5, init_state="S1")
 mol = job.run()
 ```
 
+For an ensemble, keep one campaign `seed` and assign a distinct `rng_stream`
+to each trajectory. Hopping random numbers are then reproducible functions of
+the campaign seed, trajectory stream, and physical MD step. By default,
+`seed=0` resolves once to the local `YYYYMMDD` date, `rng_stream=1`, and
+`first_hop_step=1`. Step 1 already has the initial and propagated structures,
+so it is the first TLF2 interval and the first electronic-coefficient
+propagation and hopping decision. Setting `first_hop_step=2` explicitly delays
+only the active-state transition and hopping RNG: step 1 still propagates the
+coefficients and computes hop probabilities.
+Same-spin NAMD defaults to `nacme_check="baeck_an"`, which logs an independent
+energy-curvature estimate beside the overlap/TLF TDC. The comparison is
+magnitude-only because TD-BA has no wavefunction phase information. The default
+`nacme_gate="off"` records the diagnostic without enforcing it; use `warn` or
+`error` only after calibrating the absolute and relative
+tolerances for the target system. The same gate accepts a signed, phase-aligned
+analytic `d_IJ . v` reference when that provider is connected in a later release.
+
+All same-spin/SOC and gas-phase/QM/MM NAMD drivers write a dense appendable,
+packed-binary `<project>.namd.trj`,
+an atomic compressed checkpoint, and a directly runnable
+`<project>.namd.restart.oqp`. The trajectory is designed for NumPy memory
+mapping rather than human reading. Use `trajectory_interval` to trade temporal
+resolution for file size. Zero, the default, selects an interval of
+approximately 10 fs from `dt`; positive values are step counts. The final point
+and strict NACME or NVE failures are retained even between regular output
+points. The human-readable NACME validation table remains in the main log:
+
+```python
+from oqp.library.namd import read_namd_trajectory
+
+metadata, trj = read_namd_trajectory("job.namd.trj")
+s1_s0_tdc = trj["overlap_tdc_au"][:, 0, 1]
+phase_margin = trj["tracking_margin"]
+```
+
+For SOC trajectories, the packed record also contains the complex
+spin-adiabatic overlap and anti-Hermitian TDC as real/imaginary fields and the
+active representation. The restart checkpoint preserves the previous SOC
+eigensystem and singlet/triplet response vectors, validating their exact shapes
+and dtypes before continuation. TD-Baeck–An remains a same-spin diagnostic and
+is contextually disabled for SOC.
+
 Dropping `job.qmmm(...)` gives gas-phase dynamics, and dropping `soc=True` gives
 internal-conversion FSSH:
 
