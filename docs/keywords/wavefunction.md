@@ -5,9 +5,12 @@ CASSCF, and second-order multireference perturbation methods. These workflows
 require an RHF reference: leave `[input] functional` empty and use
 `[scf] type=rhf` with `multiplicity=1`.
 
-CASSCF, SA-CASSCF, CASPT2, NEVPT2, and QDPT2 provide Cartesian
-central-difference nuclear gradients. These are numerical derivatives of the
-converged total energies, not analytic nuclear gradients.
+All of them run `runtype=energy`. State-specific `method=casscf` uses an
+analytic nuclear gradient; SA-CASSCF, CASPT2, NEVPT2, and QDPT2 use Cartesian
+central differences of their converged total energies. These derivatives also
+support `optimize`, `ts`, `mep`, and `irc`. See
+[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md). CASCI and FCI remain
+energy-only.
 
 The method selects which sections are read:
 
@@ -175,7 +178,20 @@ scaffold and performs no orbital optimization.
 
 `gradient_norm_tol` and `hessian` refer to orbital optimization. In
 particular, `hessian=analytic` selects an analytic orbital Hessian; it does not
-provide an analytic derivative with respect to nuclear coordinates.
+select the nuclear derivative. State-specific CASSCF has a separate analytic
+nuclear-gradient kernel.
+
+`root` also selects which state `runtype=grad` differentiates. Tighten
+`gradient_norm_tol` to `1.0e-7` for gradient runs: the analytic gradient is
+valid at a stationary point, and its error is first order in the converged
+orbital-gradient norm. See
+[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md).
+
+The analytic state-specific result has one public row: use `[properties]
+grad=0` for a direct gradient and `[optimize] istate=0` for `optimize`, `ts`,
+`mep`, or `irc`. The physical CI state is selected only by `[casscf] root`.
+The `grad_*` controls in the table apply to the numerical SA-CASSCF path; they
+do not replace or tune the state-specific analytic derivative.
 
 ## `[state_average]`
 
@@ -190,6 +206,12 @@ provide an analytic derivative with respect to nuclear coordinates.
 
 The number of weights must equal the number of target roots. Weights are
 normalized internally and must contain a positive total.
+
+`sa-casscf` and `method=casscf` with `enabled=true` use central differences for
+nuclear gradients. They are never handed the state-specific analytic formula:
+only the averaged objective is stationary against orbital rotations, so an
+analytic individual-state derivative would require a Lagrangian/Z-vector
+response that is not implemented.
 
 ## `[pt2]`
 
