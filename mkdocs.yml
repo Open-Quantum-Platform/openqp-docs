@@ -71,6 +71,7 @@ nav:
       - input: keywords/input.md
       - guess: keywords/guess.md
       - scf: keywords/scf.md
+      - Wavefunction methods: keywords/wavefunction.md
       - mp2: keywords/mp2.md
       - cc: keywords/cc.md
       - afqmc: keywords/afqmc.md
