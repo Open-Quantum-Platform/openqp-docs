@@ -45,10 +45,10 @@ After an MRSF energy run, the same Python script can continue into excited-state
 analysis and export through `oqp.interop`.
 
 ```python
-from oqp.interop import MRSFExcitedStates, nto_excitation
+from oqp.interop import MRSFExcitedStates, nto_transition
 
 states = MRSFExcitedStates(mol)
-nto = nto_excitation(states, 1)
+nto = nto_transition(states, 0, 1)
 
 print("S0 -> S1 oscillator strength:", states.oscillator_strength(0, 1))
 print("Leading NTO weight:", nto["weights"][0])
