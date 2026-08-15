@@ -58,17 +58,20 @@ nstate=5
 | --- | --- |
 | Type | string |
 | Default | `rpa` |
-| Values | `rpa`, `tda`, `sf`, `mrsf`, `umrsf`, `mrsf_ekt_ip`, `mrsf_ekt_ea` |
+| Values | `rpa`, `tda`, `sf`, `mrsf`, `umrsf`, `qmrsf_dk`, `mrsf_ekt_ip`, `mrsf_ekt_ea` |
 | Used by | response model selection |
 
 Selects the response model. Use `mrsf` for production MRSF-TDDFT workflows.
 `sf` selects ordinary spin-flip TDDFT, and `umrsf` selects the unrestricted
-MRSF energy path. The legacy `mrsf_ekt_ip` and `mrsf_ekt_ea` values are
+MRSF energy path. `qmrsf_dk` selects the quintet-reference dressed-kernel
+method described in [QMRSF-DK](../workflows/qmrsf-dk.md). The legacy
+`mrsf_ekt_ip` and `mrsf_ekt_ea` values are
 energy-only; the current EKT workflow should use `[input] runtype=ekt`,
 `[tdhf] type=mrsf`, and the `[ekt]` section.
 
 MRSF and SF workflows require an ROHF reference in the current code path.
-UMRSF-TDDFT requires a UHF reference.
+UMRSF-TDDFT requires a UHF reference. QMRSF-DK requires a quintet
+(`[scf] multiplicity=5`) ROHF/ROKS reference and `[input] runtype=energy`.
 
 ### `nstate`
 
@@ -211,6 +214,12 @@ Response-model selector used by the native TDHF/MRSF implementation.
 
 Override exact-exchange and CAM/range-separated parameters for response
 calculations. Negative values mean use the selected functional defaults.
+
+For `type=qmrsf_dk` these set the exchange carried by the dressed kernel,
+independently of the reference. With a global hybrid the kernel uses
+`hfscale`; with a range-separated reference it uses
+`cam_alpha*K + cam_beta*K(erf(cam_mu*r)/r)`, and any of the three that is left
+negative is inherited from `[dftgrid]`.
 
 ### `spc_coco`, `spc_ovov`, `spc_coov`
 

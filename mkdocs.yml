@@ -49,6 +49,7 @@ nav:
       - TDDFT and TDHF: workflows/tddft.md
       - SF-TDDFT: workflows/sf-tddft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
+      - QMRSF-DK: workflows/qmrsf-dk.md
       - DFTB (ground state): workflows/dftb.md
       - TD-DFTB: workflows/tddftb.md
       - MRSF-TDDFTB: workflows/mrsf-tddftb.md
