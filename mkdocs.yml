@@ -71,6 +71,7 @@ nav:
       - dftb: keywords/dftb.md
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md
+      - xtb: keywords/xtb.md
       - md: keywords/md.md
       - qmmm: keywords/qmmm.md
       - properties: keywords/properties.md
