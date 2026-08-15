@@ -38,6 +38,29 @@ For `method=mp2`, the exported energy is the correlated MP2 total after the
 SCF reference energy and MP2 correlation are combined. The run log also prints
 the reference SCF energy plus same-spin and opposite-spin MP2 components.
 
+For `method=ccsd` and `method=ccsd(t)`, the exported energy follows the same
+rule: it is the correlated total, not the reference. `ccsd` exports
+`E(SCF) + E(CCSD correlation)`, and `ccsd(t)` exports
+`E(SCF) + E(CCSD correlation) + E((T) correction)` — so switching between them
+changes the value under the same key, and the key alone does not say which
+method produced it. The individual pieces are not exported separately; the run
+log prints them as a labelled table:
+
+| Log line | Meaning |
+| --- | --- |
+| `E(reference, SCF)` | The converged HF reference energy. |
+| `E(CCSD, correlation)` | The CCSD correlation energy alone. |
+| `E(CCSD, total)` | Reference plus CCSD correlation. |
+| `E((T), correction)` | The perturbative triples correction (`ccsd(t)` only). |
+| `E(CCSD(T), correlation)` | CCSD correlation plus triples (`ccsd(t)` only). |
+| `E(CCSD(T), total)` | The exported total for `ccsd(t)`. |
+
+Consumers that need the decomposition rather than the total should record
+which method they requested and read these lines; coupled cluster is a
+development preview (OpenQP PR
+[#302](https://github.com/Open-Quantum-Platform/openqp/pull/302), not part of
+OpenQP 1.2.0), so the exported keys may still gain a dedicated breakdown.
+
 When the corresponding property is requested via `[properties] scf_prop`,
 `get_results()` also includes the following (identically for file-based and
 `input_dict`/scripting-API runs):

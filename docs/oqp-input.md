@@ -171,6 +171,8 @@ roots.
 | Kohn--Sham DFT with automatic restricted/unrestricted reference | `dft/FUNCTIONAL/BASIS` |
 | Explicit KS reference | `rks/FUNCTIONAL/BASIS`, `uks/FUNCTIONAL/BASIS`, or `roks/FUNCTIONAL/BASIS` |
 | MP2 | <code>mp2(reference=rhf&#124;rohf&#124;uhf,variant=...,same_spin_scale=...,opposite_spin_scale=...)/BASIS</code> |
+| CCSD | <code>ccsd(reference=rhf&#124;rohf&#124;uhf)/BASIS</code> (development preview, not part of OpenQP 1.2.0) |
+| CCSD(T) | <code>ccsd_t(reference=rhf&#124;rohf&#124;uhf)/BASIS</code>; `ccsd-t` and `ccsdt` are accepted input aliases (development preview, not part of OpenQP 1.2.0) |
 | TDHF | `tdhf(nstate=N)/BASIS` |
 | TDDFT | `tddft(nstate=N)/FUNCTIONAL/BASIS` |
 | TDA-TDDFT | `tda(nstate=N)/FUNCTIONAL/BASIS` |
@@ -498,14 +500,15 @@ a keyword-only call:
 
 ```text
 scf(conv=1e-8,maxit=100)
+cc(nfzc=1,conv=1e-7,maxit=60,ndiis=8)
 oqp(coordsys=tric,trust=0.2)
 properties(scf_prop=mulliken)
 tdhf(nvdav=30,zvconv=1e-7)
 ```
 
 Advanced exact calls include non-driver sections such as `input`, `guess`,
-`scf`, `mp2`, `dftgrid`, `tdhf`, `properties`, `oqp`, `pcm`, `symmetry`, `qmmm`,
-`dftb`, `json`, and `tests`. When a schema section is represented by a primary
+`scf`, `mp2`, `cc`, `dftgrid`, `tdhf`, `properties`, `oqp`, `pcm`, `symmetry`,
+`qmmm`, `dftb`, `json`, and `tests`. When a schema section is represented by a primary
 driver, put its public controls in that driver instead. The established schema
 remains authoritative for keyword spelling, type, allowed values, and
 cross-section constraints.
