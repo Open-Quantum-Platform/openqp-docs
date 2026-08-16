@@ -12,7 +12,8 @@ specific input contract.
 | HF and DFT | RHF, ROHF, and UHF references. |
 | MP2 | RHF, UHF, and ROHF energies with spin-scaled variants; analytic RHF gradients and RHF gradient-driven geometry calculations. |
 | Coupled cluster | Energy-only CCSD and CCSD(T) on RHF, UHF, and ROHF references, with a frozen core. In-core integrals; the open-shell path is a spin-orbital solver for small systems. See [Coupled Cluster](workflows/coupled-cluster.md). |
-| Wavefunction methods | Native determinant-space FCI, CASCI, CASSCF, state-averaged CASSCF, CASPT2, NEVPT2, and QDPT-family energy workflows on an RHF reference. See [Wavefunction methods](keywords/wavefunction.md). |
+| Wavefunction methods | Native determinant-space FCI, CASCI, CASSCF, state-averaged CASSCF, CASPT2, NEVPT2, and QDPT-family energies on an RHF reference. State-specific CASSCF has an analytic nuclear gradient; SA-CASSCF and the PT2 families use central differences. See [Wavefunction methods](keywords/wavefunction.md). |
+| CASSCF nuclear gradient | Analytic gradient and gradient-driven optimization for state-specific `casscf` at the `[casscf] root`. SA-CASSCF gradients are numerical; CASCI and FCI remain energy-only. See [CASSCF Nuclear Gradient](workflows/casscf-gradient.md). |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
 | SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
 | UMRSF-TDDFT | Energy-only UHF-reference workflow. |
@@ -22,7 +23,8 @@ specific input contract.
 
 | Property | Status |
 | --- | --- |
-| Analytic gradients | Available for the supported HF/DFT, RHF MP2 and spin-scaled MP2, and response workflows. |
+| Analytic gradients | Available for the supported HF/DFT, RHF MP2 and spin-scaled MP2, state-specific CASSCF, and response methods. |
+| Numerical multireference gradients | Central differences for SA-CASSCF, CASPT2, NEVPT2, and QDPT2 with `grad`, `optimize`, `ts`, `mep`, and `irc`. |
 | HF/DFT Hessians | Native analytic path for supported HF/DFT references. |
 | Numerical Hessians | Available through the Hessian workflow. |
 | NACME | MRSF-TDDFT state-coupling workflow. |
@@ -45,6 +47,12 @@ backend selector. Native TS supports model, numerical, or analytical initial
 Hessians and mode following. Native NEB supports endpoint alignment and
 relaxation, climbing images, maximum and RMS force convergence, and final
 multi-frame XYZ path output.
+
+Method availability is narrower than the optimizer's complete run-type list.
+The native multireference wavefunction methods support `optimize`, `ts`,
+`mep`, and `irc`: state-specific CASSCF uses its analytic gradient, while
+SA-CASSCF and the PT2 families use numerical gradients. They do not support
+`meci`, `mecp`, or `neb`; FCI and CASCI remain energy-only.
 
 geomeTRIC and SciPy remain optional compatibility backends for traditional
 sectioned `.inp` files and the Python API. Native `.oqp` supports frozen-distance

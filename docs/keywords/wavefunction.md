@@ -5,6 +5,13 @@ CASSCF, and second-order multireference perturbation methods. These workflows
 require an RHF reference: leave `[input] functional` empty and use
 `[scf] type=rhf` with `multiplicity=1`.
 
+All of them run `runtype=energy`. State-specific `method=casscf` uses an
+analytic nuclear gradient; SA-CASSCF, CASPT2, NEVPT2, and QDPT2 use Cartesian
+central differences of their converged total energies. These derivatives also
+support `optimize`, `ts`, `mep`, and `irc`. See
+[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md). CASCI and FCI remain
+energy-only.
+
 The method selects which sections are read:
 
 | `[input] method` | Required controls | Optional controls |
@@ -160,10 +167,31 @@ currently require a contiguous core/active partition.
 | `step_norm_tol` | `1.0e-8` | Orbital-step threshold. |
 | `max_rotation_norm` | `0.2` | Maximum orbital-rotation norm. |
 | `canonicalize` | `true` | Canonicalize the converged orbitals. |
+| `grad_step` | `1.0e-3` | Central-difference half-step in Bohr for a nuclear gradient. |
+| `grad_guess` | `cold` | `cold` restores the same central-point SCF data before every displacement; `warm` follows the preceding solution serially. |
+| `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the displaced-root ordering warning. |
+| `grad_ranks_per_group` | `0` | MPI ranks assigned to one displaced energy; zero selects the automatic distribution. |
 
 The `ah_*`, `diis_*`, and diagnostic keywords provide detailed control of the
 selected converger. `max_macro_iterations=0` runs the fixed-orbital CASCI
 scaffold and performs no orbital optimization.
+
+`gradient_norm_tol` and `hessian` refer to orbital optimization. In
+particular, `hessian=analytic` selects an analytic orbital Hessian; it does not
+select the nuclear derivative. State-specific CASSCF has a separate analytic
+nuclear-gradient kernel.
+
+`root` also selects which state `runtype=grad` differentiates. Tighten
+`gradient_norm_tol` to `1.0e-7` for gradient runs: the analytic gradient is
+valid at a stationary point, and its error is first order in the converged
+orbital-gradient norm. See
+[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md).
+
+The analytic state-specific result has one public row: use `[properties]
+grad=0` for a direct gradient and `[optimize] istate=0` for `optimize`, `ts`,
+`mep`, or `irc`. The physical CI state is selected only by `[casscf] root`.
+The `grad_*` controls in the table apply to the numerical SA-CASSCF path; they
+do not replace or tune the state-specific analytic derivative.
 
 ## `[state_average]`
 
@@ -178,6 +206,12 @@ scaffold and performs no orbital optimization.
 
 The number of weights must equal the number of target roots. Weights are
 normalized internally and must contain a positive total.
+
+`sa-casscf` and `method=casscf` with `enabled=true` use central differences for
+nuclear gradients. They are never handed the state-specific analytic formula:
+only the averaged objective is stationary against orbital rotations, so an
+analytic individual-state derivative would require a Lagrangian/Z-vector
+response that is not implemented.
 
 ## `[pt2]`
 
@@ -194,6 +228,10 @@ normalized internally and must contain a positive total.
 | `max_terms` | `30000000` | Direct-engine streamed-term limit. |
 | `max_memory` | `2048` | PT2 memory ceiling in MiB, combined with the tighter `[cas]` ceiling. |
 | `semi_canonical` | `true` | Semicanonicalize the reference orbitals. |
+| `grad_step` | `1.0e-3` | Central-difference half-step in Bohr for a nuclear gradient. |
+| `grad_guess` | `cold` | Displaced-geometry SCF starting-data policy (`cold` or `warm`). |
+| `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the root-ordering warning. |
+| `grad_ranks_per_group` | `0` | MPI ranks assigned to one displaced energy; zero selects the automatic distribution. |
 
 Select NEVPT2 through `[input] method=caspt2` with `h0=dyall`; add
 `contraction=strong` for strongly contracted NEVPT2. The Python
@@ -202,6 +240,32 @@ than introducing a separate `method=nevpt2` input value. The
 QDPT family (`mrmp2`, `mcqdpt2`, and `xmcqdpt2`) uses the diagonal-Fock direct
 engine and accepts `edshft`; `edshft` is mutually exclusive with real or
 imaginary level shifts.
+
+## Nuclear gradients and geometry calculations
+
+The following run types use central differences of the converged
+multireference energies:
+
+| Methods | Supported run types |
+| --- | --- |
+| CASSCF and SA-CASSCF | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| CASPT2, NEVPT2, and QDPT2 variants | `grad`, `optimize`, `ts`, `mep`, `irc` |
+
+FCI and CASCI remain energy-only. `meci`, `mecp`, and `neb` are not connected
+to these wavefunction-gradient calculations.
+
+For state-specific CASSCF, `[properties] grad` or `[optimize] istate` must
+equal `[casscf] root`: only that root is stationary with respect to the
+optimized orbitals. For SA-CASSCF, state indices address the list published by
+`[state_average] target_roots`. A state-specific SA-CASSCF central difference
+includes the change of the common state-averaged orbitals between displaced
+geometries; an analytic individual-state SA-CASSCF gradient would require a
+separate Lagrangian/Z-vector response and is not implemented.
+
+The displaced calculations currently retain energy ordering without matching
+CI vectors between geometries. OpenQP warns when two published roots become
+closer than the displacement-induced energy change, but it cannot detect a
+crossing with an uncomputed root.
 
 ## Python helpers
 
@@ -227,3 +291,10 @@ print(mol.get_results()["energies"])
 Available helpers include `fci`, `casci`, `casscf`, `sa_casscf`, `caspt2`,
 `nevpt2`, and `qdpt2`. A helper call resets method-owned state from an earlier
 call on the same builder unless that state is explicitly supplied again.
+
+For a gradient-driven state-specific CASSCF calculation,
+`job.casscf(root=1, runtype="optimize")` automatically sets
+`[optimize] istate=1`. For SA-CASSCF, `state` is the index in the published
+state list; for example, `job.sa_casscf(nstate=2, state=1, runtype="grad")`
+sets `[properties] grad=1`. The CASSCF helpers also accept `grad_step`,
+`grad_guess`, `grad_gap_warn`, and `grad_ranks_per_group`.
