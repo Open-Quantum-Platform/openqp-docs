@@ -45,6 +45,7 @@ nav:
       - HF and DFT: workflows/hf-dft.md
       - MP2: workflows/mp2.md
       - Coupled Cluster: workflows/coupled-cluster.md
+      - CASSCF Nuclear Gradient: workflows/casscf-gradient.md
       - TDDFT and TDHF: workflows/tddft.md
       - SF-TDDFT: workflows/sf-tddft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
