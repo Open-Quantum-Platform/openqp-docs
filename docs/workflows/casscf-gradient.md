@@ -52,9 +52,10 @@ gradient. Converge tighter than you would for an energy:
 gradient_norm_tol=1.0e-7
 ```
 
-Every gradient run prints its own stationarity diagnostics, and the driver
-refuses to return a gradient when `|g_orb|` exceeds
-`max(1e-4, 100 x [casscf] gradient_norm_tol)`:
+Every gradient run prints its own stationarity diagnostics. The driver refuses
+to return a gradient when `|g_orb|` exceeds
+`max(1e-4, 100 x [casscf] gradient_norm_tol)`, or when the generalized-Fock
+asymmetry is nonfinite or exceeds `1e-6` Hartree:
 
 ```text
  Differentiated root                        0
@@ -64,9 +65,11 @@ refuses to return a gradient when `|g_orb|` exceeds
 ```
 
 `Generalized Fock asymmetry` is `max |F_pq - F_qp|`; the generalized Fock matrix
-is symmetric at a stationary point, so a large value is a second, independent
-warning that the run was not converged. `Active 2-RDM correction vectors` is the
-rank of the all-active two-particle correction (see
+is symmetric at a stationary point, so this is an independent acceptance
+condition for CI and active-active stationarity. It remains informative for a
+full active space, where no non-redundant orbital rotations exist and
+`|g_orb|` is identically zero. `Active 2-RDM correction vectors` is the rank of
+the all-active two-particle correction (see
 [Implementation notes](#implementation-notes)).
 
 ## Running it
@@ -138,6 +141,11 @@ root=1
 istate=0
 ```
 
+For `grad`, `optimize`, `ts`, `mep`, and `irc`, public energy slot `0` contains
+the same selected physical root as public gradient slot `0`. The complete
+physical-root energy list remains available in `OQP::CASSCF_ENERGIES` for
+diagnostics and analysis.
+
 A runnable ground-state example is
 [`examples/WF_methods/LiH_CASSCF_optimize.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/WF_methods/LiH_CASSCF_optimize.inp).
 
@@ -165,10 +173,12 @@ invalid formula:
   orbital-response term this derivation drops.
 
 Full active spaces with no non-redundant orbital rotations are supported: their
-orbital-gradient norm is exactly zero by construction. An excited-root
-Davidson calculation with an explicit subspace is also supported even when its
-energy optimization used the Python fallback; gradient eligibility is assessed
-independently of native energy-driver eligibility.
+orbital-gradient norm is exactly zero by construction, while the independent
+generalized-Fock-asymmetry condition still verifies CI and active-active
+stationarity. An excited-root Davidson calculation with an explicit subspace
+is also supported even when its energy optimization used the Python fallback;
+gradient eligibility is assessed independently of native energy-driver
+eligibility.
 
 Not implemented, and deliberately not claimed: an *analytic* gradient of the
 averaged SA-CASSCF objective (the same expression on weight-averaged RDMs) or
