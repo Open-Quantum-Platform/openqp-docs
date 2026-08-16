@@ -99,8 +99,9 @@ print("DFT energy:", mol.get_scf_energy())
 
 ## Minimal MP2 Script
 
-MP2 uses an HF reference and is selected with `job.theory.mp2(...)`. It is
-currently an energy-only workflow.
+MP2 uses an HF reference and is selected with `job.theory.mp2(...)`. RHF
+supports analytic gradients and gradient-driven geometry calculations; UHF and
+ROHF remain energy-only.
 
 ```python
 from oqp.openqp import OpenQP
@@ -111,6 +112,18 @@ job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2", conv=1.0e-10)
 
 mol = job.run()
 print("MP2 total energy:", mol.get_results()["energy"])
+```
+
+For an analytic spin-scaled RHF-MP2 gradient:
+
+```python
+job = OpenQP("h2o_scs_mp2_grad", silent=1)
+job.molecule(geometry="water", charge=0, multiplicity=1)
+job.theory.mp2(basis="6-31g", reference="rhf", variant="scs-mp2", conv=1.0e-10)
+job.workflow.gradient(state=0)
+
+mol = job.run()
+print("SCS-MP2 gradient:", mol.get_grad())
 ```
 
 ## Minimal Coupled-Cluster Script
@@ -172,7 +185,7 @@ dispatch calls remain supported. New examples prefer `job.theory.mrsf(...)`,
 helpers.
 
 For gradients, Python uses `state=...` even though the input-file keyword is
-`[properties] grad`. HF/DFT reference gradients use `state=0`. Ordinary
+`[properties] grad`. HF/DFT and RHF-MP2 reference gradients use `state=0`. Ordinary
 TDHF/TDDFT state `1` is the first excited state. SF-TDDFT and MRSF-TDDFT state
 `1` is the lowest spin-flip/MRSF target state, which can be the
 multiconfigurational ground state.

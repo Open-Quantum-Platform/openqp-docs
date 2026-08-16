@@ -33,7 +33,7 @@ workflows and keywords.
 ## Common Workflows
 
 - Ground-state [HF and DFT](workflows/hf-dft.md)
-- Energy-only [MP2](workflows/mp2.md) and spin-scaled MP2 variants
+- [MP2](workflows/mp2.md) and spin-scaled MP2 energies, plus analytic RHF gradients
 - [TDDFT and TDHF](workflows/tddft.md) energies and gradients
 - [SF-TDDFT](workflows/sf-tddft.md) spin-flip energies and gradients
 - [MRSF-TDDFT](workflows/mrsf-tddft.md) energies and gradients

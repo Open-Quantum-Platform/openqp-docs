@@ -116,14 +116,15 @@ dft_job.theory.dft(functional="pbe0", basis="6-31g*")
 dft_job.workflow.optimize(istate=0, coordsys="tric", trust=0.2)
 
 mp2_job = OpenQP("water_mp2").molecule(geometry="water")
-mp2_job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2")
+mp2_job.theory.mp2(basis="6-31g", reference="rhf", variant="scs-mp2")
+mp2_job.workflow.gradient(state=0)
 ```
 
 | Method | Returns | Use |
 | --- | --- | --- |
 | `theory.hf(basis=None, reference="rhf", multiplicity=None, **scf_keywords)` | `OpenQP` | Selects Hartree-Fock reference-SCF theory. |
 | `theory.dft(functional, basis=None, reference="rhf", multiplicity=None, **scf_keywords)` | `OpenQP` | Selects Kohn-Sham DFT. The functional is part of the theory call. |
-| `theory.mp2(reference="rhf", runtype=None, multiplicity=None, basis=None, variant=None, same_spin_scale=None, opposite_spin_scale=None, **scf_keywords)` | `OpenQP` | Selects energy-only MP2 with an HF reference. Use `variant` for named spin scaling, or `variant="custom"` with explicit same- and opposite-spin scales. |
+| `theory.mp2(reference="rhf", runtype=None, multiplicity=None, basis=None, variant=None, same_spin_scale=None, opposite_spin_scale=None, **scf_keywords)` | `OpenQP` | Selects MP2 with an HF reference. RHF supports analytic gradients and gradient-driven geometry runtypes; UHF/ROHF are energy-only. Use `variant` for named spin scaling, or `variant="custom"` with explicit same- and opposite-spin scales. |
 | `theory.ccsd(reference="rhf", runtype=None, multiplicity=None, basis=None, nfzc=None, conv=None, maxit=None, ndiis=None, cholesky=None, cholesky_tol=None, cholesky_direct=None, triples=False, **scf_keywords)` | `OpenQP` | Selects energy-only CCSD with an HF reference. `nfzc`, `conv`, `maxit`, `ndiis`, `cholesky`, `cholesky_tol`, and `cholesky_direct` route to `[cc]`; every other keyword routes to `[scf]`. Passing a non-empty `functional`, or any `runtype` other than `energy`, raises. |
 | `theory.ccsd_t(**kwargs)` | `OpenQP` | `theory.ccsd(...)` with `triples=True`, adding the perturbative triples correction. Takes the same arguments. |
 | `fci(nroot=1, frozen_core=None, runtype=None, basis=None, reference="rhf", **keywords)` | `OpenQP` | Selects determinant-space FCI. |
@@ -161,18 +162,24 @@ only when selecting a non-energy workflow or setting workflow-specific controls.
 older compact `job.hf(...)`, `job.dft(...)`, `job.mrsf(...)`, and `job.soc(...)`
 helpers remain available for existing scripts.
 
-MP2 clears any DFT functional, forces `runtype=energy`, and accepts named or
-custom spin-scaling variants:
+MP2 clears any DFT functional and accepts named or custom spin-scaling
+variants. It defaults to `runtype=energy`; an RHF calculation may instead use
+`workflow.gradient`, `workflow.optimize`, `workflow.ts`, `workflow.mep`, or
+`workflow.irc`:
 
 ```python
 job.theory.mp2(basis="6-31g", reference="uhf", variant="scs-mp2", conv=1.0e-10)
 job.theory("mp2", basis="6-31g", variant="custom",
            same_spin_scale=0.5, opposite_spin_scale=1.1)
+
+grad_job = OpenQP("water_rmp2_grad").molecule(geometry="water")
+grad_job.theory.mp2(basis="6-31g", reference="rhf", variant="sos-mp2")
+grad_job.workflow.gradient(state=0)
 ```
 
 The Python gradient helper uses `state=...` because users choose a molecular
 state, even though the input-file keyword remains `[properties] grad`. For
-HF/DFT, `state=0` means the reference ground state. For ordinary TDHF/TDDFT,
+HF/DFT and RHF MP2, `state=0` means the reference ground state. For ordinary TDHF/TDDFT,
 `state=1` is the first excited state. For SF-TDDFT and MRSF-TDDFT, `state=1`
 is the lowest spin-flip/MRSF target state, which can be the multiconfigurational
 ground state. Existing scripts that use `grad=...` still work.

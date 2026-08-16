@@ -15,7 +15,7 @@ Shared Cartesian coordinates used by the concise decks live in
 | --- | --- |
 | `examples/HF` | RHF, ROHF, and UHF Hartree-Fock energies and gradients. |
 | `examples/DFT` | DFT energies, gradients, and optimization examples. |
-| `examples/MP2` | Standalone MP2 energy and reference-value examples. |
+| `examples/MP2` | Standalone MP2 energy and analytic RHF-gradient reference examples. |
 | `examples/SCF` | SCF convergence controls such as DIIS variants, MOM, pFON, and SOSCF. |
 | `examples/TDHF` | TDHF energy and gradient examples. |
 | `examples/TDDFT` | TDDFT energy and gradient examples. |
@@ -43,6 +43,12 @@ For the standalone MP2 example:
 
 ```bash
 openqp examples/MP2/h2o_ump2_6-31g.oqp
+```
+
+For the analytic RHF-MP2 gradient example:
+
+```bash
+openqp examples/MP2/h2o_rmp2_6-31g_grad.oqp
 ```
 
 Run the packaged example tests:
