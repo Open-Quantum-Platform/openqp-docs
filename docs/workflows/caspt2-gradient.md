@@ -5,11 +5,14 @@ listed under [Scope](#scope), and by central differences for the rest. Set
 `runtype=grad` (or any gradient-driven run type: `optimize`, `ts`, `mep`, `irc`)
 and select the route with `[pt2] gradient`.
 
-| `[pt2] gradient` | Behaviour |
-| --- | --- |
-| `auto` (default) | analytic where the variant has one, central differences otherwise |
-| `analytic` | refuse rather than fall back |
-| `numerical` | always central differences |
+| `[pt2] gradient` | Unsupported variant | Failed precondition at this geometry |
+| --- | --- | --- |
+| `auto` (default) | central differences, logged | central differences, logged |
+| `analytic` | refuse | refuse |
+| `numerical` | central differences | central differences |
+
+The second column is explained under
+[When the analytic route does not apply](#when-the-analytic-route-does-not-apply).
 
 The analytic path is one PT2 evaluation plus one pass of derivative integrals,
 so its cost stops growing with the number of nuclei; the central difference
@@ -94,22 +97,40 @@ differentiated approximately.
 Under `gradient=auto` an unsupported combination falls back to central
 differences and records why in the log. Under `gradient=analytic` it raises.
 
-## When the gradient is refused
+## When the analytic route does not apply
 
-Beyond the variant scope, OpenQP refuses rather than approximates when the
-*reference* cannot support the derivative. Each message carries the offending
-number:
+The derivation rests on conditions that hold almost everywhere and can fail at
+one particular geometry. Each message carries the offending number:
 
-- the CASSCF reference is not stationary (`g_orb` above tolerance);
+- the CASCI reference orbitals no longer diagonalize the RHF Fock, or the CASSCF
+  reference is not stationary (`g_orb` above tolerance);
 - the orbitals are not semicanonical, so the zeroth-order Hamiltonian the
   gradient differentiates is not the one the energy used;
 - the orbital-response system is singular, meaning two reference orbitals are
   degenerate under the reference condition and the multipliers are not
   determined;
-- the requested effective-Hamiltonian root is degenerate with a neighbour;
+- the requested effective-Hamiltonian root is degenerate with a neighbour, or
+  the XMS model-space Fock has two degenerate eigenvalues;
 - the gradient module's own reconstruction of the energy disagrees with the
   reported one, which would mean the gradient does not belong to the printed
   energy.
+
+These are preconditions of the **route**, not of the energy, so `auto` treats
+them exactly like an unsupported variant: it falls back to central differences
+and logs the condition that failed. The energy OpenQP evaluates is still well
+defined at such a geometry, and a central difference of it is still a gradient
+of that function — slower, and near a crossing a difference of *sorted*
+energies rather than of one state, which the log says. A penalty-function MECI
+search walks into the degenerate case by construction; on a two-iteration H4
+`mcqdpt2` search, 98 steps take the analytic gradient and 5 fall back at root
+gaps between 7e-7 and 9e-7 Eh.
+
+`gradient=analytic` refuses instead, naming the condition.
+
+Three conditions are **not** routed and stop the run whatever `[pt2] gradient`
+says, because they are about the caller or the build rather than the geometry:
+no PT2 energy on the molecule, a `liboqp` without the `caspt2_gradient` entry
+point, and a nonzero status out of the gradient kernel.
 
 ## Selecting the state
 

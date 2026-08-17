@@ -230,7 +230,7 @@ response that is not implemented.
 | `max_terms` | `30000000` | Direct-engine streamed-term limit. |
 | `max_memory` | `2048` | PT2 memory ceiling in MiB, combined with the tighter `[cas]` ceiling. |
 | `semi_canonical` | `true` | Semicanonicalize the reference orbitals. |
-| `gradient` | `auto` | Nuclear-gradient route: `auto` (analytic where the variant has one, central differences otherwise), `analytic` (refuse rather than fall back), or `numerical`. See [CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md). |
+| `gradient` | `auto` | Nuclear-gradient route: `auto` (analytic where it applies, central differences otherwise — both for an unsupported variant and for a geometry where a precondition of the derivation fails), `analytic` (refuse rather than fall back), or `numerical`. See [CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md). |
 | `grad_step` | `1.0e-3` | Central-difference half-step in Bohr for a nuclear gradient. |
 | `grad_guess` | `cold` | Displaced-geometry SCF starting-data policy (`cold` or `warm`). |
 | `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the root-ordering warning. |
