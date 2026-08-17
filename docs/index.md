@@ -34,6 +34,7 @@ workflows and keywords.
 
 - Ground-state [HF and DFT](workflows/hf-dft.md)
 - [MP2](workflows/mp2.md) and spin-scaled MP2 energies, plus analytic RHF gradients
+- [SC-NEVPT2](workflows/sc-nevpt2-gradient.md) analytic gradients and geometry calculations
 - [TDDFT and TDHF](workflows/tddft.md) energies and gradients
 - [SF-TDDFT](workflows/sf-tddft.md) spin-flip energies and gradients
 - [MRSF-TDDFT](workflows/mrsf-tddft.md) energies and gradients

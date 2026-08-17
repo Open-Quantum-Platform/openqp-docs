@@ -5,12 +5,14 @@ CASSCF, and second-order multireference perturbation methods. These workflows
 require an RHF reference: leave `[input] functional` empty and use
 `[scf] type=rhf` with `multiplicity=1`.
 
-All of them run `runtype=energy`. State-specific `method=casscf` uses an
-analytic nuclear gradient; SA-CASSCF, CASPT2, NEVPT2, and QDPT2 use Cartesian
-central differences of their converged total energies. These derivatives also
-support `optimize`, `ts`, `mep`, and `irc`. See
-[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md). CASCI and FCI remain
-energy-only.
+All of them run `runtype=energy`. State-specific `method=casscf` and the
+single-state, strongly contracted NEVPT2 variant use analytic nuclear
+gradients. SA-CASSCF and the other PT2 variants use Cartesian central
+differences of their converged total energies. These derivatives also support
+`optimize`, `ts`, `mep`, and `irc`. See
+[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md) and
+[SC-NEVPT2 Nuclear Gradient](../workflows/sc-nevpt2-gradient.md). CASCI and FCI
+remain energy-only.
 
 The method selects which sections are read:
 
@@ -223,12 +225,14 @@ response that is not implemented.
 | `contraction` | `uncontracted` | `uncontracted` or `strong` (SC-NEVPT2). |
 | `target_roots`, `nroot` | empty, `0` | PT2 target model space; zero inherits `[ci] nroot`. |
 | `ipea_shift`, `level_shift`, `imaginary_shift`, `edshft` | `0.0` | Denominator regularization controls. |
+| `frozen` | `auto` | PT2 frozen core: freeze the standard deep-core orbitals automatically, use `0` to correlate all inactive orbitals, or give an explicit count. |
 | `engine` | `auto` | Automatic, direct/Fortran, or dense QDPT engine. |
 | `nproc` | `0` | Worker count; zero selects the automatic value. |
 | `max_terms` | `30000000` | Direct-engine streamed-term limit. |
 | `max_memory` | `2048` | PT2 memory ceiling in MiB, combined with the tighter `[cas]` ceiling. |
 | `semi_canonical` | `true` | Semicanonicalize the reference orbitals. |
-| `grad_step` | `1.0e-3` | Central-difference half-step in Bohr for a nuclear gradient. |
+| `gradient` | `auto` | `auto` selects the analytic derivative when the calculation is in the SC-NEVPT2 analytic scope and central differences otherwise; `analytic` requires that scope; `numerical` forces central differences. |
+| `grad_step` | `1.0e-3` | Central-difference half-step in Bohr when the numerical route is selected. |
 | `grad_guess` | `cold` | Displaced-geometry SCF starting-data policy (`cold` or `warm`). |
 | `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the root-ordering warning. |
 | `grad_ranks_per_group` | `0` | MPI ranks assigned to one displaced energy; zero selects the automatic distribution. |
@@ -243,13 +247,13 @@ imaginary level shifts.
 
 ## Nuclear gradients and geometry calculations
 
-The following run types use central differences of the converged
-multireference energies:
+The following methods support nuclear gradients and gradient-driven geometry
+calculations:
 
 | Methods | Supported run types |
 | --- | --- |
-| CASSCF and SA-CASSCF | `grad`, `optimize`, `ts`, `mep`, `irc` |
-| CASPT2, NEVPT2, and QDPT2 variants | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| State-specific CASSCF (analytic) and SA-CASSCF (numerical) | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| SC-NEVPT2 (analytic when in scope) and the other CASPT2, NEVPT2, and QDPT2 variants (numerical) | `grad`, `optimize`, `ts`, `mep`, `irc` |
 
 FCI and CASCI remain energy-only. `meci`, `mecp`, and `neb` are not connected
 to these wavefunction-gradient calculations.
@@ -261,6 +265,15 @@ optimized orbitals. For SA-CASSCF, state indices address the list published by
 includes the change of the common state-averaged orbitals between displaced
 geometries; an analytic individual-state SA-CASSCF gradient would require a
 separate Lagrangian/Z-vector response and is not implemented.
+
+The SC-NEVPT2 analytic route requires `[pt2] h0=dyall`,
+`contraction=strong`, `reference=casscf`, and a single state-specific root on a
+closed-shell RHF reference. With `gradient=auto`, an out-of-scope input or a
+geometry-specific applicability failure is reported and routed to central
+differences. With `gradient=analytic`, the same condition is an error rather
+than a silent method change. See
+[SC-NEVPT2 Nuclear Gradient](../workflows/sc-nevpt2-gradient.md) for the full
+contract and diagnostics.
 
 The displaced calculations currently retain energy ordering without matching
 CI vectors between geometries. OpenQP warns when two published roots become
