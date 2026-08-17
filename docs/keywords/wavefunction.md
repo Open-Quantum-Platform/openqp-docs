@@ -6,10 +6,12 @@ require an RHF reference: leave `[input] functional` empty and use
 `[scf] type=rhf` with `multiplicity=1`.
 
 All of them run `runtype=energy`. State-specific `method=casscf` uses an
-analytic nuclear gradient; SA-CASSCF, CASPT2, NEVPT2, and QDPT2 use Cartesian
-central differences of their converged total energies. These derivatives also
-support `optimize`, `ts`, `mep`, and `irc`. See
-[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md). CASCI and FCI remain
+analytic nuclear gradient, and so do single-state CASPT2/MRMP2, MCQDPT2, and
+XMS-CASPT2/XMCQDPT2; SA-CASSCF, multi-set MS-CASPT2, NEVPT2, and strongly
+contracted NEVPT2 use Cartesian central differences of their converged total
+energies. These derivatives also support `optimize`, `ts`, `mep`, and `irc`. See
+[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md) and
+[CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md). CASCI and FCI remain
 energy-only.
 
 The method selects which sections are read:
@@ -228,6 +230,7 @@ response that is not implemented.
 | `max_terms` | `30000000` | Direct-engine streamed-term limit. |
 | `max_memory` | `2048` | PT2 memory ceiling in MiB, combined with the tighter `[cas]` ceiling. |
 | `semi_canonical` | `true` | Semicanonicalize the reference orbitals. |
+| `gradient` | `auto` | Nuclear-gradient route: `auto` (analytic where the variant has one, central differences otherwise), `analytic` (refuse rather than fall back), or `numerical`. See [CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md). |
 | `grad_step` | `1.0e-3` | Central-difference half-step in Bohr for a nuclear gradient. |
 | `grad_guess` | `cold` | Displaced-geometry SCF starting-data policy (`cold` or `warm`). |
 | `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the root-ordering warning. |
@@ -243,13 +246,15 @@ imaginary level shifts.
 
 ## Nuclear gradients and geometry calculations
 
-The following run types use central differences of the converged
-multireference energies:
+These run types are available for the multireference methods, analytically or
+by central differences depending on the variant:
 
-| Methods | Supported run types |
-| --- | --- |
-| CASSCF and SA-CASSCF | `grad`, `optimize`, `ts`, `mep`, `irc` |
-| CASPT2, NEVPT2, and QDPT2 variants | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| Methods | Supported run types | Derivative |
+| --- | --- | --- |
+| state-specific CASSCF | `grad`, `optimize`, `ts`, `mep`, `irc` | analytic |
+| SA-CASSCF | `grad`, `optimize`, `ts`, `mep`, `irc` | central differences |
+| CASPT2, MRMP2, MCQDPT2, XMS-CASPT2, XMCQDPT2 | `grad`, `optimize`, `ts`, `mep`, `irc` | analytic (`[pt2] gradient`) |
+| multi-set MS-CASPT2, NEVPT2, SC-NEVPT2 | `grad`, `optimize`, `ts`, `mep`, `irc` | central differences |
 
 FCI and CASCI remain energy-only. `meci`, `mecp`, and `neb` are not connected
 to these wavefunction-gradient calculations.
