@@ -157,23 +157,34 @@ at `h = 1e-3` Bohr on an off-symmetry H4 (LiH for the frozen-core row):
 | Case | `max abs(analytic - 5-point)` |
 | --- | --- |
 | `caspt2`, CASCI reference | `6e-11` |
-| + `level_shift=0.15` | `7e-11` |
-| + `imaginary_shift=0.20` | `7e-11` |
-| + `edshft=0.05` | `6e-11` |
-| `caspt2`, CASSCF reference | `5e-8` |
+| + `level_shift=0.15` | `6e-11` |
+| + `imaginary_shift=0.20` | `6e-11` |
+| + `edshft=0.05` | `7e-11` |
+| `caspt2`, state-specific CASSCF reference | `4e-9` |
+| `xms-caspt2`, SA-CASSCF reference, 2 roots | `3e-10` / `2e-10` |
 | `mcqdpt2`, 2 roots | `6e-11` / `2e-10` |
-| `xms-caspt2`, 2 roots | `5e-11` / `2e-10` |
+| `xms-caspt2`, 2 roots | `6e-11` / `1e-10` |
+| `mrmp2` / `mcqdpt2` / `xmcqdpt2` on their default direct engine | `7e-11` / `2e-10` |
 | `caspt2`, 6-31G | `1e-9` |
 | `caspt2`, LiH with the default frozen core | `1e-11` |
+| `caspt2`, LiH/cc-pVDZ (first case with `d` shells) | `2e-9` |
+| `caspt2`, BeH2/6-31G, frozen core splitting the inactive block | `2e-10` |
+| `caspt2`, LiH/cc-pVTZ (`f` shells, 44 basis functions), `h = 2e-3` | `1e-7` |
+| `xms-caspt2`, H2O/STO-3G, three centres, `h = 2e-3` | `6e-10` / `6e-9` |
 
-The CASSCF-reference row is looser because the finite-difference side inherits
-the CASSCF convergence of every displaced point; its residual falls from `3.5e-6`
-at `h = 4e-3` to `5e-8` at `h = 1e-3`, which is the behaviour of the reference,
-not of the quantity being tested.
+The CASSCF rows were measured with the reference converged to
+`[casscf] gradient_norm_tol = 1e-9`. That matters: at the default `1e-6` they
+read `5e-8` and `5e-7`, and tightening the reference *alone* moves them to
+`4e-9` and `3e-10` without touching the gradient. The residual there is the
+finite-difference side inheriting the CASSCF convergence of every displaced
+point, not the analytic derivative. The cc-pVTZ row is looser for the same kind
+of reason: at 44 basis functions and total energies near `-8` Ha, the
+reference's convergence divided by `12h` puts the floor near `1e-8`.
 
 Translational invariance `max abs(sum_A dE/dR_A)` and rotational invariance hold
 to `1e-15` and `1e-13`. The numbers were reproduced to the quoted digit on
-macOS/arm64 with Accelerate ILP64 and Linux/x86-64 with OpenBLAS ILP64.
+macOS/arm64 with Accelerate ILP64, Linux/x86-64 with OpenBLAS ILP64, and KNU
+chc4 through Slurm with GCC 12.3.0 and MKL ILP64.
 
 !!! warning "Comparing against a finite difference yourself"
 
