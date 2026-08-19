@@ -180,6 +180,11 @@ WebGL today.
   (ambient occlusion, outline, fresnel rim), and one-click export:
   PNG at arbitrary DPI with transparent background, and turntable/mode
   animations as MP4/GIF.
+- **Offline "ray-traced" export path** (the PyMOL lesson — Schrödinger's
+  PyMOL owes its publication-figure reputation to its offline `ray`
+  renderer, not its interactive view): high-resolution offscreen Mol*
+  renders first, plus scene exporters to PyMOL (`.pse`) and Blender so users
+  can produce fully ray-traced final figures when needed.
 
 ## 4. Alternatives considered
 
