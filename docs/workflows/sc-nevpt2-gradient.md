@@ -43,44 +43,42 @@ Python failure remains an error.
 
 ## Input example
 
+The concise `.oqp` request — the SC-NEVPT2 route is the `caspt2` model with the
+Dyall zeroth-order Hamiltonian and strong contraction selected in `pt2(...)`:
+
+```text
+caspt2/sto-3g opt(S0) cas(active_electrons=2,active_orbitals=2,frozen_core=1)
+pt2(h0=dyall,contraction=strong,gradient=analytic)
+geom="""
+Li  0.0  0.0  0.0
+H   0.0  0.0  1.6
+"""
+```
+
+The equivalent legacy `.inp` spelling is:
+
 ```ini
 [input]
 system=
   Li  0.0  0.0  0.0
   H   0.0  0.0  1.6
-charge=0
 basis=sto-3g
 method=caspt2
 runtype=optimize
-functional=
-
-[scf]
-type=rhf
-multiplicity=1
 
 [cas]
 active_electrons=2
 active_orbitals=2
 frozen_core=1
-max_memory=2048
 
 [ci]
-nroot=1
-solver=dense
-integral_backend=native
 target_spin=singlet
-
-[casscf]
-gradient_norm_tol=1.0e-10
 
 [pt2]
 reference=casscf
-variant=caspt2
 h0=dyall
 contraction=strong
 gradient=analytic
-frozen=auto
-semi_canonical=true
 
 [optimize]
 istate=0
