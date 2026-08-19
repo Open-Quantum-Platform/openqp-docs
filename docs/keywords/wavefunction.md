@@ -220,7 +220,7 @@ either analytic derivative.
 | `target_roots` | empty | Zero-based CI roots included in the average. |
 | `equal_weights` | `true` | Assign equal normalized weights. |
 | `weights` | `1.0` | Explicit weights when `equal_weights=false`. |
-| `root_tracking` | `overlap` | Track roots between orbital iterations. |
+| `root_tracking` | `overlap` | Accepted for compatibility; see below — roots are in fact followed by energy order. |
 
 The number of weights must equal the number of target roots. Weights are
 normalized internally and must contain a positive total.
@@ -233,9 +233,12 @@ state-averaged orbitals; its analytic derivative therefore includes the
 coupled orbital and CI response through a Z-vector.
 
 The current molecular input requires equal weights over a contiguous root
-block. Root tracking between orbital macroiterations is still based on energy
-order, so unequal weights or a noncontiguous subset could assign the objective
-to different physical states after a root interchange and are refused.
+block. Despite the `root_tracking=overlap` spelling, no overlap matching is
+performed between orbital macroiterations: each CI solve is consumed in energy
+order. Equal weights over a contiguous block are invariant when nearby roots
+interchange, which is why unequal weights or a noncontiguous `target_roots`
+subset — where an interchange would move weight onto different physical
+states — are refused at validation.
 
 `method=casscf` with `enabled=true` remains an explicit compatibility route
 that uses central differences. It includes orbital relaxation at displaced
