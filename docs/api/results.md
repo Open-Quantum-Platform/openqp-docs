@@ -45,6 +45,14 @@ Corresponding native tags include `OQP::FCI_ENERGIES`, the CASCI/CASSCF energy
 tags, and `OQP::CASPT2_ENERGIES`; `mol.energies` is the source used for this
 portable result key.
 
+For dedicated SA-CASSCF gradients, `gradient_state=averaged` stores the
+weighted-objective derivative in gradient row zero, but the energy array still
+contains the individual roots; there is no matching weighted-objective energy
+row. An integer `gradient_state=J` stores the analytic Z-vector derivative in
+physical CI-root row `J`, and the corresponding reported energy is that same
+root. Input validation requires the direct-gradient or optimizer selector to
+address the same row.
+
 For `method=mp2`, the exported energy is the correlated MP2 total after the
 SCF reference energy and MP2 correlation are combined. The run log also prints
 the reference SCF energy plus same-spin and opposite-spin MP2 components.

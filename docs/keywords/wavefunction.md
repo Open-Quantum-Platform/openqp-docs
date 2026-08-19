@@ -5,12 +5,18 @@ CASSCF, and second-order multireference perturbation methods. These workflows
 require an RHF reference: leave `[input] functional` empty and use
 `[scf] type=rhf` with `multiplicity=1`.
 
-All of them run `runtype=energy`. State-specific `method=casscf` and the
-single-state, strongly contracted NEVPT2 variant use analytic nuclear
-gradients. SA-CASSCF and the other PT2 variants use Cartesian central
-differences of their converged total energies. These derivatives also support
-`optimize`, `ts`, `mep`, and `irc`. See
-[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md) and
+All of them run `runtype=energy`. State-specific `method=casscf` and dedicated
+`method=sa-casscf` use analytic nuclear gradients, and so do single-state
+CASPT2/MRMP2, MCQDPT2, XMS-CASPT2/XMCQDPT2, and the single-state strongly
+contracted NEVPT2 variant (SC-NEVPT2). SA-CASSCF provides the gradient of
+either the weighted objective or an individual averaged root; the latter
+includes the coupled orbital and CI response through a Z-vector. The
+compatibility spelling `method=casscf` with `[state_average] enabled=true`,
+multi-set MS-CASPT2, and partially contracted NEVPT2 use Cartesian central
+differences of converged total energies. The supported analytic and numerical
+derivatives also connect to the gradient-driven run types described below. See
+[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md),
+[CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md), and
 [SC-NEVPT2 Nuclear Gradient](../workflows/sc-nevpt2-gradient.md). CASCI and FCI
 remain energy-only.
 
@@ -169,6 +175,9 @@ currently require a contiguous core/active partition.
 | `step_norm_tol` | `1.0e-8` | Orbital-step threshold. |
 | `max_rotation_norm` | `0.2` | Maximum orbital-rotation norm. |
 | `canonicalize` | `true` | Canonicalize the converged orbitals. |
+| `gradient_state` | `averaged` | For dedicated `method=sa-casscf`, differentiate the weighted objective (`averaged`) or the named zero-based CI root. |
+| `zvector_tol` | `1.0e-8` | Relative cutoff for the individual-state Z-vector null space, leakage, and residual tests. |
+| `zvector_degeneracy_tol` | `1.0e-8` | Root-gap threshold in Hartree below which an individual-state derivative is refused. |
 | `grad_step` | `1.0e-3` | Central-difference half-step in Bohr for a nuclear gradient. |
 | `grad_guess` | `cold` | `cold` restores the same central-point SCF data before every displacement; `warm` follows the preceding solution serially. |
 | `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the displaced-root ordering warning. |
@@ -189,11 +198,22 @@ valid at a stationary point, and its error is first order in the converged
 orbital-gradient norm. See
 [CASSCF Nuclear Gradient](../workflows/casscf-gradient.md).
 
-The analytic state-specific result has one public row: use `[properties]
+The analytic state-specific result has one reported row: use `[properties]
 grad=0` for a direct gradient and `[optimize] istate=0` for `optimize`, `ts`,
 `mep`, or `irc`. The physical CI state is selected only by `[casscf] root`.
-The `grad_*` controls in the table apply to the numerical SA-CASSCF path; they
-do not replace or tune the state-specific analytic derivative.
+
+For dedicated `method=sa-casscf`, `gradient_state=averaged` selects the
+stationary weighted objective, while an integer selects the corresponding
+physical CI root and activates its coupled orbital and CI Z-vector response. For
+a direct individual-root gradient, `[properties] grad` must equal that physical
+root. Gradient-driven optimization also requires `[optimize] istate` to match
+the root and `target_roots` to be the contiguous sequence beginning at zero.
+The weighted objective is currently available only for `runtype=grad`, because
+it is not one of the reported state energies used by the optimizers.
+
+The `grad_*` controls in the table apply only to the numerical compatibility
+path, `method=casscf` with state averaging enabled. They do not replace or tune
+either analytic derivative.
 
 ## `[state_average]`
 
@@ -204,16 +224,29 @@ do not replace or tune the state-specific analytic derivative.
 | `target_roots` | empty | Zero-based CI roots included in the average. |
 | `equal_weights` | `true` | Assign equal normalized weights. |
 | `weights` | `1.0` | Explicit weights when `equal_weights=false`. |
-| `root_tracking` | `overlap` | Track roots between orbital iterations. |
+| `root_tracking` | `overlap` | Accepted for compatibility; see below — roots are in fact followed by energy order. |
 
 The number of weights must equal the number of target roots. Weights are
 normalized internally and must contain a positive total.
 
-`sa-casscf` and `method=casscf` with `enabled=true` use central differences for
-nuclear gradients. They are never handed the state-specific analytic formula:
-only the averaged objective is stationary against orbital rotations, so an
-analytic individual-state derivative would require a Lagrangian/Z-vector
-response that is not implemented.
+Dedicated `method=sa-casscf` uses analytic nuclear gradients. The weighted
+objective is stationary with respect to the optimized orbital and CI
+parameters, so its derivative uses weight-averaged density matrices without a
+response term. An individual root is not stationary with respect to the common
+state-averaged orbitals; its analytic derivative therefore includes the
+coupled orbital and CI response through a Z-vector.
+
+The current molecular input requires equal weights over a contiguous root
+block. Despite the `root_tracking=overlap` spelling, no overlap matching is
+performed between orbital macroiterations: each CI solve is consumed in energy
+order. Equal weights over a contiguous block are invariant when nearby roots
+interchange, which is why unequal weights or a noncontiguous `target_roots`
+subset — where an interchange would move weight onto different physical
+states — are refused at validation.
+
+`method=casscf` with `enabled=true` remains an explicit compatibility route
+that uses central differences. It includes orbital relaxation at displaced
+geometries and retains the `grad_*` controls above.
 
 ## `[pt2]`
 
@@ -231,8 +264,8 @@ response that is not implemented.
 | `max_terms` | `30000000` | Direct-engine streamed-term limit. |
 | `max_memory` | `2048` | PT2 memory ceiling in MiB, combined with the tighter `[cas]` ceiling. |
 | `semi_canonical` | `true` | Semicanonicalize the reference orbitals. |
-| `gradient` | `auto` | `auto` selects the analytic derivative when the calculation is in the SC-NEVPT2 analytic scope and central differences otherwise; `analytic` requires that scope; `numerical` forces central differences. |
-| `grad_step` | `1.0e-3` | Central-difference half-step in Bohr when the numerical route is selected. |
+| `gradient` | `auto` | Nuclear-gradient route: `auto` (analytic where it applies — including the SC-NEVPT2 analytic scope — and central differences otherwise, both for an unsupported variant and for a geometry where a precondition of the derivation fails), `analytic` (refuse rather than fall back), or `numerical`. See [CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md) and [SC-NEVPT2 Nuclear Gradient](../workflows/sc-nevpt2-gradient.md). |
+| `grad_step` | `1.0e-3` | Central-difference half-step in Bohr for a nuclear gradient. |
 | `grad_guess` | `cold` | Displaced-geometry SCF starting-data policy (`cold` or `warm`). |
 | `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the root-ordering warning. |
 | `grad_ranks_per_group` | `0` | MPI ranks assigned to one displaced energy; zero selects the automatic distribution. |
@@ -247,24 +280,26 @@ imaginary level shifts.
 
 ## Nuclear gradients and geometry calculations
 
-The following methods support nuclear gradients and gradient-driven geometry
-calculations:
-
-| Methods | Supported run types |
-| --- | --- |
-| State-specific CASSCF (analytic) and SA-CASSCF (numerical) | `grad`, `optimize`, `ts`, `mep`, `irc` |
-| SC-NEVPT2 (analytic when in scope) and the other CASPT2, NEVPT2, and QDPT2 variants (numerical) | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| Methods | Derivative | Supported run types |
+| --- | --- | --- |
+| State-specific `method=casscf` | Analytic derivative of `[casscf] root` | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| Dedicated `method=sa-casscf`, individual `gradient_state` | Analytic coupled orbital and CI Z-vector derivative | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| Dedicated `method=sa-casscf`, `gradient_state=averaged` | Analytic derivative of the weighted objective | `grad` |
+| `method=casscf` with state averaging enabled | Central difference | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| CASPT2, MRMP2, MCQDPT2, XMS-CASPT2, XMCQDPT2 | Analytic (`[pt2] gradient`, `auto` falls back to central differences) | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| SC-NEVPT2 (strong contraction, Dyall `h0`) | Analytic when in scope (`[pt2] gradient`) | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| Multi-set MS-CASPT2, partially contracted NEVPT2 | Central difference | `grad`, `optimize`, `ts`, `mep`, `irc` |
 
 FCI and CASCI remain energy-only. `meci`, `mecp`, and `neb` are not connected
 to these wavefunction-gradient calculations.
 
-For state-specific CASSCF, `[properties] grad` or `[optimize] istate` must
-equal `[casscf] root`: only that root is stationary with respect to the
-optimized orbitals. For SA-CASSCF, state indices address the list published by
-`[state_average] target_roots`. A state-specific SA-CASSCF central difference
-includes the change of the common state-averaged orbitals between displaced
-geometries; an analytic individual-state SA-CASSCF gradient would require a
-separate Lagrangian/Z-vector response and is not implemented.
+For state-specific CASSCF, the physical CI state is selected by `[casscf] root`,
+while `[properties] grad` and `[optimize] istate` remain zero because the result
+has one reported row. For analytic SA-CASSCF, `gradient_state` is either
+`averaged` or a physical root in `[state_average] target_roots`. A direct
+individual-root gradient and its optimizer selector must name that same root.
+The compatibility numerical route instead indexes the state list published by
+`[state_average] target_roots`.
 
 The SC-NEVPT2 analytic route requires `[pt2] h0=dyall`,
 `contraction=strong`, `reference=casscf`, and a single state-specific root on a
@@ -275,8 +310,8 @@ than a silent method change. See
 [SC-NEVPT2 Nuclear Gradient](../workflows/sc-nevpt2-gradient.md) for the full
 contract and diagnostics.
 
-The displaced calculations currently retain energy ordering without matching
-CI vectors between geometries. OpenQP warns when two published roots become
+The central-difference calculations currently retain energy ordering without
+matching CI vectors between geometries. OpenQP warns when two reported roots become
 closer than the displacement-induced energy change, but it cannot detect a
 crossing with an uncomputed root.
 
@@ -306,8 +341,11 @@ Available helpers include `fci`, `casci`, `casscf`, `sa_casscf`, `caspt2`,
 call on the same builder unless that state is explicitly supplied again.
 
 For a gradient-driven state-specific CASSCF calculation,
-`job.casscf(root=1, runtype="optimize")` automatically sets
-`[optimize] istate=1`. For SA-CASSCF, `state` is the index in the published
-state list; for example, `job.sa_casscf(nstate=2, state=1, runtype="grad")`
-sets `[properties] grad=1`. The CASSCF helpers also accept `grad_step`,
-`grad_guess`, `grad_gap_warn`, and `grad_ranks_per_group`.
+`job.casscf(root=1, runtype="optimize")` selects physical root 1 and reports it
+in result row zero. For analytic SA-CASSCF,
+`job.sa_casscf(nstate=2, gradient_state=1, runtype="grad")` differentiates
+physical CI root 1 and sets `[properties] grad=1`; omit `gradient_state` to
+differentiate the weighted objective. The older `state=1` argument remains a
+positional alias for the second entry of `target_roots`. The CASSCF helpers
+also accept `grad_step`, `grad_guess`, `grad_gap_warn`, and
+`grad_ranks_per_group` for the numerical compatibility route.
