@@ -7,16 +7,18 @@ require an RHF reference: leave `[input] functional` empty and use
 
 All of them run `runtype=energy`. State-specific `method=casscf` and dedicated
 `method=sa-casscf` use analytic nuclear gradients, and so do single-state
-CASPT2/MRMP2, MCQDPT2, and XMS-CASPT2/XMCQDPT2. SA-CASSCF provides the
-gradient of either the weighted objective or an individual averaged root;
-the latter includes the coupled orbital and CI response through a Z-vector.
-The compatibility spelling `method=casscf` with `[state_average] enabled=true`,
-multi-set MS-CASPT2, NEVPT2, and strongly contracted NEVPT2 use Cartesian
-central differences of converged total energies. The supported analytic and
-numerical derivatives also connect to the gradient-driven run types described
-below. See [CASSCF Nuclear Gradient](../workflows/casscf-gradient.md) and
-[CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md). CASCI and FCI remain
-energy-only.
+CASPT2/MRMP2, MCQDPT2, XMS-CASPT2/XMCQDPT2, and the single-state strongly
+contracted NEVPT2 variant (SC-NEVPT2). SA-CASSCF provides the gradient of
+either the weighted objective or an individual averaged root; the latter
+includes the coupled orbital and CI response through a Z-vector. The
+compatibility spelling `method=casscf` with `[state_average] enabled=true`,
+multi-set MS-CASPT2, and partially contracted NEVPT2 use Cartesian central
+differences of converged total energies. The supported analytic and numerical
+derivatives also connect to the gradient-driven run types described below. See
+[CASSCF Nuclear Gradient](../workflows/casscf-gradient.md),
+[CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md), and
+[SC-NEVPT2 Nuclear Gradient](../workflows/sc-nevpt2-gradient.md). CASCI and FCI
+remain energy-only.
 
 The method selects which sections are read:
 
@@ -256,12 +258,13 @@ geometries and retains the `grad_*` controls above.
 | `contraction` | `uncontracted` | `uncontracted` or `strong` (SC-NEVPT2). |
 | `target_roots`, `nroot` | empty, `0` | PT2 target model space; zero inherits `[ci] nroot`. |
 | `ipea_shift`, `level_shift`, `imaginary_shift`, `edshft` | `0.0` | Denominator regularization controls. |
+| `frozen` | `auto` | PT2 frozen core: freeze the standard deep-core orbitals automatically, use `0` to correlate all inactive orbitals, or give an explicit count. |
 | `engine` | `auto` | Automatic, direct/Fortran, or dense QDPT engine. |
 | `nproc` | `0` | Worker count; zero selects the automatic value. |
 | `max_terms` | `30000000` | Direct-engine streamed-term limit. |
 | `max_memory` | `2048` | PT2 memory ceiling in MiB, combined with the tighter `[cas]` ceiling. |
 | `semi_canonical` | `true` | Semicanonicalize the reference orbitals. |
-| `gradient` | `auto` | Nuclear-gradient route: `auto` (analytic where it applies, central differences otherwise — both for an unsupported variant and for a geometry where a precondition of the derivation fails), `analytic` (refuse rather than fall back), or `numerical`. See [CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md). |
+| `gradient` | `auto` | Nuclear-gradient route: `auto` (analytic where it applies — including the SC-NEVPT2 analytic scope — and central differences otherwise, both for an unsupported variant and for a geometry where a precondition of the derivation fails), `analytic` (refuse rather than fall back), or `numerical`. See [CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md) and [SC-NEVPT2 Nuclear Gradient](../workflows/sc-nevpt2-gradient.md). |
 | `grad_step` | `1.0e-3` | Central-difference half-step in Bohr for a nuclear gradient. |
 | `grad_guess` | `cold` | Displaced-geometry SCF starting-data policy (`cold` or `warm`). |
 | `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the root-ordering warning. |
@@ -284,7 +287,8 @@ imaginary level shifts.
 | Dedicated `method=sa-casscf`, `gradient_state=averaged` | Analytic derivative of the weighted objective | `grad` |
 | `method=casscf` with state averaging enabled | Central difference | `grad`, `optimize`, `ts`, `mep`, `irc` |
 | CASPT2, MRMP2, MCQDPT2, XMS-CASPT2, XMCQDPT2 | Analytic (`[pt2] gradient`, `auto` falls back to central differences) | `grad`, `optimize`, `ts`, `mep`, `irc` |
-| Multi-set MS-CASPT2, NEVPT2, SC-NEVPT2 | Central difference | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| SC-NEVPT2 (strong contraction, Dyall `h0`) | Analytic when in scope (`[pt2] gradient`) | `grad`, `optimize`, `ts`, `mep`, `irc` |
+| Multi-set MS-CASPT2, partially contracted NEVPT2 | Central difference | `grad`, `optimize`, `ts`, `mep`, `irc` |
 
 FCI and CASCI remain energy-only. `meci`, `mecp`, and `neb` are not connected
 to these wavefunction-gradient calculations.
@@ -296,6 +300,15 @@ has one reported row. For analytic SA-CASSCF, `gradient_state` is either
 individual-root gradient and its optimizer selector must name that same root.
 The compatibility numerical route instead indexes the state list published by
 `[state_average] target_roots`.
+
+The SC-NEVPT2 analytic route requires `[pt2] h0=dyall`,
+`contraction=strong`, `reference=casscf`, and a single state-specific root on a
+closed-shell RHF reference. With `gradient=auto`, an out-of-scope input or a
+geometry-specific applicability failure is reported and routed to central
+differences. With `gradient=analytic`, the same condition is an error rather
+than a silent method change. See
+[SC-NEVPT2 Nuclear Gradient](../workflows/sc-nevpt2-gradient.md) for the full
+contract and diagnostics.
 
 The central-difference calculations currently retain energy ordering without
 matching CI vectors between geometries. OpenQP warns when two reported roots become
