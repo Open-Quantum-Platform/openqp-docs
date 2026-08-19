@@ -5,14 +5,12 @@ Users select a physical state and the calculation they want; there is no
 backend or `lib` keyword in this format.
 
 ```text
-dft/pbe0/def2-svp
-opt
+dft/pbe0/def2-svp opt
 geom="h2o.xyz"
 ```
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-meci(S0,S1)
+mrsf(nstate=5)/bhhlyp/6-31g* meci(S0,S1)
 geom="guess.xyz"
 ```
 
@@ -32,16 +30,14 @@ needed to condition the internal-coordinate transformation.
 The shortest canonical input is:
 
 ```text
-dft/bhhlyp/6-31g*
-opt
+dft/bhhlyp/6-31g* opt
 geom="h2o.xyz"
 ```
 
 `opt` defaults to `S0`. Add native controls directly when needed:
 
 ```text
-dft/bhhlyp/6-31g*
-opt(coordsys=tric,trust=0.2,trust_max=0.5)
+dft/bhhlyp/6-31g* opt(coordsys=tric)
 geom="h2o.xyz"
 ```
 
@@ -93,8 +89,7 @@ Native TS optimization uses P-RFO. `follow` selects the initial mode index, and
 `hessian` selects how the starting Hessian is obtained:
 
 ```text
-dft/pbe0/def2-svp
-ts(S0,follow=0,hessian=numerical)
+dft/pbe0/def2-svp ts(S0,hessian=numerical)
 geom="ts_guess.xyz"
 ```
 
@@ -114,17 +109,16 @@ OpenQP geometry and reaction-path jobs are currently rejected in preflight
 because their force backend is not connected to these optimizers; supported
 QM/MM workflows remain energy, MD, and NAMD.
 
-After locating a transition state, trace either native IRC branch explicitly:
+After locating a transition state, trace each native IRC branch; the forward
+branch is the default direction, so only the backward run names it:
 
 ```text
-dft/pbe0/def2-svp
-irc(S0,direction=forward,step=0.1,hessian=analytical,gtol=1e-4)
+dft/pbe0/def2-svp irc(S0,hessian=analytical)
 geom="ts.xyz"
 ```
 
 ```text
-dft/pbe0/def2-svp
-irc(S0,direction=backward,step=0.1,hessian=analytical,gtol=1e-4)
+dft/pbe0/def2-svp irc(S0,direction=backward,hessian=analytical)
 geom="ts.xyz"
 ```
 
@@ -136,8 +130,7 @@ Native MEP uses the same gradient stopping threshold without requiring a
 transition-state Hessian:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-mep(S0,points=30,step=0.1,gtol=1e-4)
+mrsf(nstate=5)/bhhlyp/6-31g* mep(S0)
 geom="start.xyz"
 ```
 
@@ -148,8 +141,7 @@ NEB can align the endpoints, relax them, run climbing-image NEB, test both
 maximum and RMS force thresholds, and write the final band:
 
 ```text
-dft/pbe0/def2-svp
-neb(S0,product="product.xyz",images=7,spring=0.05,climb=true,fmax=0.002,frms=0.001,dt=0.5,maxmove=0.2,align=true,opt_ends=true,end_fmax=0.001,output="reaction_path.xyz")
+dft/pbe0/def2-svp neb(S0,product="product.xyz",images=7,frms=0.001,output="reaction_path.xyz")
 geom="reactant.xyz"
 ```
 
@@ -164,32 +156,27 @@ before the final convergence threshold can be satisfied.
 Physical state labels replace internal state indices in `.oqp`:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-meci(S0,S1)
+mrsf(nstate=5)/bhhlyp/6-31g* meci(S0,S1)
 geom="guess.xyz"
 ```
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-mecp(S0,T0)
+mrsf(nstate=5)/bhhlyp/6-31g* mecp(S0,T0)
 geom="guess.xyz"
 ```
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-meci(S0,S1,algorithm=baeka)
+mrsf(nstate=5)/bhhlyp/6-31g* meci(S0,S1,algorithm=baeka)
 geom="guess.xyz"
 ```
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-meci(S0,S1,S2,algorithm=baeka)
+mrsf(nstate=5)/bhhlyp/6-31g* meci(S0,S1,S2)
 geom="guess.xyz"
 ```
 
 ```text
-mrsf(nstate=6)/bhhlyp/6-31g*
-meci(S0,S1,S2,S3,algorithm=baeka)
+mrsf(nstate=6)/bhhlyp/6-31g* meci(S0,S1,S2,S3)
 geom="guess.xyz"
 ```
 
@@ -210,8 +197,7 @@ Use [`gap_sigma`](../keywords/optimize.md#gap_sigma) to scale the gap term;
 `gap_sigma=1` recovers the plain Bearpark gradient projection.
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-mecp(S0,T0,algorithm=auglag,gap_sigma=10.0)
+mrsf(nstate=5)/bhhlyp/6-31g* mecp(S0,T0,algorithm=auglag)
 geom="guess.xyz"
 ```
 
@@ -235,8 +221,7 @@ Atom indices are one-based, and multiple constraints are separated by
 semicolons:
 
 ```text
-dft/bhhlyp/3-21g
-opt(freeze="distance(1,2)",coordsys=dlc,trust=0.05,trust_max=0.05)
+dft/bhhlyp/3-21g opt(freeze="distance(1,2)",coordsys=dlc,trust=0.05,trust_max=0.05)
 geom="hcn.xyz"
 ```
 

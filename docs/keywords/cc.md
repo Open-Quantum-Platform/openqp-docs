@@ -20,7 +20,6 @@ CCSD(T) in `.oqp`:
 
 ```text
 ccsd_t/6-31g
-energy
 geom="h2o.xyz"
 ```
 
@@ -47,9 +46,7 @@ functional=
 To freeze core orbitals, add an exact `.oqp` section call:
 
 ```text
-ccsd_t/6-31g
-energy
-cc(nfzc=1)
+ccsd_t/6-31g cc(nfzc=1)
 geom="h2o.xyz"
 ```
 

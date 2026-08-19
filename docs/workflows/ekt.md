@@ -6,8 +6,7 @@ MRSF-TDDFT reference.
 `.oqp`:
 
 ```text
-mrsf(nstate=10)/bhhlyp/6-31g
-ekt(ip=true,ea=false)
+mrsf(nstate=10)/bhhlyp/6-31g ekt
 geom="h2o.xyz"
 ```
 

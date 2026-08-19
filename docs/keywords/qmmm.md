@@ -13,9 +13,7 @@ geometry optimizations are rejected because those generic backends do not yet
 provide the assembled QM/MM gradient.
 
 ```text
-dft/pbe0/def2-svp
-energy
-qmmm(embedding=electrostatic)
+dft/pbe0/def2-svp qmmm()
 geom="ala.pdb 9 10 17 18 19"
 ```
 
@@ -49,9 +47,7 @@ Two ways of defining the QM region are supported, matching the driver paths:
 Single-point QM/MM energy in `.oqp`:
 
 ```text
-dft/bhhlyp/6-31g*
-energy
-qmmm(embedding=electrostatic)
+dft/bhhlyp/6-31g* qmmm()
 geom="ala.pdb 9 10 17 18 19"
 ```
 
@@ -85,9 +81,8 @@ type = rhf
 Embedded nonadiabatic molecular dynamics in `.oqp`:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g
-namd
-qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-2",cutoff=PME,embedding=electrostatic)
+mrsf(nstate=5)/bhhlyp/6-31g namd
+qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-2",cutoff=PME)
 geom="water_box.pdb 0-2"
 ```
 

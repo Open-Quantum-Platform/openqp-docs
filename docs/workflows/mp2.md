@@ -19,9 +19,7 @@ The available workflows depend on the HF reference:
 ### `.oqp`
 
 ```text
-mp2(reference=uhf)/6-31g
-energy
-scf(conv=1e-10)
+mp2(reference=uhf)/6-31g scf(conv=1e-10)
 geom="../geometries/H2O-0381125c86f2.xyz"
 ```
 
@@ -103,9 +101,7 @@ spin scaling all have analytic gradients.
 ### `.oqp`
 
 ```text
-mp2/6-31g
-grad(S0)
-scf(conv=1e-10,incremental=false)
+mp2/6-31g grad(S0) scf(conv=1e-10,incremental=false)
 geom="../geometries/H2O-0381125c86f2.xyz"
 ```
 
