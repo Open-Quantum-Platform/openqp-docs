@@ -20,8 +20,7 @@ then select the Hessian workflow with `job.workflow.hessian(...)`.
 `.oqp`:
 
 ```text
-dft/bhhlyp/6-31g*
-hess(S0,type=analytical,clean=true)
+dft/bhhlyp/6-31g* hess(S0,type=analytical,clean=true)
 geom="h2o.xyz"
 ```
 
@@ -69,8 +68,7 @@ Omit `type=analytical` to use the numerical finite-difference path.
 `.oqp`:
 
 ```text
-dft/bhhlyp/6-31g*
-hess(S0,clean=true)
+dft/bhhlyp/6-31g* hess(S0,clean=true)
 geom="h2o.xyz"
 ```
 
@@ -123,8 +121,7 @@ lowest MRSF target state, which can be the multiconfigurational ground state.
 `.oqp`:
 
 ```text
-mrsf(nstate=2)/bhhlyp/6-31g*
-hess(S0,clean=true)
+mrsf(nstate=2)/bhhlyp/6-31g* hess(S0,clean=true)
 geom="h2o.xyz"
 ```
 

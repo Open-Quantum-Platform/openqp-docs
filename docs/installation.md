@@ -126,9 +126,7 @@ openqp h2o.oqp --omp 16
 or from a top-level option in `.oqp`:
 
 ```text
-hf/6-31g*
-omp_threads=16
-energy
+hf/6-31g* omp_threads=16
 geom="h2o.xyz"
 ```
 

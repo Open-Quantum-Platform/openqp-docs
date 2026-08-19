@@ -86,8 +86,11 @@ Selects the partition function used to assign atomic grid weights.
 | Default | `SG2` |
 | Used by | pruned DFT grids |
 
-Selects a pruned grid preset. Examples sometimes set this explicitly or leave it
-blank for testing.
+Selects a pruned grid preset: `SG0`, `SG1`, `SG2`, or `SG3`. Write
+`pruned=none` (in `.inp` input an empty value, `pruned=`, means the same) to
+use the unpruned `rad_npts` × `ang_npts` grid at every radius; some regression
+examples do this so their reference numbers do not depend on a pruning
+scheme.
 
 ### `grid_ao_pruned`
 

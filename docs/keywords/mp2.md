@@ -17,7 +17,6 @@ Conventional MP2 in `.oqp`:
 
 ```text
 mp2/6-31g
-energy
 geom="h2o.xyz"
 ```
 
@@ -35,8 +34,7 @@ mol = job.run()
 Analytic RHF-MP2 gradient in `.oqp`:
 
 ```text
-mp2/6-31g
-grad(S0)
+mp2/6-31g grad(S0)
 geom="h2o.xyz"
 ```
 
@@ -56,9 +54,7 @@ functional=
 For spin-component-scaled MP2, add an exact `.oqp` section call:
 
 ```text
-mp2/6-31g
-energy
-mp2(variant=scs-mp2)
+mp2/6-31g mp2(variant=scs-mp2)
 geom="h2o.xyz"
 ```
 

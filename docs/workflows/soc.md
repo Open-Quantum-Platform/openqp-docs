@@ -13,8 +13,7 @@ relativistic MRSF-TDDFT SOC method and the mean-field SOC operator background.
 Use one route count for equal singlet and triplet spaces:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g*
-soc
+mrsf(nstate=3)/bhhlyp/6-31g* soc
 geom="h2o.xyz"
 ```
 
@@ -22,8 +21,7 @@ This requests `S0`--`S2` and `T0`--`T2`. For unequal spaces, omit route
 `nstate` and specify both counts:
 
 ```text
-mrsf/bhhlyp/6-31g*
-soc(ns=3,nt=5)
+mrsf/bhhlyp/6-31g* soc(ns=3,nt=5)
 geom="h2o.xyz"
 ```
 

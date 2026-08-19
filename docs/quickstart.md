@@ -24,17 +24,18 @@ Create `h2o_mrsf.oqp` beside it:
 
 ```text
 mrsf(nstate=3)/bhhlyp/6-31g*
-energy
 geom="h2o.xyz"
 ```
 
 Read the file from top to bottom: use MRSF-TDDFT with BHHLYP/6-31G*, calculate
-three states, run a single-point energy, and read the water geometry.
-OpenQP selects the required high-spin working reference automatically.
+three states, and read the water geometry. No task keyword means a single-point
+energy, and OpenQP selects the required high-spin working reference
+automatically. Nothing else is needed: the initial guess, SCF convergence, and
+grid settings are sensible defaults and are written only when they change.
 
-The same items may be placed on one line; whitespace outside quotes and
-parentheses has no semantic effect. Examples use one logical item per line and
-put `geom` last for readability.
+Whitespace outside quotes and parentheses has no semantic effect, so the same
+items may be split over several lines. Examples put the route and task on one
+line and `geom` last for readability.
 
 Run it:
 
@@ -42,8 +43,8 @@ Run it:
 openqp h2o_mrsf.oqp
 ```
 
-For a gradient or geometry optimization, replace `energy` with `grad(S0)` or
-`opt(S0)`. For HF and DFT, the only ground-state surface is implicit, so
+For a gradient or geometry optimization, add `grad(S0)` or `opt(S0)` after the
+route. For HF and DFT, the only ground-state surface is implicit, so
 `grad` and `grad(S0)` are equivalent, as are `opt` and `opt(S0)`.
 
 See [`.oqp` Input](oqp-input.md) for routes, physical state labels,

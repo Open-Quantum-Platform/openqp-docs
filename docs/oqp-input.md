@@ -1,9 +1,12 @@
 # `.oqp` Input
 
-The `.oqp` format describes one calculation as a short readable sequence. Put
-each logical item on its own line, or put the same items on one line; both
-spellings are identical. It has no leading `#` and no `[input]` or `[scf]`
-blocks.
+The `.oqp` format describes one calculation as a short readable sequence:
+the method route, the task, and the geometry. Write everything except the
+geometry on one line and put the geometry last; splitting the same items over
+several lines is also accepted and means exactly the same thing. Write only
+what differs from the defaults: a bare `opt` with no SCF, guess, or optimizer
+keywords is a complete, production-ready request. It has no leading `#` and no
+`[input]` or `[scf]` blocks.
 
 !!! note "Available in OpenQP 1.3.0"
 
@@ -15,21 +18,15 @@ blocks.
 Put `h2o.xyz` beside a file named, for example, `h2o-opt.oqp`, and write:
 
 ```text
-mrsf/bhhlyp/6-31g*
-opt
+mrsf/bhhlyp/6-31g* opt
 geom="h2o.xyz"
 ```
 
 For a keyword with no arguments, empty parentheses are optional: `opt` and
 `opt()` mean the same thing. The examples use the shorter form when possible.
-An `.xyz` or `.pdb` geometry may immediately follow the route in a one-line
-shorthand, but the readable form puts explicit `geom` last:
-
-```text
-mrsf/bhhlyp/6-31g*
-opt
-geom="h2o.xyz"
-```
+An `.xyz` or `.pdb` geometry may also immediately follow the route in a
+one-line shorthand, `mrsf/bhhlyp/6-31g* h2o.xyz opt`; the examples put an
+explicit `geom` last.
 
 Use quotes for a path containing spaces, for example
 `geom="structures/water molecule.xyz"`.
@@ -64,9 +61,7 @@ To optimize a particular excited state with tighter controls, add details only
 where they are needed:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g*
-opt(S1,maxit=100)
-scf(conv=1e-8)
+mrsf(nstate=3)/bhhlyp/6-31g* opt(S1,maxit=100) scf(conv=1e-08)
 geom="h2o.xyz"
 ```
 
@@ -77,25 +72,21 @@ optimization steps, and an SCF convergence threshold of `1e-8`.
 
 ```text
 mrsf(nstate=3)/bhhlyp/6-31g*
-energy
 geom="h2o.xyz"
 ```
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g*
-grad(S1)
+mrsf(nstate=3)/bhhlyp/6-31g* grad(S1)
 geom="h2o.xyz"
 ```
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g*
-opt(T0)
+mrsf(nstate=3)/bhhlyp/6-31g* opt(T0)
 geom="h2o.xyz"
 ```
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g*
-meci(S1,S2)
+mrsf/bhhlyp/6-31g* meci(S1,S2)
 geom="guess.xyz"
 ```
 
@@ -126,8 +117,7 @@ small hand-written subset.
 One count requests the same number of singlets and triplets:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g*
-soc
+mrsf(nstate=3)/bhhlyp/6-31g* soc
 geom="h2o.xyz"
 ```
 
@@ -135,8 +125,7 @@ This calculates `S0`--`S2` and `T0`--`T2`. To use different counts, put both
 counts in `soc(...)`:
 
 ```text
-mrsf/bhhlyp/6-31g*
-soc(ns=3,nt=5)
+mrsf/bhhlyp/6-31g* soc(ns=3,nt=5)
 geom="h2o.xyz"
 ```
 
@@ -153,9 +142,13 @@ ROUTE GLOBAL... PRIMARY_DRIVER MODIFIER... SECTION_CALL...
 
 The route comes first. Whitespace outside quotes and parentheses separates the
 remaining parts, so spaces and line breaks are interchangeable. The canonical
-layout writes one logical item per line and moves `geom`/`geom2` to the end.
-OpenQP converts either layout to its established configuration and applies the
-same schema validation used for traditional input.
+layout — what OpenQP writes when it renders an input — puts the route, the
+global options, the driver, and the modifier/section calls on one line,
+wrapping to a new line only when that line would exceed about 100 characters
+(long multiconfigurational inputs therefore span a few lines), and moves
+`geom`/`geom2` to the end. It also omits every option that merely restates a
+runtime default. OpenQP converts any layout to its established configuration
+and applies the same schema validation used for traditional input.
 
 ## Route and Model Reference
 
@@ -205,9 +198,7 @@ spellings. Put advanced response controls in their exact section call, for
 example:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-energy(S0)
-tdhf(nvdav=30)
+mrsf(nstate=5)/bhhlyp/6-31g* energy(S0) tdhf(nvdav=30)
 geom="h2o.xyz"
 ```
 
@@ -241,7 +232,6 @@ triple-quoted block; each atom occupies its own line:
 
 ```text
 hf/sto-3g
-energy
 geom="""
 O   0.000000   0.000000   0.000000
 H   0.000000   0.000000   0.960000
@@ -313,7 +303,7 @@ means the current `[md]` controls `nstep`,
 | <code>energy([S0&#124;T0&#124;Q0])</code> | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet. |
 | `grad([STATE],td_prop=...,export=...,title=...)` | Gradient target plus concise `[properties]` controls. Default target is `S0`, except that SF routes require `root=N`. |
 | `opt([STATE],OPT...,ENGINE...,freeze="distance(i,j)")` | Native minimum optimization. Default target is `S0`, except that SF routes require `root=N`. `freeze` holds one or more semicolon-separated atom-pair distances at their initial values. |
-| <code>meci(STATE1,STATE2,[algorithm=auglag&#124;penalty&#124;ubp&#124;hybrid],[gap_sigma=...],OPT...,ENGINE...)</code><br><code>meci(STATE1,STATE2[,STATE3...],algorithm=baeka,BAEKA_OPT...,BAEKA...,ENGINE...)</code> | Native intersection search for states of the same multiplicity. A two-state call defaults to `auglag`, the augmented Lagrangian, whose gap term is scaled by `gap_sigma` (default `10.0`); a call with three or more states selects `baeka`, the only N-state algorithm. Writing `algorithm=baeka` explicitly is recommended and also selects BaekA for two states. State order is normalized. Use public `gap` rather than the internal `energy_gap` spelling in a BaekA call, and do not supply both. See [BaekA Multistate MECI](workflows/baeka-multistate-meci.md). |
+| <code>meci(STATE1,STATE2,[algorithm=auglag&#124;penalty&#124;ubp&#124;hybrid],[gap_sigma=...],OPT...,ENGINE...)</code><br><code>meci(STATE1,STATE2[,STATE3...],algorithm=baeka,BAEKA_OPT...,BAEKA...,ENGINE...)</code> | Native intersection search for states of the same multiplicity. A two-state call defaults to `auglag`, the augmented Lagrangian, whose gap term is scaled by `gap_sigma` (default `10.0`); a call with three or more states selects `baeka`, the only N-state algorithm. Write `algorithm=baeka` explicitly only to select BaekA for two states; with three or more states it is implied and the canonical rendering omits it. State order is normalized. Use public `gap` rather than the internal `energy_gap` spelling in a BaekA call, and do not supply both. See [BaekA Multistate MECI](workflows/baeka-multistate-meci.md). |
 | `tci(STATE1,STATE2,STATE3,OPT...,TCI...,ENGINE...)` | Backward-compatible three-state adaptive-penalty driver. It preserves the established `pen_sigma`/`pen_alpha`/multiplicative `pen_incre` behavior and is not an alias for BaekA. New work should select the intended MECI algorithm explicitly. |
 | <code>mecp(STATE1,STATE2,[algorithm=auto&#124;sqp&#124;auglag&#124;penalty&#124;quad],[gap_sigma=...],OPT...,ENGINE...)</code> | Native crossing search for two states of different multiplicity. Defaults to `algorithm=auto`, which selects `sqp` with the native optimizer and `auglag` elsewhere. `sqp` solves the KKT equations of the constrained problem for the step and the multiplier together and reads no penalty parameter; `auglag` scales its gap term by `gap_sigma` (default `10.0`). `quad` is the legacy fixed-weight quadratic penalty; it settles at a residual gap of order `1/gap_weight` and is kept only to reproduce older runs. |
 | <code>mep([STATE],maxit=...&#124;points=...,step=...,gtol=...)</code> | Native minimum-energy path with a path limit, step size, and gradient stopping threshold. |
@@ -356,8 +346,7 @@ use `prop(S1)` or omit the state for its `S0` default.
 For MRSF SOC, the route count is applied equally to singlets and triplets:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g*
-soc
+mrsf(nstate=3)/bhhlyp/6-31g* soc
 geom="h2o.xyz"
 ```
 
@@ -365,8 +354,7 @@ This requests `S0`--`S2` and `T0`--`T2`. Use explicit counts when the two
 manifolds need different sizes:
 
 ```text
-mrsf/bhhlyp/6-31g*
-soc(ns=3,nt=5)
+mrsf/bhhlyp/6-31g* soc(ns=3,nt=5)
 geom="h2o.xyz"
 ```
 
@@ -408,8 +396,7 @@ distances.
 Native NEB keeps backend details out of the command:
 
 ```text
-dft/pbe0/def2-svp
-neb(S0,product="product.xyz",images=7,spring=0.08,climb=true,fmax=0.002,frms=0.001,align=true,output="path.xyz")
+dft/pbe0/def2-svp neb(S0,product="product.xyz",images=7,spring=0.08,frms=0.001,output="path.xyz")
 geom="reactant.xyz"
 ```
 
@@ -553,51 +540,42 @@ where a state-aware canonical workflow supports them.
 1. HF energy with a tighter SCF threshold:
 
     ```text
-    hf/6-31g*
-    energy
-    scf(conv=1e-8)
+    hf/6-31g* scf(conv=1e-08)
     geom="h2o.xyz"
     ```
 
 2. DFT-D4/PCM single point:
 
     ```text
-    dft/pbe0/def2-svp
-    energy
-    d4
-    pcm(water)
+    dft/pbe0/def2-svp d4 pcm(water)
     geom="h2o.xyz"
     ```
 
 3. MRSF gradient on the physical first singlet excited state:
 
     ```text
-    mrsf(nstate=5)/bhhlyp/6-31g*
-    grad(S1)
+    mrsf(nstate=5)/bhhlyp/6-31g* grad(S1)
     geom="h2o.xyz"
     ```
 
 4. MRSF optimization on the physical singlet ground state:
 
     ```text
-    mrsf(nstate=5)/bhhlyp/6-31g*
-    opt
+    mrsf(nstate=5)/bhhlyp/6-31g* opt
     geom="h2o.xyz"
     ```
 
 5. BaekA multistate MRSF conical-intersection search:
 
     ```text
-    mrsf(nstate=5)/bhhlyp/6-31g*
-    meci(S0,S1,S2,algorithm=baeka)
+    mrsf(nstate=5)/bhhlyp/6-31g* meci(S0,S1,S2)
     geom="guess.xyz"
     ```
 
 6. Ground-state QM/MM molecular dynamics:
 
     ```text
-    dft/pbe0/def2-svp
-    md
+    dft/pbe0/def2-svp md
     qmmm(pdb_file="system.pdb",forcefield_files="amber14-all.xml",qm_atoms="0-2",n_steps=100)
     geom="qm.xyz"
     ```
@@ -605,44 +583,35 @@ where a state-aware canonical workflow supports them.
 7. QM/MM single-point energy with the QM atom selection in the PDB geometry:
 
     ```text
-    dft/pbe0/def2-svp
-    energy
-    qmmm(embedding=electrostatic)
+    dft/pbe0/def2-svp qmmm()
     geom="ala.pdb 9 10 17 18 19"
     ```
 
 8. Ground-state NEB calculation:
 
     ```text
-    dft/pbe0/def2-svp
-    neb(S0,product="product.xyz",images=7)
+    dft/pbe0/def2-svp neb(S0,product="product.xyz",images=7)
     geom="reactant.xyz"
     ```
 
 9. NMR shielding with the canonical GIAO default:
 
     ```text
-    dft/pbe0/def2-svp
-    energy
-    nmr
+    dft/pbe0/def2-svp nmr
     geom="h2o.xyz"
     ```
 
 10. Analytic Hessian with IR and Raman intent:
 
     ```text
-    dft/pbe0/def2-svp
-    hess(S0,type=analytical)
-    ir
-    raman
+    dft/pbe0/def2-svp hess(S0,type=analytical) ir raman
     geom="h2o.xyz"
     ```
 
 11. Forward native IRC:
 
     ```text
-    dft/pbe0/def2-svp
-    irc(S0,direction=forward,step=0.1,hessian=analytical)
+    dft/pbe0/def2-svp irc(S0,hessian=analytical)
     geom="ts.xyz"
     ```
 
