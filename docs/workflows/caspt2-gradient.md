@@ -117,13 +117,20 @@ one particular geometry. Each message carries the offending number:
 
 These are preconditions of the **route**, not of the energy, so `auto` treats
 them exactly like an unsupported variant: it falls back to central differences
-and logs the condition that failed. The energy OpenQP evaluates is still well
-defined at such a geometry, and a central difference of it is still a gradient
-of that function — slower, and near a crossing a difference of *sorted*
-energies rather than of one state, which the log says. A penalty-function MECI
-search walks into the degenerate case by construction; on a two-iteration H4
-`mcqdpt2` search, 98 steps take the analytic gradient and 5 fall back at root
-gaps between 7e-7 and 9e-7 Eh.
+and logs the condition that failed. One caveat is fundamental rather than a
+matter of speed. When the failed precondition is a *degenerate* (or
+near-degenerate) effective-Hamiltonian root, the central difference is taken of
+the ascending *sorted* energies, and a displaced geometry can cross the seam
+and switch branches. The sorted energy is not differentiable at the crossing,
+so the result is step- and coordinate-dependent and is **not** the gradient of
+one physical state — the log says a sorted difference was used, and it should
+be treated as a search direction, not as a state gradient. A penalty-function
+MECI search walks into exactly this case by construction, which it tolerates
+because its objective is built from the average and the gap of the sorted
+pair; on a two-iteration H4 `mcqdpt2` search, 98 steps take the analytic
+gradient and 5 fall back at root gaps between 7e-7 and 9e-7 Eh. Anything that
+needs the derivative of one diabatic-following state at a seam needs
+state-following machinery that this fallback does not provide.
 
 `gradient=analytic` refuses instead, naming the condition.
 
@@ -140,6 +147,17 @@ multistate or XMS run publishes the diagonalized effective-Hamiltonian roots in
 ascending order.
 
 ## Example
+
+The complete runnable request, in concise `.oqp` form:
+
+```text
+caspt2/sto-3g grad(S0) pt2(gradient=analytic)
+cas(active_electrons=2,active_orbitals=2,frozen_core=1)
+geom="h4.xyz"
+```
+
+The equivalent legacy `.inp` sections are (add an `[input] system=` geometry
+block to run it):
 
 ```ini
 [input]
