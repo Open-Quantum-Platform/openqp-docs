@@ -121,7 +121,8 @@ The same-stem `.inp` file is retained for legacy use.
 
 - SF-TDDFT currently uses an ROHF high-spin reference in the documented
   production path.
-- `[tdhf] nstate` must include the highest spin-flip state requested by a
-  gradient or follow-up workflow.
+- In sectioned `.inp` input, `[tdhf] nstate` must include the highest spin-flip
+  state requested by a gradient or follow-up workflow; `.oqp` input widens the
+  root count from `root=N` automatically.
 - For the mixed-reference correction and OpenQP's main multistate workflow, use
   [MRSF-TDDFT](mrsf-tddft.md).

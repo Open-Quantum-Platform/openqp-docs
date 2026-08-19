@@ -35,7 +35,8 @@ geom="guess.xyz"
 A two-state `meci(S0,S1)` call defaults to `auglag`, the augmented Lagrangian,
 so write `algorithm=baeka` when BaekA is intended for two states. With three or
 more states OpenQP infers `baeka`, because the other MECI algorithms are
-two-state only; keeping the option explicit makes the chosen method clearest.
+two-state only; the option is then redundant and the canonical rendering omits
+it (`meci(S0,S1,S2,algorithm=baeka)` and `meci(S0,S1,S2)` are the same request).
 
 All selected states must be consecutive response roots in the same physical
 spin manifold. OpenQP normalizes their order. Thus

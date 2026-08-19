@@ -71,6 +71,12 @@ tddft/b3lyp5/6-31g* grad(S3)
 geom="h2o.xyz"
 ```
 
+The state label sets the root count: `grad(S3)` makes OpenQP solve at least
+three roots, so the route needs `nstate` only to request more roots than the
+driver implies (for example `tddft(nstate=6)/b3lyp5/6-31g* grad(S3)`). The
+same rule applies to `energy(...)`, `opt(...)`, and the SF/MRSF labels
+(`grad(root=3)`, `grad(S2)`).
+
 Python:
 
 ```python
@@ -114,8 +120,9 @@ TDHF gradient example:
 
 ## Notes
 
-- `[tdhf] nstate` must include the highest state requested by gradients or
-  follow-up analysis.
+- In sectioned `.inp` input, `[tdhf] nstate` must include the highest state
+  requested by gradients or follow-up analysis; `.oqp` input widens the root
+  count from the driver's state label automatically.
 - Ordinary TDHF/TDDFT state numbering is excited-state numbering: `state=1`
   in Python, or `grad=1` in `[properties]`, means the first excited state.
 - SF-TDDFT and MRSF-TDDFT use a different target-state ordering: state `1` is

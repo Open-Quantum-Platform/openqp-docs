@@ -173,8 +173,10 @@ The same-stem `.inp` file is retained for legacy use.
   in Python, or `grad=1` in `[properties]`, means the lowest MRSF target state,
   which can be the multiconfigurational ground state. This differs from
   ordinary TDHF/TDDFT, where state `1` means the first excited state.
-- `[tdhf] nstate` must include every state requested by gradients, NACME, SOC,
-  or EKT analysis.
+- In sectioned `.inp` input, `[tdhf] nstate` must include every state requested
+  by gradients, NACME, SOC, or EKT analysis; `.oqp` input widens the root count
+  from the driver's state labels automatically, so `mrsf/bhhlyp/6-31g* grad(S2)`
+  solves three roots without a route `nstate`.
 - For SOC, `mrsf(nstate=3)/... soc` requests `S0`--`S2` and `T0`--`T2`.
   Use `mrsf/... soc(ns=3,nt=5)` for unequal counts; `ns` and `nt` must appear
   together and cannot be combined with route `nstate`.

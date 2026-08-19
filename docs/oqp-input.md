@@ -142,9 +142,13 @@ ROUTE GLOBAL... PRIMARY_DRIVER MODIFIER... SECTION_CALL...
 
 The route comes first. Whitespace outside quotes and parentheses separates the
 remaining parts, so spaces and line breaks are interchangeable. The canonical
-layout writes one logical item per line and moves `geom`/`geom2` to the end.
-OpenQP converts either layout to its established configuration and applies the
-same schema validation used for traditional input.
+layout — what OpenQP writes when it renders an input — puts the route, the
+global options, the driver, and the modifier/section calls on one line,
+wrapping to a new line only when that line would exceed about 100 characters
+(long multiconfigurational inputs therefore span a few lines), and moves
+`geom`/`geom2` to the end. It also omits every option that merely restates a
+runtime default. OpenQP converts any layout to its established configuration
+and applies the same schema validation used for traditional input.
 
 ## Route and Model Reference
 
@@ -299,7 +303,7 @@ means the current `[md]` controls `nstep`,
 | <code>energy([S0&#124;T0&#124;Q0])</code> | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet. |
 | `grad([STATE],td_prop=...,export=...,title=...)` | Gradient target plus concise `[properties]` controls. Default target is `S0`, except that SF routes require `root=N`. |
 | `opt([STATE],OPT...,ENGINE...,freeze="distance(i,j)")` | Native minimum optimization. Default target is `S0`, except that SF routes require `root=N`. `freeze` holds one or more semicolon-separated atom-pair distances at their initial values. |
-| <code>meci(STATE1,STATE2,[algorithm=auglag&#124;penalty&#124;ubp&#124;hybrid],[gap_sigma=...],OPT...,ENGINE...)</code><br><code>meci(STATE1,STATE2[,STATE3...],algorithm=baeka,BAEKA_OPT...,BAEKA...,ENGINE...)</code> | Native intersection search for states of the same multiplicity. A two-state call defaults to `auglag`, the augmented Lagrangian, whose gap term is scaled by `gap_sigma` (default `10.0`); a call with three or more states selects `baeka`, the only N-state algorithm. Writing `algorithm=baeka` explicitly is recommended and also selects BaekA for two states. State order is normalized. Use public `gap` rather than the internal `energy_gap` spelling in a BaekA call, and do not supply both. See [BaekA Multistate MECI](workflows/baeka-multistate-meci.md). |
+| <code>meci(STATE1,STATE2,[algorithm=auglag&#124;penalty&#124;ubp&#124;hybrid],[gap_sigma=...],OPT...,ENGINE...)</code><br><code>meci(STATE1,STATE2[,STATE3...],algorithm=baeka,BAEKA_OPT...,BAEKA...,ENGINE...)</code> | Native intersection search for states of the same multiplicity. A two-state call defaults to `auglag`, the augmented Lagrangian, whose gap term is scaled by `gap_sigma` (default `10.0`); a call with three or more states selects `baeka`, the only N-state algorithm. Write `algorithm=baeka` explicitly only to select BaekA for two states; with three or more states it is implied and the canonical rendering omits it. State order is normalized. Use public `gap` rather than the internal `energy_gap` spelling in a BaekA call, and do not supply both. See [BaekA Multistate MECI](workflows/baeka-multistate-meci.md). |
 | `tci(STATE1,STATE2,STATE3,OPT...,TCI...,ENGINE...)` | Backward-compatible three-state adaptive-penalty driver. It preserves the established `pen_sigma`/`pen_alpha`/multiplicative `pen_incre` behavior and is not an alias for BaekA. New work should select the intended MECI algorithm explicitly. |
 | <code>mecp(STATE1,STATE2,[algorithm=auto&#124;sqp&#124;auglag&#124;penalty&#124;quad],[gap_sigma=...],OPT...,ENGINE...)</code> | Native crossing search for two states of different multiplicity. Defaults to `algorithm=auto`, which selects `sqp` with the native optimizer and `auglag` elsewhere. `sqp` solves the KKT equations of the constrained problem for the step and the multiplier together and reads no penalty parameter; `auglag` scales its gap term by `gap_sigma` (default `10.0`). `quad` is the legacy fixed-weight quadratic penalty; it settles at a residual gap of order `1/gap_weight` and is kept only to reproduce older runs. |
 | <code>mep([STATE],maxit=...&#124;points=...,step=...,gtol=...)</code> | Native minimum-energy path with a path limit, step size, and gradient stopping threshold. |

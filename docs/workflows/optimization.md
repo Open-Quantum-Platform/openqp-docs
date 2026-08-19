@@ -109,7 +109,8 @@ OpenQP geometry and reaction-path jobs are currently rejected in preflight
 because their force backend is not connected to these optimizers; supported
 QM/MM workflows remain energy, MD, and NAMD.
 
-After locating a transition state, trace either native IRC branch explicitly:
+After locating a transition state, trace each native IRC branch; the forward
+branch is the default direction, so only the backward run names it:
 
 ```text
 dft/pbe0/def2-svp irc(S0,hessian=analytical)
