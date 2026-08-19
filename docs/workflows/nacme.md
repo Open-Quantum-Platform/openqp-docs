@@ -5,8 +5,7 @@ NACME calculations use two geometries and an MRSF-TDDFT response calculation.
 `.oqp`:
 
 ```text
-mrsf(nstate=10)/bhhlyp/6-31g
-nacme(S0,S1)
+mrsf(nstate=10)/bhhlyp/6-31g nacme(S0,S1)
 geom="h2o.xyz"
 geom2="h2o_previous.xyz"
 ```

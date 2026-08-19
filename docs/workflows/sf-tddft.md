@@ -15,8 +15,7 @@ separately with `job.workflow.*` only when you need a non-energy workflow.
     State-specific `.oqp` input must therefore use `root=N`, for example:
 
     ```text
-    sf(nstate=3)/bhhlyp/6-31g*
-    grad(root=1)
+    sf(nstate=3)/bhhlyp/6-31g* grad(root=1)
     geom="h2o.xyz"
     ```
 
@@ -29,7 +28,6 @@ separately with `job.workflow.*` only when you need a non-energy workflow.
 
 ```text
 sf(nstate=3)/bhhlyp/6-31g*
-energy
 geom="h2o.xyz"
 ```
 
@@ -76,8 +74,7 @@ ordinary TDDFT excited state.
 `.oqp`:
 
 ```text
-sf(nstate=3)/bhhlyp/6-31g*
-grad(root=3)
+sf/bhhlyp/6-31g* grad(root=3)
 geom="h2o.xyz"
 ```
 
@@ -124,7 +121,8 @@ The same-stem `.inp` file is retained for legacy use.
 
 - SF-TDDFT currently uses an ROHF high-spin reference in the documented
   production path.
-- `[tdhf] nstate` must include the highest spin-flip state requested by a
-  gradient or follow-up workflow.
+- In sectioned `.inp` input, `[tdhf] nstate` must include the highest spin-flip
+  state requested by a gradient or follow-up workflow; `.oqp` input widens the
+  root count from `root=N` automatically.
 - For the mixed-reference correction and OpenQP's main multistate workflow, use
   [MRSF-TDDFT](mrsf-tddft.md).

@@ -7,9 +7,7 @@ Request NMR shielding with the `nmr` modifier.
 `.oqp`:
 
 ```text
-hf/sto-3g
-energy
-nmr(gauge=cgo)
+hf/sto-3g nmr(gauge=cgo)
 geom="h2o.xyz"
 ```
 
@@ -68,10 +66,7 @@ workflow page.
 `.oqp`:
 
 ```text
-dft/bhhlyp/6-31g*
-hess(S0,type=analytical)
-ir
-raman
+dft/bhhlyp/6-31g* hess(S0,type=analytical) ir raman
 geom="h2o.xyz"
 ```
 

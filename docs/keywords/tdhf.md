@@ -21,7 +21,6 @@ recent overview articles.
 
 ```text
 mrsf(nstate=5)/bhhlyp/6-31g*
-energy
 geom="h2o.xyz"
 ```
 

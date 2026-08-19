@@ -66,10 +66,7 @@ SCF and Dyson Molden results:
 `.oqp` Hessian output with MO data:
 
 ```text
-dft/bhhlyp/6-31g*
-guess(save_mol=true)
-scf(save_molden=true)
-hess(S0,type=analytical,clean=true)
+dft/bhhlyp/6-31g* hess(S0,type=analytical,clean=true) guess(save_mol=true)
 geom="h2o.xyz"
 ```
 

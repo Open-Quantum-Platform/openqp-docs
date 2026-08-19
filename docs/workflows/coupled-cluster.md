@@ -21,9 +21,7 @@ Coupled cluster is currently an energy-only post-SCF workflow:
 ### `.oqp`
 
 ```text
-ccsd_t/6-31g
-energy
-cc(nfzc=1)
+ccsd_t/6-31g cc(nfzc=1)
 geom="h2o.xyz"
 ```
 
@@ -35,9 +33,7 @@ The `reference` route option accepts `rhf`, `rohf`, or `uhf` and lowers to
 `[scf] type`. It is separate from the `[cc]` solver section:
 
 ```text
-ccsd_t(reference=uhf)/sto-3g
-mult=3
-energy
+ccsd_t(reference=uhf)/sto-3g mult=3
 geom="ch2.xyz"
 ```
 

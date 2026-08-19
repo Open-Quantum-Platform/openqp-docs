@@ -19,9 +19,7 @@ ddPCM literature.
 `.oqp`:
 
 ```text
-hf/6-31g*
-energy
-pcm(epsilon=78.3553)
+hf/6-31g* pcm(epsilon=78.3553)
 geom="h2o.xyz"
 ```
 

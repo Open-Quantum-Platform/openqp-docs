@@ -10,11 +10,10 @@ DFT, while leaving it empty gives Hartree-Fock.
 
 ```text
 hf/6-31g*
-energy
 geom="h2o.xyz"
 ```
 
-`energy` is the default driver and may also be omitted.
+A single-point energy is the default task, so no `energy` keyword is needed; `hf/6-31g* energy` means the same thing.
 
 Python:
 
@@ -62,8 +61,7 @@ Python, the same choice is written as `job.workflow.gradient(state=0)`.
 `.oqp`:
 
 ```text
-dft/bhhlyp/6-31g*
-grad
+dft/bhhlyp/6-31g* grad
 geom="h2o.xyz"
 ```
 

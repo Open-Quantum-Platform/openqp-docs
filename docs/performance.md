@@ -7,9 +7,7 @@ dial.
 `.oqp`:
 
 ```text
-dft/pbe0/def2-svp
-perf=1
-energy
+dft/pbe0/def2-svp perf=1
 geom="h2o.xyz"
 ```
 
@@ -70,11 +68,7 @@ Precedence (low → high): control default → `perf` preset → explicit input 
 production speed but keep the full XC grid and a tight response on one job:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g*
-perf=2
-energy
-scf(xc_c2f=off)
-tdhf(resp_cutoff=5e-11)
+mrsf(nstate=3)/bhhlyp/6-31g* perf=2 scf(xc_c2f=off) tdhf(resp_cutoff=5e-11)
 geom="h2o.xyz"
 ```
 

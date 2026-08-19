@@ -9,8 +9,7 @@ legacy `.inp` equivalents.
 A compact `.oqp` file describes the same calculation in one readable line:
 
 ```text
-mrsf/bhhlyp/6-31g*
-opt
+mrsf/bhhlyp/6-31g* opt
 geom="h2o.xyz"
 ```
 
