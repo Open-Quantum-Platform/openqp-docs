@@ -1,8 +1,8 @@
-# OpenQP Studio — Design Proposal
+# OQP Studio — Design Proposal
 
 Status: draft proposal (2026-08)
 
-This document proposes **OpenQP Studio**, a single cross-platform
+This document proposes **OQP Studio**, a single cross-platform
 (Windows / macOS / Linux) desktop application that unifies the currently
 separate OpenQP graphical tools — OpenQP Web, the Input Generator, and
 OpenqpView — and adds the missing pieces: molecule building, public-database
@@ -51,7 +51,7 @@ define what "beautiful" means for this proposal).
 **Web-technology frontend + Python backend + lightweight desktop shell.**
 
 ```
-┌────────────────────────────── OpenQP Studio ─────────────────────────────┐
+┌────────────────────────────── OQP Studio ─────────────────────────────┐
 │  Desktop shell: Tauri 2 (preferred) or Electron                          │
 │  ┌──────────────────────────┐      ┌───────────────────────────────────┐ │
 │  │ Frontend (TypeScript)    │ HTTP │ Local backend (Python, FastAPI)   │ │
@@ -221,8 +221,8 @@ contributors.
 ## 6. Immediate next steps
 
 1. Approve the stack (Tauri + TypeScript/Mol* frontend + FastAPI/pyoqp
-   backend) and the name *OpenQP Studio*.
-2. Create the `open-quantum-platform/openqp-studio` monorepo
+   backend) and the name *OQP Studio*.
+2. Create the `open-quantum-platform/oqp-studio` monorepo
    (`frontend/`, `backend/`, `shell/`, shared `parsers/` extracted from
    OpenqpView).
 3. Build the Phase-0 MVP against the current OpenQP release, with the WSL
