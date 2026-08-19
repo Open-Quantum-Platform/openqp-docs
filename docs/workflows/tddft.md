@@ -18,7 +18,6 @@ type separately with `job.workflow.*` only when you need a non-energy workflow.
 
 ```text
 tddft(nstate=3)/b3lyp5/6-31g*
-energy
 geom="h2o.xyz"
 ```
 
@@ -68,8 +67,7 @@ In ordinary TDHF/TDDFT, `S1` means the first excited state.
 `.oqp`:
 
 ```text
-tddft(nstate=3)/b3lyp5/6-31g*
-grad(S3)
+tddft/b3lyp5/6-31g* grad(S3)
 geom="h2o.xyz"
 ```
 

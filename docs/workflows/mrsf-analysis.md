@@ -17,7 +17,6 @@ Run the underlying MRSF energy calculation first:
 
 ```text
 mrsf(nstate=4)/bhhlyp/6-31g*
-energy
 geom="formaldehyde.xyz"
 ```
 

@@ -34,8 +34,7 @@ Gas-phase FSSH on MRSF-TDDFT states:
 `.oqp`:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-namd(S1)
+mrsf(nstate=5)/bhhlyp/6-31g* namd(S1)
 geom="molecule.xyz"
 ```
 

@@ -18,20 +18,17 @@ See the [method reference](../references.md#baeka-multistate-meci).
 The same public command covers two, three, and more states:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-meci(S0,S1,algorithm=baeka)
+mrsf(nstate=5)/bhhlyp/6-31g* meci(S0,S1,algorithm=baeka)
 geom="guess.xyz"
 ```
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-meci(S0,S1,S2,algorithm=baeka)
+mrsf(nstate=5)/bhhlyp/6-31g* meci(S0,S1,S2)
 geom="guess.xyz"
 ```
 
 ```text
-mrsf(nstate=6)/bhhlyp/6-31g*
-meci(S0,S1,S2,S3,algorithm=baeka)
+mrsf(nstate=6)/bhhlyp/6-31g* meci(S0,S1,S2,S3)
 geom="guess.xyz"
 ```
 
@@ -47,14 +44,18 @@ spin manifold. OpenQP normalizes their order. Thus
 intervening root or mixing singlets and triplets is rejected. A crossing
 between different spin manifolds is an MECP problem.
 
-A three-state production-style route with every public BaekA control explicit
-is:
+A three-state production-style route is:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g*
-meci(S0,S1,S2,algorithm=baeka,sigma=1.0,alpha=0.02,delta_beta=0.025,beta_schedule="10,10,25,25,100,100,1000,1000,3000",gap=1e-4,maxit=100,energy_shift=1e-6,rmsd_grad=1e-4,coordsys=auto,trust=0.15,trust_max=0.5)
+mrsf(nstate=5)/bhhlyp/6-31g* meci(S0,S1,S2,maxit=100,trust=0.15)
 geom="guess.xyz"
 ```
+
+Three or more states select BaekA by themselves, and the public BaekA controls
+default to `sigma=1.0`, `alpha=0.02`, `delta_beta=0.025`,
+`beta_schedule="10,10,25,25,100,100,1000,1000,3000"`, `gap=1e-4`,
+`energy_shift=1e-6`, `rmsd_grad=1e-4`, `coordsys=auto`, and `trust_max=0.5`.
+Write one only to change it, for example `meci(S0,S1,S2,gap=2e-4)`.
 
 The concise route selects the native OpenQP optimizer automatically. Do not add
 `lib=oqp`. MRSF also supplies its internal high-spin working reference

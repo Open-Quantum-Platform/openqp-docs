@@ -6,8 +6,7 @@
     you want:
 
     ```text
-    mrsf/bhhlyp/6-31g*
-    opt
+    mrsf/bhhlyp/6-31g* opt
     geom="h2o.xyz"
     ```
 
@@ -16,9 +15,7 @@
     internal MRSF reference automatically. Add controls only when needed:
 
     ```text
-    mrsf(nstate=3)/bhhlyp/6-31g*
-    opt(S1,maxit=100)
-    scf(conv=1e-8)
+    mrsf(nstate=3)/bhhlyp/6-31g* opt(S1,maxit=100) scf(conv=1e-08)
     geom="h2o.xyz"
     ```
 
@@ -41,7 +38,6 @@ The concise form defaults to the singlet manifold:
 
 ```text
 mrsf(nstate=3)/bhhlyp/6-31g*
-energy
 geom="h2o.xyz"
 ```
 
@@ -49,8 +45,7 @@ This calculates `S0`--`S2`. Select another physical manifold through the
 driver, not through the route:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g*
-energy(T0)
+mrsf(nstate=3)/bhhlyp/6-31g* energy(T0)
 geom="h2o.xyz"
 ```
 
@@ -61,7 +56,6 @@ For MRSF-TDHF, use the explicit basis-only route:
 
 ```text
 mrsf-tdhf(nstate=3)/6-31g*
-energy
 geom="h2o.xyz"
 ```
 
@@ -115,8 +109,7 @@ In canonical input, select the physical state directly; an omitted state
 defaults to `S0`:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g*
-grad(S2)
+mrsf/bhhlyp/6-31g* grad(S2)
 geom="h2o.xyz"
 ```
 
