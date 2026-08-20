@@ -75,7 +75,8 @@ that still use Microsoft's linker, Windows SDK and C runtime, so install
 **Visual Studio Build Tools** with the "Desktop development with C++" workload
 before oneAPI — Intel's compilers will not link without it.
 
-Load the oneAPI environment, then build with Ninja:
+Load the oneAPI environment, then build with Ninja. In **Command Prompt**
+(`cmd.exe`):
 
 ```bat
 "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
@@ -86,6 +87,25 @@ set FC=ifx
 set CMAKE_GENERATOR=Ninja
 pip install .
 ```
+
+PowerShell is the default shell on current Windows and needs different
+commands: `setvars.bat` cannot modify a PowerShell parent environment, and
+`set NAME=value` is not how PowerShell assigns one. Use the vendored
+`setvars.ps1`, or run the block above in `cmd.exe`:
+
+```powershell
+& "C:\Program Files (x86)\Intel\oneAPI\setvars.ps1"
+pip install ninja
+$env:CC = "icx"
+$env:CXX = "icx"
+$env:FC = "ifx"
+$env:CMAKE_GENERATOR = "Ninja"
+pip install .
+```
+
+Getting this wrong is quiet rather than loud: `pip install .` still runs, but
+without the compilers or the generator, and lands on one of the configurations
+below.
 
 `CMAKE_GENERATOR=Ninja` matters: CMake otherwise picks Visual Studio when it is
 installed, and that is a multi-configuration generator, which is rejected (see
