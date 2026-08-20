@@ -58,7 +58,8 @@ pip install openqp
 
 pip installs Intel MKL alongside the wheel, so nothing else is needed. The
 wheels are built with Intel oneAPI (`ifx`/`icx`) against MKL ILP64, and are
-published for CPython 3.9 through 3.14.
+published for CPython 3.9 through 3.14 on **x86-64** (`win_amd64`). There is no
+native Windows-on-ARM wheel, and the source route below targets x86-64 as well.
 
 MKL is linked but deliberately not carried inside the wheel: a single MKL
 library exceeds PyPI's per-file size limit, so it is declared as a runtime
@@ -69,8 +70,12 @@ the wheels are compiled against.
 ### Building from source on Windows
 
 A source build needs the Intel oneAPI compilers; the GNU toolchain used on
-Linux and macOS has no Windows equivalent here. Load the oneAPI environment,
-then build with Ninja:
+Linux and macOS has no Windows equivalent here. `icx` and `ifx` are front ends
+that still use Microsoft's linker, Windows SDK and C runtime, so install
+**Visual Studio Build Tools** with the "Desktop development with C++" workload
+before oneAPI — Intel's compilers will not link without it.
+
+Load the oneAPI environment, then build with Ninja:
 
 ```bat
 "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
@@ -136,8 +141,7 @@ cmake -B build -G Ninja \
   -DCMAKE_Fortran_COMPILER=/opt/homebrew/bin/gfortran-15 \
   -DCMAKE_INSTALL_PREFIX=. \
   -DENABLE_OPENMP=ON \
-  -DLINALG_LIB=auto \
-  -DLINALG_LIB_INT64=OFF
+  -DLINALG_LIB=auto
 ninja -C build install
 cd pyoqp
 pip install .
@@ -154,7 +158,6 @@ machine.
 | `-DENABLE_OPENMP=ON` | `OFF` in CMake, `ON` for Python package builds | Enable OpenMP parallel sections. |
 | `-DUSE_LIBINT=ON` | `ON` in CMake, `OFF` for Python package builds | Use Libint for ERIs instead of the native Rys path. |
 | `-DLINALG_LIB=<vendor>` | `auto` | Select BLAS/LAPACK provider. |
-| `-DLINALG_LIB_INT64=ON` | `ON` | Use ILP64 BLAS/LAPACK. |
 | `-DENABLE_OPENTRAH=OFF` | `ON` in CMake, `OFF` for Python package builds | Skip the external OpenTrustRegion library and use native TRAH. |
 | `-DOQP_REUSE_EXTERNALS=OFF` | `ON` | Disable reusable bundled-external build caches. |
 
@@ -162,9 +165,12 @@ For the complete list, including `ENABLE_DDX`, `BUILD_SHARED_LIBS`,
 `ENABLE_PYTHON`, sanitizer flags, and external dependency cache paths, see
 [Build Options](build-options.md).
 
-ILP64 BLAS/LAPACK is the normal build mode. LP64
-(`-DLINALG_LIB_INT64=OFF`) is supported only on macOS, mainly for a consistent
-native Accelerate build.
+ILP64 BLAS/LAPACK is the only build mode. LP64 support was removed: OpenQP uses
+one 8-byte integer model on every platform, with macOS reaching it through
+Accelerate's `$NEWLAPACK$ILP64` interface (macOS 13.3 or newer). The former
+`-DLINALG_LIB_INT64` option is gone, and passing `-DLINALG_LIB_INT64=OFF` now
+fails the configure on purpose, so that a stale cache or an old build script
+cannot silently produce a mixed-width build.
 
 ## Runtime Files
 
