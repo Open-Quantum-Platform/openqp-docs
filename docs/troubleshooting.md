@@ -15,10 +15,13 @@ OpenQP runtime tree.
 
 ## BLAS/LAPACK Integer ABI
 
-The default build expects ILP64 BLAS/LAPACK. LP64
-(`-DLINALG_LIB_INT64=OFF`) is supported only on macOS, mainly for native
-Accelerate builds. On Linux, use ILP64 OpenBLAS, MKL, or the configured bundled
-Netlib path.
+OpenQP is ILP64-only: one 8-byte BLAS/LAPACK integer model on every platform.
+LP64 support was removed, and `-DLINALG_LIB_INT64=OFF` now fails the configure
+deliberately, so a stale CMake cache or an old script cannot produce a
+mixed-width build. Clear the cache and drop the flag.
+
+Use ILP64 OpenBLAS or MKL on Linux, MKL ILP64 on Windows, and Accelerate's
+`$NEWLAPACK$ILP64` interface on macOS 13.3 or newer.
 
 ## SCF Does Not Converge
 

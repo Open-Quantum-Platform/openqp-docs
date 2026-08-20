@@ -65,7 +65,6 @@ see [Python Package Build Defaults](#python-package-build-defaults).
 | Option | Default | Values | Use |
 | --- | --- | --- | --- |
 | `LINALG_LIB` | `auto` | `auto`, `netlib`, `FLAME`, `Intel10_64ilp`, `Intel10_64ilp_seq`, `Intel10_64_dyn`, `OpenBLAS` | Select the BLAS/LAPACK provider. |
-| `LINALG_LIB_INT64` | `ON` | `ON`, `OFF` | Use the 64-bit BLAS/LAPACK integer interface when `ON`. |
 | `CMAKE_FIND_ROOT_PATH_MODE_PACKAGE` | CMake default | `BOTH`, `ONLY`, `NEVER` | Useful for wheel/cross builds where CMake must search both host and package roots. |
 
 `LINALG_LIB=auto` first tries a system BLAS/LAPACK. If nothing suitable is
@@ -73,20 +72,13 @@ found, OpenQP falls back to the bundled NetLib build. `LINALG_LIB=none` is
 listed internally but rejected because OpenQP and OpenTrustRegion require
 BLAS/LAPACK.
 
-The default build expects ILP64 BLAS/LAPACK:
+Every build is ILP64 -- one 8-byte BLAS/LAPACK integer model on every platform,
+with no option to change it. `LINALG_LIB_INT64` was removed, and passing
+`-DLINALG_LIB_INT64=OFF` fails the configure on purpose so that a stale cache
+or an old build script cannot silently produce a mixed-width build.
 
-```bash
-cmake -B build -G Ninja -DLINALG_LIB_INT64=ON
-```
-
-LP64 builds:
-
-```bash
-cmake -B build -G Ninja -DLINALG_LIB_INT64=OFF
-```
-
-are supported only on macOS, primarily for native Accelerate builds. On Linux,
-use ILP64 OpenBLAS, MKL, or the bundled NetLib fallback.
+Use ILP64 OpenBLAS or MKL on Linux, MKL ILP64 on Windows, and Accelerate's
+`$NEWLAPACK$ILP64` interface on macOS 13.3 or newer.
 
 ## External Dependency Cache
 
@@ -153,15 +145,14 @@ The top-level `pip install .` build uses these CMake overrides from
 | `USE_LIBINT` | `OFF` | Prefer the native Rys path for package builds. |
 | `ENABLE_OPENMP` | `ON` | Enable parallel production kernels by default. |
 | `ENABLE_OPENTRAH` | `OFF` | Avoid the external OpenTrustRegion dependency in ordinary package builds. |
-| `LINALG_LIB_INT64` | `ON` | Build against ILP64 BLAS/LAPACK by default. |
 | `CMAKE_INSTALL_PREFIX` | `.` | Keep native runtime files package-local. |
 
 Platform wheel builds add a few more environment-level settings:
 
 | Platform | Wheel build settings |
 | --- | --- |
-| Linux | `LINALG_LIB=auto`, `LINALG_LIB_INT64=ON`, `CMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH` |
-| macOS | Homebrew GCC compilers, `LINALG_LIB=auto`, `LINALG_LIB_INT64=OFF` |
+| Linux | `LINALG_LIB=auto`, `CMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH` |
+| macOS | Homebrew GCC compilers, `LINALG_LIB=auto` |
 
 ## Common Recipes
 
@@ -173,7 +164,6 @@ cmake -B build -G Ninja \
   -DCMAKE_INSTALL_PREFIX=. \
   -DUSE_LIBINT=OFF \
   -DENABLE_OPENMP=ON \
-  -DLINALG_LIB_INT64=ON
 ninja -C build install
 ```
 
@@ -187,7 +177,6 @@ cmake -B build -G Ninja \
   -DCMAKE_INSTALL_PREFIX=. \
   -DENABLE_OPENMP=ON \
   -DLINALG_LIB=auto \
-  -DLINALG_LIB_INT64=OFF
 ninja -C build install
 ```
 
