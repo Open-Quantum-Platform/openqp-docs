@@ -69,12 +69,22 @@ the wheels are compiled against.
 ### Building from source on Windows
 
 A source build needs the Intel oneAPI compilers; the GNU toolchain used on
-Linux and macOS has no Windows equivalent here. Load the oneAPI environment
-first (`setvars.bat`), then:
+Linux and macOS has no Windows equivalent here. Load the oneAPI environment,
+then build with Ninja:
 
 ```bat
-pip install . --config-settings=cmake.define.LINALG_LIB=Intel10_64ilp
+"C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+pip install ninja
+set CC=icx
+set CXX=icx
+set FC=ifx
+set CMAKE_GENERATOR=Ninja
+pip install .
 ```
+
+`CMAKE_GENERATOR=Ninja` matters: CMake otherwise picks Visual Studio when it is
+installed, and that is a multi-configuration generator, which is rejected (see
+below). `LINALG_LIB` needs no value — `auto` resolves to MKL ILP64 on Windows.
 
 Three configurations are rejected during CMake configuration rather than
 failing later:
@@ -89,9 +99,11 @@ failing later:
 - **`-DENABLE_DDX=ON`.** The ddX build models a single library artifact, while
   Windows needs the import library and the DLL modelled separately.
 
-`LINALG_LIB=auto` resolves to MKL ILP64 on Windows. OpenQP is ILP64-only — one
-8-byte integer model everywhere — so a build that cannot obtain an ILP64
-interface fails rather than silently linking a 4-byte one.
+OpenQP is ILP64-only — one 8-byte integer model on every platform — so a build
+that cannot obtain an ILP64 interface fails rather than silently linking a
+4-byte one. On Windows that means MKL's ILP64 interface specifically; MKL's
+single dynamic library (`mkl_rt`) is not used, because it selects its interface
+layer at run time and defaults to LP64.
 
 ## Source Build
 
