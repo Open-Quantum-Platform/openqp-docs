@@ -23,7 +23,8 @@ files, and data files together. Normal command-line use does not require
 ## Requirements
 
 - Python 3.9 or newer
-- GCC, G++, and Gfortran
+- GCC, G++, and Gfortran on Linux and macOS; Intel oneAPI (`ifx`, `icx`) on
+  Windows, which has no GNU Fortran toolchain
 - CMake 3.25 or newer
 - BLAS/LAPACK
 - `cffi`, NumPy, and SciPy
@@ -46,6 +47,51 @@ Plain `pip install openqp` does not install this compatibility backend.
 See the [Build Options](build-options.md) reference for the full CMake option
 table, defaults, BLAS/LAPACK choices, external dependency cache behavior, and
 package-build overrides.
+
+## Windows
+
+`pip install openqp` works the same as elsewhere:
+
+```bat
+pip install openqp
+```
+
+pip installs Intel MKL alongside the wheel, so nothing else is needed. The
+wheels are built with Intel oneAPI (`ifx`/`icx`) against MKL ILP64, and are
+published for CPython 3.9 through 3.14.
+
+MKL is linked but deliberately not carried inside the wheel: a single MKL
+library exceeds PyPI's per-file size limit, so it is declared as a runtime
+dependency instead. This is why installation pulls in `mkl` and
+`intel-openmp`, and why the `mkl` requirement is pinned to the oneAPI series
+the wheels are compiled against.
+
+### Building from source on Windows
+
+A source build needs the Intel oneAPI compilers; the GNU toolchain used on
+Linux and macOS has no Windows equivalent here. Load the oneAPI environment
+first (`setvars.bat`), then:
+
+```bat
+pip install . --config-settings=cmake.define.LINALG_LIB=Intel10_64ilp
+```
+
+Three configurations are rejected during CMake configuration rather than
+failing later:
+
+- **Static builds** (`-DBUILD_SHARED_LIBS=OFF`). The bundled DFT-D4 sources
+  export their API with `DLLEXPORT`, which a static link cannot satisfy, and
+  static library discovery here looks for Unix `.a` names. Windows is built
+  shared.
+- **Multi-configuration generators** (Visual Studio). The DFT-D4 DLLs are
+  resolved from the top of each subproject build directory, without a
+  per-configuration subdirectory. Configure with `-G Ninja`.
+- **`-DENABLE_DDX=ON`.** The ddX build models a single library artifact, while
+  Windows needs the import library and the DLL modelled separately.
+
+`LINALG_LIB=auto` resolves to MKL ILP64 on Windows. OpenQP is ILP64-only — one
+8-byte integer model everywhere — so a build that cannot obtain an ILP64
+interface fails rather than silently linking a 4-byte one.
 
 ## Source Build
 
