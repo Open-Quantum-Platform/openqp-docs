@@ -452,7 +452,6 @@ a keyword-only call:
 ```text
 scf(conv=1e-8,maxit=100)
 cc(nfzc=1,conv=1e-7,maxit=60,ndiis=8)
-oqp(coordsys=tric,trust=0.2)
 properties(scf_prop=mulliken)
 tdhf(nvdav=30,zvconv=1e-7)
 ```
@@ -477,8 +476,9 @@ than repeating it through `input(soc_2e=...)`.
 
 When a section name is also a primary driver, put its options in that driver.
 For example, write `opt(S0,maxit=100,coordsys=tric,trust=0.2)`, not
-`opt(S0) optimize(maxit=100)`. An exact `oqp(...)` call remains available for
-advanced native controls, but do not specify the same control in both places.
+`opt(S0) optimize(maxit=100)`. Older `oqp(...)` calls are accepted only as a
+compatibility form and are rewritten into the primary driver when OpenQP
+renders canonical input; do not write them in new `.oqp` files.
 
 ## Physical States and Reserved Internal Keys
 
