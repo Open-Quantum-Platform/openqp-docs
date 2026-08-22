@@ -559,7 +559,9 @@ link-atom energy gradient is redistributed onto its two real host atoms by the
 chain rule of this scaled position, so no extra degrees of freedom are added.
 
 Across a covalent boundary the MM frontier-host charge is treated per
-[`frontier_scheme`](#frontier_scheme) (default `none` = full-field ESPF).
+[`frontier_scheme`](#frontier_scheme) (default `none` = full-field ESPF), and
+the ESPF grid switching width is selected automatically — see
+[ESPF grid switching](#espf-grid-switching) below.
 
 !!! note "Covalent boundaries are not supported in nonadiabatic dynamics"
     Automatic link-atom capping applies to the single-point and ground-state
@@ -568,6 +570,60 @@ Across a covalent boundary the MM frontier-host charge is treated per
     from `qm_atoms` only, so it supports **whole-molecule** QM regions and raises
     on a covalent cut; use the ground-state QM/MM MD path for covalent-boundary
     QM/MM.
+
+## ESPF grid switching
+
+The ESPF embedding gradient carries a small finite-difference residual (the
+grid-derivative floor, ~1e-3 a.u.). At a **covalent** boundary that residual
+does not spread over the QM region: it concentrates as an over-shoot on the MM
+host atom, and it is governed by the smooth-switching width `ESPF_SWSCALE`.
+
+The shipped whole-molecule value, `1.8`, over-smooths at a covalent boundary,
+and the tighter `1.5` is about 20% worse without one — neither is a safe
+global default. OpenQP therefore selects it **per system**, from whether the
+QM/MM partition actually cut a bond:
+
+| QM/MM boundary | `ESPF_SWSCALE` |
+| --- | --- |
+| covalent (a bond is cut; link atoms present) | **1.5**, selected automatically |
+| whole-molecule (no bond cut) | `1.8` |
+
+The choice is made by the QM/MM driver when it builds the partition, because
+that is where it is known whether a bond was cut: the native ESPF gradient is
+handed a grid and a density and cannot tell. A covalent-boundary run reports
+the selection:
+
+```
+[QM/MM] 1 covalent boundary bond(s); frontier-charge embedding = ...
+[QM/MM] covalent boundary detected; ESPF_SWSCALE=1.5 (whole-molecule default
+        is 1.8). Set ESPF_SWSCALE to override.
+```
+
+Setting `ESPF_SWSCALE` yourself always wins and the automatic choice stands
+down entirely, so a parameter sweep or a reproduction is never silently
+overridden:
+
+```bash
+export ESPF_SWSCALE=1.8      # force the whole-molecule width at a boundary
+```
+
+### ESPF environment variables
+
+These are runtime **environment variables**, not `[qmmm]` keywords, read by the
+native ESPF module:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `ESPF_SMOOTH` | on | enable smooth grid switching at all |
+| `ESPF_SWSCALE` | selected (1.5 / 1.8) | switching width scale, see above |
+| `ESPF_SWDELTA` | 0.7 | switching offset |
+| `ESPF_WSCALE` | 1.0 | grid weight scale; keep at 1.0 |
+| `ESPF_WDERIV` | on | include the grid weight-derivative gradient term |
+
+!!! note "Applies to every QM/MM path"
+    Grid switching is a property of baseline ESPF, so it affects all QM/MM
+    including [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md). It is
+    independent of [`frontier_scheme`](#frontier_scheme).
 
 ## Notes
 
