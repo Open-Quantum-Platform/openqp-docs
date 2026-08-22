@@ -188,12 +188,20 @@ irrep of the detected abelian subgroup; the run reports which subgroup was
 detected and lists the available names when one does not match.
 
 Determinants are classified by the direct product of the irreps of their
-occupied active orbitals, and a root is accepted for the requested irrep when
-at least `irrep_min_purity` of its weight sits there. The default of `0.5` is
-the weakest threshold that still identifies a dominant irrep; raise it to
-demand a cleaner symmetry eigenstate. Values outside `0 < value <= 1` are
-rejected rather than clamped -- below zero the filter would accept anything,
-above one it would accept nothing, and `NaN` would disable the test silently.
+occupied active orbitals, which gives each root a weight per irrep. A root is
+then accepted on two conditions, in this order: the irrep holding the most of
+that weight -- the root's dominant irrep -- must be the one requested, and it
+must hold at least `irrep_min_purity` of the total. Lowering the threshold
+therefore never admits a root whose dominant irrep is some other one; it only
+relaxes how dominant the requested irrep has to be. Determinants that could not
+be classified stay in the total, so they lower the purity rather than quietly
+vanishing from it.
+
+The default of `0.5` is the weakest threshold that still identifies a dominant
+irrep; raise it to demand a cleaner symmetry eigenstate. Values outside
+`0 < value <= 1` are rejected rather than clamped -- below zero the filter would
+accept anything, above one it would accept nothing, and `NaN` would disable the
+test silently.
 
 The request is refused, rather than partly applied, in three cases:
 
