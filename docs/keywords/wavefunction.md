@@ -122,6 +122,8 @@ controls that CAS methods keep in separate sections.
 | `eig_tol` | `1.0e-10` | Eigenpair residual tolerance. |
 | `davidson_maxiter`, `davidson_subspace` | `100`, `0` | Davidson iteration and subspace limits; zero subspace selects the automatic size. |
 | `target_spin` | `any` | `any`, a multiplicity name such as `singlet`, or an integer multiplicity. |
+| `irrep` | `any` | Return the lowest root of this spatial irrep instead of the lowest root overall. See [Selecting a root by spatial symmetry](#selecting-a-root-by-spatial-symmetry). |
+| `irrep_min_purity` | `0.5` | Fraction of a root's weight that must sit in its dominant irrep before the root is accepted as belonging to it. |
 | `print_ci_vectors`, `save_ci_vectors`, `save_rdm` | `false` | Optional CI diagnostics and artifacts. |
 
 The only integral backend is `integral_backend=native`. Use
@@ -157,10 +159,71 @@ currently require a contiguous core/active partition.
 | `eig_tol` | `1.0e-10` | Eigenpair residual tolerance. |
 | `davidson_maxiter`, `davidson_subspace` | `100`, `0` | Davidson limits. |
 | `target_spin` | `any` | Requested spin multiplicity. |
+| `irrep` | `any` | Return the lowest root of this spatial irrep instead of the lowest root overall. See [Selecting a root by spatial symmetry](#selecting-a-root-by-spatial-symmetry). |
+| `irrep_min_purity` | `0.5` | Fraction of a root's weight that must sit in its dominant irrep before the root is accepted as belonging to it. |
 | `root_tracking` | `energy` | Root ordering/tracking policy. |
 | `print_ci_vectors`, `save_ci_vectors`, `save_rdm` | `false` | Optional diagnostics and artifacts. |
 
 `nroot` must cover every CASSCF root, state-average target, and PT2 target.
+
+### Selecting a root by spatial symmetry
+
+`irrep` asks a correlated method for a state by its spatial symmetry rather
+than by its position in the energy ordering. It is the only way to do so: the
+solvers otherwise return the lowest roots, and an excited state of a given
+symmetry can sit anywhere in that list.
+
+```
+[ci]
+nroot=1
+irrep=b1
+
+[symmetry]
+enabled=true
+```
+
+`[symmetry] enabled=true` is required, because the request is resolved against
+the per-MO irrep labels that symmetry detection produces. The name must be an
+irrep of the detected abelian subgroup; the run reports which subgroup was
+detected and lists the available names when one does not match.
+
+Determinants are classified by the direct product of the irreps of their
+occupied active orbitals, which gives each root a weight per irrep. A root is
+then accepted on two conditions, in this order: the irrep holding the most of
+that weight -- the root's dominant irrep -- must be the one requested, and it
+must hold at least `irrep_min_purity` of the total. Lowering the threshold
+therefore never admits a root whose dominant irrep is some other one; it only
+relaxes how dominant the requested irrep has to be. Determinants that could not
+be classified stay in the total, so they lower the purity rather than quietly
+vanishing from it.
+
+The default of `0.5` is the weakest threshold that still identifies a dominant
+irrep; raise it to demand a cleaner symmetry eigenstate. Values outside
+`0 < value <= 1` are rejected rather than clamped -- below zero the filter would
+accept anything, above one it would accept nothing, and `NaN` would disable the
+test silently.
+
+The request is refused, rather than partly applied, in three cases:
+
+* **CASSCF and SA-CASSCF.** The orbital optimizer does not follow a
+  symmetry-selected root across macroiterations, so the request would be
+  honoured by the final CI and ignored by everything that produced the
+  orbitals. Use `method=casci`.
+* **An unclassified active orbital.** Symmetry detection leaves an orbital it
+  cannot assign -- a near-degenerate pair rotated by the SCF, for instance --
+  unlabelled. Such an orbital would be coded as totally symmetric, so every
+  determinant containing it would be *mislabelled* rather than declined.
+* **A solve the native engine declines.** The Python fallback driver has no
+  irrep classification, and the two paths disagreeing about which root a run
+  returns is worse than not offering the feature on the fallback.
+
+Runnable examples:
+[`H2O_CASCI_IRREP_B1`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/WF_methods/H2O_CASCI_IRREP_B1.inp)
+for `[ci] irrep`, and
+[`H2_FCI_IRREP_B1U`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/WF_methods/H2_FCI_IRREP_B1U.inp)
+for `[fci] irrep` combined with `target_spin`. Both predict their reference
+from the full spectrum of the same deck, so a filter that silently did nothing
+would be caught.
 
 ## `[casscf]`
 
