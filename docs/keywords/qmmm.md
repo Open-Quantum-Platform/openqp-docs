@@ -620,10 +620,14 @@ native ESPF module:
 | `ESPF_WSCALE` | 1.0 | grid weight scale; keep at 1.0 |
 | `ESPF_WDERIV` | on | include the grid weight-derivative gradient term |
 
-!!! note "Applies to every QM/MM path"
-    Grid switching is a property of baseline ESPF, so it affects all QM/MM
-    including [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md). It is
-    independent of [`frontier_scheme`](#frontier_scheme).
+!!! note "Applies to every electrostatically embedded QM/MM path"
+    Grid switching is a property of baseline ESPF, so it affects every path
+    that runs [`embedding = electrostatic`](#embedding), including
+    [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md), and it is independent of
+    [`frontier_scheme`](#frontier_scheme). Under `embedding = mechanical`
+    there is no electrostatic coupling into the QM Hamiltonian and therefore
+    no ESPF grid at all, so none of these variables — including the automatic
+    `ESPF_SWSCALE` selection — has any effect.
 
 ## Notes
 
