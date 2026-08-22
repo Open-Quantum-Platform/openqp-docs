@@ -1,9 +1,11 @@
 # `[oqp]`
 
-The `[oqp]` section stores controls for the native OpenQP optimizer. Concise
-`.oqp` geometry drivers select this engine automatically and route their native
-options here; no `lib` selector is used. Traditional sectioned `.inp` files may
-still select it explicitly with `[optimize] lib=oqp`.
+The `[oqp]` section stores controls for the native OpenQP optimizer in
+traditional sectioned `.inp` input and the internal configuration assembled by
+the concise parser. In a concise `.oqp` file, write native geometry controls in
+the primary driver, for example `opt(coordsys=dlc,trust=0.1)`, never as a
+separate `oqp(...)` call. Traditional sectioned `.inp` files may still select
+the native engine explicitly with `[optimize] lib=oqp`.
 
 ## Keywords
 
