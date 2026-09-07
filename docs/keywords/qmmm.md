@@ -354,7 +354,10 @@ implementation (its `ERFMU` keyword); `0.7` Å corresponds to its default
 QM density, which otherwise lets a solvent hydrogen collapse onto a QM carbonyl
 oxygen through a polarisation runaway of the ESPF charges, after which the MRSF
 Z-vector equations diverge. Must be a positive number; `0` or unset means point
-charges.
+charges. In a periodic box the damping correction is summed over the minimum
+image inside the real-space cutoff (half the shortest box edge) only, so the
+width must be short-ranged on that scale: `w ≤ L_min / (9 √2)` (1.26 Å for a
+16 Å box); larger values are rejected with a message giving the bound.
 
 ### `nonbondedmethod`
 
