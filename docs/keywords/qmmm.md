@@ -200,8 +200,9 @@ explicit `forcefield_files` value. New QM/MM-MD decks should set
 | Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
 
 Zero-based indices of the atoms placed in the QM region, as individual indices
-and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. Give the indices in
-**ascending order**. This key is required by ground-state QM/MM MD and NAMD;
+and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. The selection is
+normalised to ascending (topology) order by every driver, so the order you
+write does not matter. This key is required by ground-state QM/MM MD and NAMD;
 single-point energy writes the equivalent selection after its PDB path in
 `[input] system`. Whole-molecule QM selections (e.g. a solute in a solvent box)
 are the common case. A selection that cuts a covalent bond is capped with a
@@ -344,7 +345,8 @@ Pauli wall. QM atoms are never modified. On its own this is a weak barrier; see
 | Default | unset (point charges) |
 | Used by | QM/MM MD and NAMD-QMMM (`electrostatic` embedding) |
 
-Represent the MM charges as Gaussians of this width in the QM/MM electrostatics.
+Represent the MM charges as Gaussians of this width in the QM/MM electrostatics
+(full-ESPF `embedding = electrostatic` only; other embeddings reject it).
 The QM-MM pair potential `1/r` becomes `erf(μr)/r` with `μ = 1/(√2 w)`,
 consistently in the energy, the QM and MM forces, the direct sum and the
 real-space part of the Ewald sum; the MM-MM interactions and the QM-image term
