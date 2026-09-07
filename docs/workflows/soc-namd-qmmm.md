@@ -81,12 +81,16 @@ never constrained. A periodic water box uses particle-mesh Ewald
 
 ### Scope and limitations
 
-SOC-NAMD-QMMM builds the QM molecule from [`[qmmm] qm_atoms`](../keywords/qmmm.md#qm_atoms)
-only, so **whole-molecule QM regions** are supported. Covalent QM/MM boundaries
-(hydrogen link atoms) in nonadiabatic dynamics are **not yet available** —
-single-point QM/MM and ground-state QM/MM MD do handle covalent boundaries (see
-[Link atoms](../keywords/qmmm.md#link-atoms)). Use a solvated chromophore in a
-periodic (PME) water box, with the whole chromophore in the QM region.
+Whole-molecule QM regions (a solvated chromophore in a periodic PME water box)
+are the common case. Covalent QM/MM boundaries (hydrogen link atoms) are
+supported in the nonadiabatic paths as well, provided the QM molecule is built
+from the PDB with `[input] system = file.pdb <1-based QM indices>` so the link
+hydrogens are appended (see [Link atoms](../keywords/qmmm.md#link-atoms));
+the driver rejects a QM molecule whose layout does not match `qm_atoms` plus one
+link hydrogen per cut bond. In the periodic branch the QM-image term is made
+self-consistent with the **ground-state** ESPF charges, which is exact for the
+ground state and an approximation for the excited states. The tight-binding
+(`method=dftb/xtb`) NAMD path supports non-periodic clusters only.
 
 ## How the driver is selected
 
@@ -208,8 +212,9 @@ Notes on the deck:
 - **Gap gate.** [`thrshe=0.1`](../keywords/md.md#thrshe) is the default for
   both same-spin and SOC dynamics and blocks large-gap transitions outside the
   intended local crossing region.
-- **QM region.** [`qm_atoms`](../keywords/qmmm.md#qm_atoms) must be a whole
-  molecule (see [Scope and limitations](#scope-and-limitations)).
+- **QM region.** [`qm_atoms`](../keywords/qmmm.md#qm_atoms) is normally a whole
+  molecule; a covalent cut needs the PDB-built QM molecule with link atoms (see
+  [Scope and limitations](#scope-and-limitations)).
 - **Periodicity.** [`cutoff=PME`](../keywords/qmmm.md#cutoff) selects the
   periodic ESPF-PME branch for a solvated box; use `NoCutoff` for an isolated
   cluster.

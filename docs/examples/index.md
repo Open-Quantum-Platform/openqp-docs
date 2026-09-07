@@ -88,6 +88,8 @@ run them directly.
 | --- | --- | --- |
 | `H2CO-water_BHHLYP-MRSF-NAMD-QMMM.oqp` | NAMD | MRSF-TDDFT Tully FSSH (internal conversion, `md(soc=false)`) with ESPF QM/MM: formaldehyde QM + 5 TIP3P waters, `NoCutoff` cluster. |
 | `H2CO-water_BHHLYP-SOC-NAMD-QMMM.oqp` | SOC-NAMD | Intersystem crossing on the spin-adiabatic manifold with ESPF QM/MM, using the same system. |
+| `ala-dipeptide_BHHLYP-MRSF-NAMD-QMMM-linkatom.inp` | NAMD | MRSF-TDDFT FSSH across a **covalent QM/MM boundary** (hydrogen link atom): alanine dipeptide, QM = the C-terminal amide, `NoCutoff`. |
+| `ala-box_BHHLYP-MRSF-NAMD-QMMM-PME.inp` | NAMD | The same boundary in a **periodic TIP3P box** (`cutoff=PME`, Ewald QM/MM electrostatics), exercising `ewald_tol`, `lj_switch`, `h_lj` and `mm_charge_width`. |
 | `ala-dipeptide_BHHLYP-QMMM-MD-RCD.oqp` | Ground-state MD | QM/MM MD across a **covalent boundary**: alanine dipeptide, QM = the C-terminal amide, hydrogen link-atom cap + `frontier_scheme=rcd`. |
 | `run.oqp` | Ground-state MD | Whole-molecule QM region: one water of a water dimer. |
 | `ala.oqp` | Single-point | QM/MM energy of the alanine amide. |
