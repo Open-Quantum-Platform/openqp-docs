@@ -93,7 +93,10 @@ FSSH only) the QM-image term is iterated to self-consistency with the relaxed
 ESPF charges of the **propagated state**, so the force integrated is the
 derivative of the reported energy of that state; each iteration is logged as
 `QM-image field, active-state iteration`, and after a surface hop the field
-is re-iterated for the new state before its force is integrated. The spin-adiabatic SOC-NAMD state is
+is re-iterated for the new state before its force is integrated. The relaxed
+charges inherit the Z-vector residual, so periodic MRSF dynamics should set
+`[tdhf] zvconv = 1e-8` (the input checker warns otherwise): the image loop
+then converges in two gradient evaluations per step instead of four or five. The spin-adiabatic SOC-NAMD state is
 a mixture of MCH states without per-iteration relaxed charges, so the SOC-NAMD
 drivers reject periodic boxes (`NotImplementedError`; use `cutoff=NoCutoff`).
 The tight-binding (`method=dftb/xtb`) NAMD path supports non-periodic clusters
