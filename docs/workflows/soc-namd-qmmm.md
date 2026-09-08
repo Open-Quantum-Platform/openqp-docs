@@ -92,7 +92,8 @@ link hydrogen per cut bond. In the periodic branch (`cutoff=PME`, same-spin
 FSSH only) the QM-image term is iterated to self-consistency with the relaxed
 ESPF charges of the **propagated state**, so the force integrated is the
 derivative of the reported energy of that state; each iteration is logged as
-`QM-image field, active-state iteration`. The spin-adiabatic SOC-NAMD state is
+`QM-image field, active-state iteration`, and after a surface hop the field
+is re-iterated for the new state before its force is integrated. The spin-adiabatic SOC-NAMD state is
 a mixture of MCH states without per-iteration relaxed charges, so the SOC-NAMD
 drivers reject periodic boxes (`NotImplementedError`; use `cutoff=NoCutoff`).
 The tight-binding (`method=dftb/xtb`) NAMD path supports non-periodic clusters
