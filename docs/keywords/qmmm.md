@@ -455,7 +455,11 @@ legacy bookkeeping with its own default of one.
 | --- | --- |
 | Type | string |
 | Default | `nve` |
-| Values | `nve`, `nvt`, `npt` |
+| Values | `nve`, `nvt` (`npt` is rejected) |
+
+`npt` is not available for QM/MM MD: the QM/MM electrostatics carry no
+lattice derivative and would be evaluated with the initial box while the
+barostat rescales the MM system, so the driver stops with a clear error.
 
 ### `friction`
 
