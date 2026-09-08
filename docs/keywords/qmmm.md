@@ -255,7 +255,7 @@ Selects how the MM environment couples to the QM subsystem.
 | Value | Meaning |
 | --- | --- |
 | `electrostatic` | Full ESPF electrostatic embedding. The MM charges polarize the QM density through the ESPF operator, and the QM density reacts on the MM atoms via ESPF-fitted charges. This is the production value and gives the analytic, energy-conserving QM/MM gradient. |
-| `mechanical` | No electrostatic coupling into the QM Hamiltonian: the QM subsystem runs a gas-phase SCF (zero embedding field), and OpenMM evaluates the QM–MM electrostatics with the QM ESP charges of the current step held fixed. Because that force lacks the charge-response term it is not the exact gradient of the energy, so use it for single points or exploratory dynamics, not for energy-conservation work. |
+| `mechanical` | No electrostatic coupling into the QM Hamiltonian: the QM subsystem runs a gas-phase SCF (zero embedding field), and OpenMM evaluates the QM–MM electrostatics with the fixed force-field charges of the QM atoms (intra-QM non-bonded pairs excluded). The MM energy is then differentiated at the charges it was built with, so the force is the exact gradient of the energy and the scheme conserves energy in dynamics; it simply omits the polarisation of the QM density by the environment. |
 
 Legacy spellings such as `espf` and `split` appear in older decks; new inputs
 should use `electrostatic`.
