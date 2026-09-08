@@ -74,8 +74,9 @@ the same embedding. The default full-ESPF electrostatics (`embedding=electrostat
 give a finite-difference-exact analytic gradient and energy-conserving dynamics.
 Rigid-water SHAKE/RATTLE constraints are applied to the MM region inside the
 velocity-Verlet loop, so a normal (~0.5 fs) timestep can be used; QM atoms are
-never constrained. A periodic water box uses particle-mesh Ewald
-(`cutoff=PME`) with ESPF-PME electrostatics. See the
+never constrained. A periodic water box (particle-mesh Ewald, `cutoff=PME`,
+ESPF-PME electrostatics) is available to the same-spin FSSH driver; the
+SOC-NAMD drivers run isolated clusters (`cutoff=NoCutoff`). See the
 [`[qmmm]`](../keywords/qmmm.md) page and
 [References](../references.md#qmmm-espf-embedding).
 
@@ -87,10 +88,15 @@ supported in the nonadiabatic paths as well, provided the QM molecule is built
 from the PDB with `[input] system = file.pdb <1-based QM indices>` so the link
 hydrogens are appended (see [Link atoms](../keywords/qmmm.md#link-atoms));
 the driver rejects a QM molecule whose layout does not match `qm_atoms` plus one
-link hydrogen per cut bond. In the periodic branch the QM-image term is made
-self-consistent with the **ground-state** ESPF charges, which is exact for the
-ground state and an approximation for the excited states. The tight-binding
-(`method=dftb/xtb`) NAMD path supports non-periodic clusters only.
+link hydrogen per cut bond. In the periodic branch (`cutoff=PME`, same-spin
+FSSH only) the QM-image term is iterated to self-consistency with the relaxed
+ESPF charges of the **propagated state**, so the force integrated is the
+derivative of the reported energy of that state; each iteration is logged as
+`QM-image field, active-state iteration`. The spin-adiabatic SOC-NAMD state is
+a mixture of MCH states without per-iteration relaxed charges, so the SOC-NAMD
+drivers reject periodic boxes (`NotImplementedError`; use `cutoff=NoCutoff`).
+The tight-binding (`method=dftb/xtb`) NAMD path supports non-periodic clusters
+only.
 
 ## How the driver is selected
 
@@ -106,16 +112,17 @@ and `soc_basis`:
 | **`true`** | **`true`** | `adiabatic` | **`NAMD_SOC_QMMM`** (spin-adiabatic SOC-NAMD + ESPF QM/MM) |
 | **`true`** | **`true`** | **`mch`** | **`NAMD_SOC_MCH_QMMM`** (MCH-basis SOC-NAMD + ESPF QM/MM) |
 
-## Example deck: SOC-NAMD-QMMM in a periodic water box
+## Example deck: SOC-NAMD-QMMM in a water cluster
 
-A complete deck for a chromophore solvated in a periodic TIP3P water box. The
+A complete deck for a chromophore solvated in a TIP3P water cluster (SOC-NAMD
+is non-periodic; the same deck with `soc=false` may use `cutoff=PME`). The
 whole chromophore is the QM region (`qm_atoms`); the water is MM.
 
 `.oqp`:
 
 ```text
 mrsf(nstate=3)/bhhlyp/6-31g* namd(S1,soc=true,soc_basis=mch,nstep=200)
-qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-14",cutoff=PME,rigidwater=true)
+qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-14",cutoff=NoCutoff,rigidwater=true)
 geom="chromophore_water.pdb 0-14"
 ```
 
@@ -137,10 +144,10 @@ job = OpenQP("chromophore_socnamd_qmmm", silent=1)
 job.molecule("chromophore_water.pdb 0-14", basis="6-31g*")
 job.theory.mrsf(functional="bhhlyp", nstate=3)   # ROHF triplet reference + MRSF
 
-# ESPF QM/MM embedding in a periodic TIP3P water box
+# ESPF QM/MM embedding in a TIP3P water cluster
 job.qmmm(
     forcefield=["amber14-all.xml", "amber14/tip3p.xml"],
-    cutoff="PME",
+    cutoff="NoCutoff",
     embedding="electrostatic",
     rigidwater=True,
 )
@@ -192,7 +199,7 @@ grad_wthr  = 0.001
 pdb_file         = chromophore_water.pdb
 forcefield_files = amber14-all.xml,amber14/tip3p.xml
 qm_atoms         = 0-14
-cutoff           = PME
+cutoff           = NoCutoff
 embedding        = electrostatic
 rigidwater       = True
 ```
@@ -215,9 +222,10 @@ Notes on the deck:
 - **QM region.** [`qm_atoms`](../keywords/qmmm.md#qm_atoms) is normally a whole
   molecule; a covalent cut needs the PDB-built QM molecule with link atoms (see
   [Scope and limitations](#scope-and-limitations)).
-- **Periodicity.** [`cutoff=PME`](../keywords/qmmm.md#cutoff) selects the
-  periodic ESPF-PME branch for a solvated box; use `NoCutoff` for an isolated
-  cluster.
+- **Periodicity.** SOC-NAMD runs isolated clusters (`cutoff=NoCutoff`).
+  [`cutoff=PME`](../keywords/qmmm.md#cutoff) selects the periodic ESPF-PME
+  branch for a solvated box and is available to the same-spin FSSH driver
+  (`soc=false`) only.
 
 ## Production records, restart, and energy conservation
 

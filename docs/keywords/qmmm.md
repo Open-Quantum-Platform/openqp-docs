@@ -231,7 +231,10 @@ evaluated by OpenMM with that method, and the QM/MM electrostatics of the
 and its gradient at every QM centre, the forces on the MM atoms from the ESPF
 charges and their images, and the interaction of the QM charges with their own
 periodic images, which is made self-consistent with the ESPF charges outside
-the SCF (the run stops with an error if that loop does not converge). See
+the SCF — in NAMD with the relaxed charges of the propagated state — (the run
+stops with an error if that loop does not converge). The periodic branch is
+available to `runtype = md` and to same-spin FSSH (`runtype = namd`,
+`[md] soc = false`); SOC-NAMD requires `NoCutoff`. See
 [`ewald_tol`](#ewald_tol), [`lj_switch`](#lj_switch), [`h_lj`](#h_lj) and
 [`mm_charge_width`](#mm_charge_width) for the related controls. These
 controls belong to the molecular-dynamics drivers (`runtype = md` / `namd`);
