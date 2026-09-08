@@ -233,7 +233,10 @@ charges and their images, and the interaction of the QM charges with their own
 periodic images, which is made self-consistent with the ESPF charges outside
 the SCF (the run stops with an error if that loop does not converge). See
 [`ewald_tol`](#ewald_tol), [`lj_switch`](#lj_switch), [`h_lj`](#h_lj) and
-[`mm_charge_width`](#mm_charge_width) for the related controls.
+[`mm_charge_width`](#mm_charge_width) for the related controls. These
+controls belong to the molecular-dynamics drivers (`runtype = md` / `namd`);
+a single-point QM/MM energy uses the non-periodic point-charge path and the
+input checker rejects them there rather than ignoring them.
 
 ### `embedding`
 
