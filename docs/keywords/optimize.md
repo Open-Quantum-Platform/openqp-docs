@@ -18,6 +18,35 @@ to the native optimizer while keeping state and convergence options in
 `[optimize]`. The lower-level `job.optimize(...)` section helper remains
 available for existing scripts.
 
+## QM/MM geometry optimisation
+
+With [`[input] qmmm_flag = true`](input.md#qmmm_flag), `runtype = optimize`
+minimises the **QM/MM** energy: the embedded QM energy in the ESPF field of
+the MM charges, the link-atom terms, and the classical MM energy, exactly the
+quantity the QM/MM dynamics drivers integrate. The gas-phase optimiser is not
+used, because it would move the QM fragment in vacuum while the environment
+sat still. The movable atoms are the QM region plus the MM residues within
+[`qmmm_radius`](#qmmm_radius); the rest is fixed. The native trust-radius
+RFO/BFGS engine drives the search in Cartesian coordinates, orbitals are
+reused between steps, and convergence is judged on
+[`max_grad`](#max_grad) and [`rmsd_grad`](#rmsd_grad). The result is written
+as a full-system PDB ([`qmmm_output`](#qmmm_output)). Only plain
+minimisation is connected; MECI, MECP, TS, IRC, MEP and NEB refuse
+`qmmm_flag`.
+
+```ini
+[input]
+runtype   = optimize
+qmmm_flag = true
+system    = box.pdb 207 208 ... 220        # 1-based QM atoms
+[optimize]
+istate      = 0                            # ground state; n = n-th TDHF/MRSF root
+qmmm_radius = 4.0                          # MM residues within 4 A move too
+[qmmm]
+pdb_file   = box.pdb
+qm_atoms   = 206,207,...,219               # same atoms, 0-based
+```
+
 ## Keywords
 
 ### `lib`
@@ -83,10 +112,38 @@ write physical labels directly, for example
 | Used by | state-specific and crossing searches |
 
 Target state indices. HF/DFT ground-state optimization uses `istate=0`.
-TDHF/MRSF state-specific workflows use positive state indices. MECI uses
+TDHF/MRSF state-specific workflows use positive state indices. A QM/MM
+optimisation (`qmmm_flag = true`) uses `istate` the same way and differentiates
+that root of the embedded QM fragment. MECI uses
 `istate` and `jstate` for the established two-state algorithms. The legacy TCI
 compatibility route uses all three and requires `istate < jstate < kstate`;
 new multistate inputs use [`states`](#states) with `meci_search=baeka`.
+
+### `qmmm_radius`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Å) |
+| Default | `0.0` |
+| Used by | QM/MM optimisation (`qmmm_flag = true`) |
+
+Radius of the movable shell around the QM region in a QM/MM geometry
+optimisation. Every MM residue with an atom within this distance of a QM atom
+moves with the QM atoms; everything else is held fixed. `0` moves the QM
+atoms alone. Whole residues are selected so that waters and side chains stay
+intact; in a periodic box the distance is the minimum-image distance.
+
+### `qmmm_output`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `<project>_opt.pdb` |
+| Used by | QM/MM optimisation (`qmmm_flag = true`) |
+
+File that receives the optimised **full-system** geometry (QM and MM atoms,
+in the topology of [`[qmmm] pdb_file`](qmmm.md#pdb_file)), ready to be used
+as the starting structure of a QM/MM dynamics run.
 
 ### `imult`, `jmult`
 
