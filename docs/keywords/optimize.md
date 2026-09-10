@@ -33,8 +33,14 @@ and convergence is the same five-part test as the all-QM optimiser:
 [`energy_shift`](#energy_shift), [`rmsd_step`](#rmsd_step),
 [`max_step`](#max_step), [`rmsd_grad`](#rmsd_grad) and
 [`max_grad`](#max_grad). Only `method = hf`, `tdhf` (MRSF) and the
-tight-binding methods are accepted, and frozen-distance constraints
-(`[oqp] freeze`) are not applied yet and are rejected. The result is written
+tight-binding methods are accepted. Options the QM/MM force does not carry
+are rejected rather than ignored: frozen-distance constraints
+(`[oqp] freeze`), D4 dispersion (`[input] d4`), and the MD driver's
+QM-coordinate override (`[qmmm] qm_atoms_xyz` / `qm_list`).
+[`init_scf`](#init_scf) is honoured: by default the converged orbitals of
+the previous step seed the next SCF; `init_scf = true` restarts it at every
+geometry. A relative `[qmmm] pdb_file` not found in the working directory is
+looked up next to the input deck. The result is written
 as a full-system PDB ([`qmmm_output`](#qmmm_output)). Only plain
 minimisation is connected; MECI, MECP, TS, IRC, MEP and NEB refuse
 `qmmm_flag`.
