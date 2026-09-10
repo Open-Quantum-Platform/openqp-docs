@@ -421,10 +421,29 @@ Level shift used by the SOSCF converger.
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `1` |
+| Default | `1` (`0` for [`runtype = md`](input.md#runtype) and `namd`) |
 | Used by | SCF logging |
 
-Controls SCF verbosity.
+Controls how much the SCF writes to the log.
+
+| Value | Effect |
+| --- | --- |
+| `0` | No molecular-orbital table. |
+| `1` | The orbital table after a converged SCF (the default). |
+| `2` and above | The orbital table even when the SCF did not converge. |
+
+The orbital table is written after every SCF, and a dynamics run calls the SCF
+at least once per step, so at the default it is repeated for every step of the
+trajectory: a 100-step QM/MM surface-hopping run of an 18-atom QM region wrote
+405 tables and 83 MB of log, in which the 101 lines that report the dynamics
+are impossible to find. [`runtype = md`](input.md#runtype) and `namd`
+therefore default this keyword to `0`; write `verbose = 2` in the deck to get
+the tables back for a trajectory.
+
+Only the log is affected. The orbitals of any frame remain available from the
+Molden file, the restart record and the
+[trajectory file](../workflows/soc-namd-qmmm.md), and the setting does not change
+any computed quantity.
 
 ## TRAH Keywords
 
