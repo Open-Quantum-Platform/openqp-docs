@@ -39,8 +39,14 @@ are rejected rather than ignored: frozen-distance constraints
 QM-coordinate override (`[qmmm] qm_atoms_xyz` / `qm_list`).
 [`init_scf`](#init_scf) is honoured: by default the converged orbitals of
 the previous step seed the next SCF; `init_scf = true` restarts it at every
-geometry. A relative `[qmmm] pdb_file` not found in the working directory is
-looked up next to the input deck. The result is written
+geometry. `[oqp] coordsys` is honoured, with `auto` meaning Cartesian here
+because the movable set can be several disconnected fragments. Relative
+`[qmmm] pdb_file` and `forcefield_files` entries not found in the working
+directory are looked up next to the input deck. After the run,
+`Runner.results()["energy"]` holds the QM/MM total energy of the reported
+geometry at index `istate`, and `mol.qmmm_optimization` records convergence,
+the number of evaluations, the final gradient measures and the movable atoms.
+The result is written
 as a full-system PDB ([`qmmm_output`](#qmmm_output)). Only plain
 minimisation is connected; MECI, MECP, TS, IRC, MEP and NEB refuse
 `qmmm_flag`.
