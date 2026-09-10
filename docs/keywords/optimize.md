@@ -27,9 +27,14 @@ quantity the QM/MM dynamics drivers integrate. The gas-phase optimiser is not
 used, because it would move the QM fragment in vacuum while the environment
 sat still. The movable atoms are the QM region plus the MM residues within
 [`qmmm_radius`](#qmmm_radius); the rest is fixed. The native trust-radius
-RFO/BFGS engine drives the search in Cartesian coordinates, orbitals are
-reused between steps, and convergence is judged on
-[`max_grad`](#max_grad) and [`rmsd_grad`](#rmsd_grad). The result is written
+RFO/BFGS engine drives the search in Cartesian coordinates (trust radius from
+[`[oqp] trust`](oqp.md) / `trust_max`), orbitals are reused between steps,
+and convergence is the same five-part test as the all-QM optimiser:
+[`energy_shift`](#energy_shift), [`rmsd_step`](#rmsd_step),
+[`max_step`](#max_step), [`rmsd_grad`](#rmsd_grad) and
+[`max_grad`](#max_grad). Only `method = hf`, `tdhf` (MRSF) and the
+tight-binding methods are accepted, and frozen-distance constraints
+(`[oqp] freeze`) are not applied yet and are rejected. The result is written
 as a full-system PDB ([`qmmm_output`](#qmmm_output)). Only plain
 minimisation is connected; MECI, MECP, TS, IRC, MEP and NEB refuse
 `qmmm_flag`.
