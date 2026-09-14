@@ -376,7 +376,7 @@ given, the one that differs from the default `1` wins, `[input]` first.
 `[dftb] print_level` left at its default follows the same level, and
 `runtype = md` or `namd` runs at level `0` unless a level above `1` is requested.
 At every level, the LibXC header, the DFT grid description and each functional's
-references are written once per run.
+references are written once per log file.
 
 Example:
 
