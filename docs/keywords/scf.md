@@ -422,9 +422,12 @@ Level shift used by the SOSCF converger.
 | --- | --- |
 | Type | integer |
 | Default | `1` |
-| Used by | SCF logging |
+| Values | `0`, `1`, `2`, `3` |
+| Used by | the text log of the whole run |
 
-Controls SCF verbosity.
+Older spelling of [`[input] verbose`](input.md#verbose), which sets the log level
+for the whole run. It is still read: when both are given, the one that differs
+from the default `1` wins, `[input]` first.
 
 ## TRAH Keywords
 
