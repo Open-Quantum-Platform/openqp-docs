@@ -367,8 +367,8 @@ Sets how much detail the log carries:
 | Level | Log contains |
 | --- | --- |
 | `0` | quiet: section headings, the calculation request, converged results, final energies, gradients and properties, and warnings |
-| `1` | normal: adds the SCF, TRAH, Davidson, Z-vector, GMRES, CPHF and CC iteration tables, orbital energies, SCF energy components and DFT grid statistics |
-| `2` | detailed: adds MO coefficients, the primitive-by-primitive basis listing and solver diagnostics |
+| `1` | normal: adds the SCF, TRAH, Davidson, Z-vector, GMRES and CC iteration tables, one convergence summary per CPHF solve, orbital energies, SCF energy components and DFT grid statistics |
+| `2` | detailed: adds MO coefficients, the primitive-by-primitive basis listing and solver diagnostics such as per-right-hand-side CPHF residuals and DFT XC integration timings |
 | `3` | debug: adds developer output (PCM, spin-orbit, scalar-relativistic and MRSF debug dumps) |
 
 The older spelling [`[scf] verbose`](scf.md#verbose) is still read. When both are
