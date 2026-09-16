@@ -213,6 +213,86 @@ atom](#link-atoms) and the MM frontier charge is treated per
 [`frontier_scheme`](#frontier_scheme); see the [SOC-NAMD-QMMM scope
 note](../workflows/soc-namd-qmmm.md#scope-and-limitations).
 
+### `active_atoms`
+
+| Field | Value |
+| --- | --- |
+| Type | string (index list, ranges, or `name:` groups) |
+| Default | *(empty)* |
+| Used by | QM/MM geometry optimisation, QM/MM MD and NAMD-QMMM |
+
+The atoms the calculation is allowed to move. The spelling follows ORCA's
+`%qmmm ActiveAtoms {0:5 16 21:30} end`, so a selection can be copied from
+either side without editing: indices are **zero-based** (as
+[`qm_atoms`](#qm_atoms) is) and a range may be written `first:last` (ORCA) or
+`first-last`. Braces, commas, semicolons and spaces all separate groups, so
+`{0:5 16}`, `0-5,16` and `0:5 16` select the same atoms.
+
+A group written `name:` selects by PDB atom name, matched case-insensitively
+over the whole system — `name:P,OP1,OP2,O5'` is a nucleic-acid backbone in one
+line. The QM region is always active and does not need to be listed.
+
+Leaving this empty keeps each driver's own default: an optimisation moves the
+QM region alone, dynamics propagates every atom. See
+[Active atoms](#active-atoms-what-moves) for what "held" means physically.
+
+### `frozen_atoms`
+
+| Field | Value |
+| --- | --- |
+| Type | string (index list, ranges, or `name:` groups) |
+| Default | *(empty)* |
+| Used by | QM/MM geometry optimisation, QM/MM MD and NAMD-QMMM |
+
+Atoms taken back **out** of the active set, in the same syntax as
+[`active_atoms`](#active_atoms). This is the one-line way to hold a protein or
+nucleic-acid backbone that [`active_radius`](#active_radius) would otherwise set
+free:
+
+```ini
+[qmmm]
+active_radius = 4.0
+frozen_atoms  = name:P,OP1,OP2,O5',C5',C4',C3',O3'
+```
+
+Used on its own it means "everything else moves", which is usually what a
+dynamics deck wants. It may not name a QM atom — the QM region is what the
+calculation moves — and that is reported as an error rather than silently
+ignored.
+
+### `active_radius`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Å) |
+| Default | `0.0` |
+| Used by | QM/MM geometry optimisation, QM/MM MD and NAMD-QMMM |
+
+Adds every MM residue with an atom within this distance of a QM atom to the
+active set — ORCA's `ActiveCore_Extension`. `0` adds nothing. **Whole residues**
+are selected, so waters and side chains stay intact; in a periodic box the
+distance is the minimum-image distance. The residue that carries the QM atoms is
+the exception: a covalent cut runs through it, so its MM atoms are selected one
+by one.
+
+### `active_from_pdb`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | QM/MM geometry optimisation, QM/MM MD and NAMD-QMMM |
+
+Reads the active set from the **B-factor column** of
+[`pdb_file`](#pdb_file) — `1` marks an active atom, `0` an atom to hold — which
+is ORCA's `Use_Active_InfoFromPDB`. This keeps the selection with the structure,
+so a prepared system carries its own active region and no index list has to be
+maintained alongside it. A file whose B-factor column is zero everywhere is
+reported as an error rather than run as an empty selection.
+
+A runnable deck is
+`examples/QMMM/H2CO-water_BHHLYP-MRSF-NAMD-QMMM-active.inp`.
+
 ### `cutoff`
 
 | Field | Value |
@@ -475,6 +555,58 @@ The active MD driver uses `total_energy.npz` when no path is supplied.
 When `qm_atoms_xyz` is present and `qm_list` is omitted, rows are used in QM
 atom order. If supplied, `qm_list` must have the same length as the QM atom
 selection and contain valid XYZ indices.
+
+## Active atoms (what moves)
+
+A solvated or biomolecular QM/MM system is mostly environment, and propagating
+all of it is what makes a long trajectory or a large optimisation expensive.
+The `[qmmm]` keys [`active_atoms`](#active_atoms),
+[`frozen_atoms`](#frozen_atoms), [`active_radius`](#active_radius) and
+[`active_from_pdb`](#active_from_pdb) select which atoms actually move. They
+follow ORCA's `%qmmm ActiveAtoms` naming and syntax, and they are read by the
+**QM/MM optimiser, ground-state QM/MM MD and the NAMD-QMMM drivers alike**.
+
+The active set is assembled as
+
+```text
+QM region  +  active_radius shell  +  active_atoms  −  frozen_atoms
+```
+
+and the QM region is always in it.
+
+!!! note "Held is not absent"
+    Freezing an atom changes what moves, never the physics. A held atom keeps
+    its MM charge, its contribution to the ESPF embedding field that polarizes
+    the QM density, and the force it exerts on the atoms that do move. It is
+    simply not integrated — so no work is done on it, and energy conservation
+    still applies to the atoms that move. What changes is the cost and the
+    reported number of degrees of freedom.
+
+Each driver holds an atom in the way that is natural for it:
+
+| Path | How a held atom is held |
+| --- | --- |
+| `runtype=optimize` | its coordinates never enter the optimisation vector |
+| `runtype=namd` (FSSH, SOC, SOC-MCH) | its rows are skipped in the velocity-Verlet update, so it keeps zero velocity; the Maxwell draw, the centre-of-mass correction and the degree-of-freedom count all run over the atoms that move |
+| `runtype=md` | OpenMM gives the particle **zero mass**, which is how OpenMM holds an atom in place |
+
+Rigid-water constraints are resolved against the selection, because SHAKE/RATTLE
+cannot satisfy a constraint between a moving atom and a fixed one — it would drag
+the fixed atom. A constrained pair that straddles the boundary is made whole:
+held if either atom was frozen, moving otherwise. Constraints inside the held set
+are then dropped, since those atoms never move.
+
+Defaults preserve every existing deck: with none of these keys set, an
+optimisation moves the QM region alone and dynamics propagates every atom. A
+NAMD restart is bound to the selection so a restart cannot silently change what
+moves, but only once a selection is actually requested — checkpoints written
+before these keys existed keep validating.
+
+The optimiser also accepts the `[optimize]` spellings
+[`qmmm_radius`](optimize.md#qmmm_radius) — the released name of the movable
+shell — together with `qmmm_active` and `qmmm_freeze`, as aliases of
+`active_radius`, `active_atoms` and `frozen_atoms`; `[qmmm]` wins if both are
+given, and only the `[qmmm]` spelling reaches the dynamics drivers.
 
 ## Covalent QM/MM boundaries
 

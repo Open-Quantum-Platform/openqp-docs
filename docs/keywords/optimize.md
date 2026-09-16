@@ -25,8 +25,11 @@ minimises the **QM/MM** energy: the embedded QM energy in the ESPF field of
 the MM charges, the link-atom terms, and the classical MM energy, exactly the
 quantity the QM/MM dynamics drivers integrate. The gas-phase optimiser is not
 used, because it would move the QM fragment in vacuum while the environment
-sat still. The movable atoms are the QM region plus the MM residues within
-[`qmmm_radius`](#qmmm_radius); the rest is fixed. The native trust-radius
+sat still. The movable atoms are chosen with the `[qmmm]` active-atom keys —
+the QM region plus the MM residues within
+[`[qmmm] active_radius`](qmmm.md#active_radius), plus
+[`active_atoms`](qmmm.md#active_atoms) and minus
+[`frozen_atoms`](qmmm.md#frozen_atoms) — and the rest is fixed. The native trust-radius
 RFO/BFGS engine drives the search in Cartesian coordinates (trust radius from
 [`[oqp] trust`](oqp.md) / `trust_max`), orbitals are reused between steps,
 and convergence is the same five-part test as the all-QM optimiser:
@@ -57,12 +60,17 @@ runtype   = optimize
 qmmm_flag = true
 system    = box.pdb 207 208 ... 220        # 1-based QM atoms
 [optimize]
-istate      = 0                            # ground state; n = n-th TDHF/MRSF root
-qmmm_radius = 4.0                          # MM residues within 4 A move too
+istate        = 0                          # ground state; n = n-th TDHF/MRSF root
 [qmmm]
-pdb_file   = box.pdb
-qm_atoms   = 206,207,...,219               # same atoms, 0-based
+pdb_file      = box.pdb
+qm_atoms      = 206,207,...,219            # same atoms, 0-based
+active_radius = 4.0                        # MM residues within 4 A move too
+frozen_atoms  = name:P,OP1,OP2,O5'         # ...but hold the backbone
 ```
+
+The selection keys are documented with the rest of the `[qmmm]` section under
+[Active atoms](qmmm.md#active-atoms-what-moves); they use ORCA's
+`%qmmm ActiveAtoms` syntax and are shared with the QM/MM dynamics drivers.
 
 ## Keywords
 
@@ -149,6 +157,13 @@ optimisation. Every MM residue with an atom within this distance of a QM atom
 moves with the QM atoms; everything else is held fixed. `0` moves the QM
 atoms alone. Whole residues are selected so that waters and side chains stay
 intact; in a periodic box the distance is the minimum-image distance.
+
+This key is an **alias** of [`[qmmm] active_radius`](qmmm.md#active_radius),
+which is the spelling the QM/MM dynamics drivers share; `[qmmm]` wins if both
+are given. The companion aliases `qmmm_active` and `qmmm_freeze` are
+[`[qmmm] active_atoms`](qmmm.md#active_atoms) and
+[`frozen_atoms`](qmmm.md#frozen_atoms). New decks should use the `[qmmm]`
+names — see [Active atoms](qmmm.md#active-atoms-what-moves).
 
 ### `qmmm_output`
 
