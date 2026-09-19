@@ -163,12 +163,51 @@ large-gap transitions outside the intended local crossing region.
 | --- | --- |
 | Type | string |
 | Default | `fd` |
-| Values | `fd` (`npi` pending) |
+| Values | `fd`, `baeck_an` (`npi` pending) |
 | Used by | time-derivative couplings |
 
-Time-derivative coupling scheme. `fd` uses the finite-difference (Hammes-Schiffer
-/ Tully) overlap form. The norm-preserving interpolation (`npi`) option is
-pending.
+Time-derivative coupling scheme. `fd` uses the finite-difference
+(Hammes-Schiffer / Tully) overlap form. The norm-preserving interpolation
+(`npi`) option is pending.
+
+`baeck_an` propagates the electronic amplitudes with the lagged
+time-dependent Baeck-An (TD-BA) coupling instead of the overlap TDC. From the
+adiabatic gap `dE_ij(t)`, the magnitude at the centre of three consecutive
+energy points is
+
+\[
+\left|\tau^{\mathrm{BA}}_{ij}(t_n)\right|
+=\frac{1}{2}\sqrt{
+\frac{\mathrm d^2 \Delta E_{ij}(t_n)/\mathrm dt^2}
+     {\Delta E_{ij}(t_n)}}.
+\]
+
+A pair is set to zero when the radicand is nonpositive, the centre gap is zero,
+or the centre gap exceeds [`ba_gap_max`](#ba_gap_max).
+
+**The coupling is one nuclear step lagged.** The centred curvature at `t_n`
+becomes available only after the energies at `t_(n+1)` have been evaluated, so
+causal dynamics applies it during the electronic propagation at `t_(n+1)`. It
+is not an instantaneous Baeck-An coupling.
+
+Energies alone do not fix the wavefunction gauge, so the magnitude takes the
+pairwise sign of the phase-tracked, centred overlap TDC; a pair whose overlap
+sign is exactly indeterminate is set to zero. The first interval, and any
+interval following a discontinuous history, fall back to the overlap NPI TDC as
+a warm-up value. Dense trajectory records distinguish the two sources:
+
+| `tdc_source` | Meaning |
+| --- | --- |
+| `1` | Overlap NPI warm-up |
+| `3` | Lagged Baeck-An magnitude with overlap-transported sign |
+
+Scope: same-spin FSSH only. It supplies no `3N` coupling vector and therefore no
+direction-specific momentum adjustment, and it makes no claim to supply a Berry
+phase or a signed electronic-state gauge. The one-step lag and the `ba_gap_max`
+pair selection are part of the named approximation and must be preserved in
+comparisons and restart signatures. Pair it with `rescale=isotropic` to test the
+approximate electronic coupling without adding an analytic NAC-vector
+calculation at a hop.
 
 ### `trivial`
 
@@ -312,8 +351,12 @@ silently ignored. See the
 
 Maximum central energy gap included in the TD-BA diagnostic. Pairs above this
 gap, or pairs without a positive TD-BA curvature radicand, are not evaluated by
-the reference-comparison gate. This setting does not modify the overlap/TLF
-coupling, electronic propagation, or hopping probabilities.
+the reference-comparison gate.
+
+With `nacme_check=baeck_an` the setting is diagnostic only and does not modify
+the overlap/TLF coupling, electronic propagation, or hopping probabilities. With
+[`tdc=baeck_an`](#tdc) the same selection governs the coupling that is actually
+propagated, so a pair above this gap contributes no electronic coupling at all.
 
 ### `nacme_gate`
 

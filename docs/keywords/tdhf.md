@@ -199,9 +199,42 @@ Subspace dimension for GMRES when that solver is selected.
 | --- | --- |
 | Type | integer |
 | Default | `2` |
-| Used by | response-model internals |
+| Used by | MRSF state-overlap minor determinants |
 
-Response-model selector used by the native TDHF/MRSF implementation.
+Selects how the MRSF state overlap between consecutive geometries,
+`<Psi_I(t-dt)|Psi_J(t)>`, is evaluated. The reference determinant is shared, so
+the overlap factorizes into a contraction of the response amplitudes with three
+classes of minor determinants of the MO overlap matrix: `s_ij` one-hole
+occupied minors, `s_ab` particle minors, and `s_ia` mixed minors. `tlf` selects
+the treatment of `s_ij` and `s_ab`; `s_ia` is always exact.
+
+| `tlf` | Minors | Notes |
+| --- | --- | --- |
+| `0` (`notlf`, `exact`) | Exact Gaussian-elimination minors, no truncation | Invariant to orbital rotations between steps. This is *not* the zeroth-order TLF(0) of the paper, which is not implemented. |
+| `1` | First-order truncated Leibniz formula, TLF(1) | JCTC **15**, 882 (2019) |
+| `2` | Second-order truncated Leibniz formula, TLF(2) | Most accurate TLF approximation; KNU-GAMESS `ndtlf=2` |
+
+The truncated Leibniz formula assumes the MOs of consecutive steps are nearly
+orthonormal, i.e. that the MO overlap matrix is close to diagonal. When
+near-degenerate doubly occupied orbitals rotate into each other within one
+nuclear step -- a 45-degree mixing of two occupied orbitals has been observed in
+hot uracil trajectories -- the diagonal MO overlaps fall to about 0.7 and TLF(2)
+returns a collapsed state overlap (diagonal elements around 0.3-0.4) even though
+the SCF solution and the MRSF surfaces are continuous. Norm-preserving
+interpolation then turns that collapse into a large spurious time-derivative
+coupling.
+
+The exact minors are invariant to such rotations, and for molecules the size of
+uracil (30 occupied alpha orbitals, 6-31G*) they cost the same wall time as
+TLF(2). For large systems where the `nvir^2` particle minors dominate, the
+recommended route is Jacobi's complementary-minor identity -- all one- and
+two-hole minors from one LU factorization of the occupied block -- rather than
+truncation.
+
+The state-overlap section of the log states which evaluation was used
+(`state-overlap minors: exact minor determinants (tlf=0, default; ...)` or
+`TLF(n) truncated-Leibniz minors; ...`). NAMD additionally warns when every
+column norm of the retained state overlap falls below 0.5.
 
 ### `hfscale`, `cam_alpha`, `cam_beta`, `cam_mu`
 
