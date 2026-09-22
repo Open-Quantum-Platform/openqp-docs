@@ -74,9 +74,10 @@ Four Gaussian cubes, named after the log file:
 
 The ACID scalar is a tensor invariant and does not depend on the field
 direction; only the three vector cubes do. They are ordinary Gaussian cubes, so
-they load in VMD, Multiwfn and PyMOL as well as in
-[OQP Studio](../studio/analysis.md), which draws the current vectors on the ACID
-isosurface when the four files are loaded together.
+they load in VMD, Multiwfn and PyMOL, and the scalar cube renders as an
+isosurface in [OQP Studio](../studio/analysis.md) like any other. Drawing the
+current vectors on that isosurface is a separate Studio change and is not in the
+shipped viewer yet.
 
 ## Grid controls
 
@@ -121,6 +122,10 @@ this, with NICS(1)<sub>zz</sub> of −32.1 and +68.5 ppm respectively.
 - The grid evaluator walks Cartesian components up to *f*, so a
   spherical-harmonic basis needs `ispher=false` and a Cartesian basis containing
   *g* or higher shells is not supported. Both are refused with an explicit
-  message rather than producing a partial map.
+  message rather than producing a partial map. Pople bases resolve to Cartesian
+  shells under the default `ispher=auto` — the examples above run as written,
+  and the log records `AO angular type: Cartesian (6d/10f/15g)` — while
+  correlation-consistent bases such as cc-pVDZ resolve to pure spherical
+  harmonics and need `ispher=false`.
 - Ground state only. State-specific excited-state ACID is not exposed.
 - Under MPI the cubes are written by the world root only.

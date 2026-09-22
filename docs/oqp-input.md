@@ -416,7 +416,7 @@ Modifiers may accompany the one primary driver:
 | --- | --- |
 | `d4` | Enable DFT-D4. `d4()` uses functional defaults; `d4(s6=...,s8=...,s9=...,a1=...,a2=...,alp=...)` supplies a complete explicit rational-damping set. |
 | `pcm([SOLVENT], pcm...)` | Enable PCM and optionally name a solvent, for example `pcm(water)`. The current production path is an RHF/ROHF, ddX, reference-SCF single-point energy. |
-| `nmr([gauge=cgo|giao])` | Request NMR shielding. Bare `nmr` defaults to GIAO. |
+| <code>nmr([gauge=cgo&#124;giao],[acid=true&#124;false],[acid_spacing=...],[acid_padding=...])</code> | Request NMR shielding. Bare `nmr` defaults to GIAO. `acid=true` additionally writes [ACID current-density cubes](workflows/acid.md) and requires GIAO; `acid_spacing` and `acid_padding` size their grid in bohr and are accepted only with `acid=true`. |
 | `ir` | Record that IR intensities are requested; valid only with `hess(...)` or `thermo()`. |
 | `raman` | Record that Raman activities are requested; valid only with `hess(...)` or `thermo()`. |
 | `qmmm(qmmm...)` | Supply QM/MM options and enable `qmmm_flag` automatically. It may accompany `energy`, `md`, or `namd`; `md` requires it. |
