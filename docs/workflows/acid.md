@@ -1,7 +1,9 @@
 # ACID Current-Density Maps
 
-ACID — the anisotropy of the induced current density — maps where electrons are
-delocalised. It is the scalar field that an isosurface plot of aromaticity is
+ACID — the anisotropy of the induced current density, spelled "anisotropy of
+the current-induced density" in the title of the original 2000 proceedings and
+"Anisotropy of the Induced Current Density" in the 2005 *Chemical Reviews* paper
+that is usually cited — maps where electrons are delocalised. It is the scalar field that an isosurface plot of aromaticity is
 drawn from, and OpenQP writes it as Gaussian cubes together with the induced
 current itself, so the map shows not only *where* the delocalisation is but
 *which way* the current runs.
@@ -99,7 +101,7 @@ geom="h2o.xyz"
 ## Reading the map
 
 The standard plotting isosurface is **0.05 a.u.**, following Herges and
-Geuenich. On that scale a saturated bond falls below the threshold while
+Geuenich ([references](../references.md#acid-anisotropy-of-the-induced-current-density)). On that scale a saturated bond falls below the threshold while
 unsaturated and conjugated bonds stay above it, which is what makes the value
 comparable across molecules. Critical isosurface values — the isovalue at which
 the surface between two atoms breaks — at RHF/6-31G* GIAO:
