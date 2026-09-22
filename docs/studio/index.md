@@ -1,5 +1,9 @@
 # OQP Studio
 
+[Download Studio](download.md){ .md-button .md-button--primary }
+[What's new](whats-new.md){ .md-button }
+
+
 OQP Studio is the desktop graphical interface for OpenQP. It prepares canonical
 `.oqp` inputs, runs a local or bundled OpenQP engine, keeps each calculation in
 a project directory, and presents molecular structures and calculated results.
