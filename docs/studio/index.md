@@ -1,7 +1,7 @@
 # OQP Studio
 
 [Download Studio](download.md){ .md-button .md-button--primary }
-[What's new](whats-new.md){ .md-button }
+[Release notes](whats-new.md){ .md-button }
 
 
 OQP Studio is the desktop graphical interface for OpenQP. It prepares canonical

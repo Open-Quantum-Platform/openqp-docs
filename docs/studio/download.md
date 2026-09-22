@@ -6,6 +6,8 @@ uses a separately installed local or remote engine.
 
 ## Available release: Studio 0.2.3
 
+[Read release notes and compare versions](whats-new.md).
+
 These are the existing, publicly available Studio 0.2.3 installers. They are
 stored with the OpenQP 1.3.1 release for historical reasons; **1.3.1 is the
 engine release label, not the Studio version**. New features described in the

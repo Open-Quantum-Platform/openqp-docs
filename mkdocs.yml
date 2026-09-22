@@ -39,7 +39,7 @@ nav:
   - OQP Studio:
       - Overview: studio/index.md
       - Download: studio/download.md
-      - What's new: studio/whats-new.md
+      - Release notes: studio/whats-new.md
       - Engine compatibility: studio/engine-compatibility.md
       - Installation: studio/installation.md
       - Standalone and integrated packages: studio/packages.md
