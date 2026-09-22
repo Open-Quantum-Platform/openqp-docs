@@ -11,7 +11,7 @@ gradient-like workflows.
 | --- | --- |
 | Type | comma-separated string list |
 | Default | empty (no SCF properties) |
-| Values | `el_mom`, `mulliken`, `lowdin`, `resp`, `nmr` |
+| Values | `el_mom`, `mulliken`, `lowdin`, `resp`, `nmr`, `acid` |
 | Used by | SCF property driver |
 
 Requests SCF properties. Properties are **opt-in**: a property is computed only
@@ -24,6 +24,10 @@ reference and regression-tested. Available analyses:
   `mulliken_charges` / `lowdin_charges`.
 - `resp` — RESP/ESP-fitted atomic charges, exposed as `resp_charges`.
 - `nmr` — isotropic NMR shielding (`nmr_shielding`).
+- `acid` — ACID and induced-current-density cubes. Built from the GIAO
+  magnetic density response, so it requires `nmr` as well and
+  `nmr_gauge=giao`, and must be listed after `nmr`. See
+  [ACID Current-Density Maps](../workflows/acid.md).
 
 ```ini
 [properties]
@@ -48,6 +52,39 @@ scf_prop=el_mom,mulliken,lowdin,resp
 Selects the NMR gauge formulation. `cgo` is the common-gauge-origin formulation
 and is limited to closed-shell RHF in the input checker. Use `giao` for
 open-shell UHF/ROHF NMR shielding where supported.
+
+### `acid_spacing`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.2` |
+| Units | bohr |
+| Used by | `scf_prop=acid` |
+
+Grid spacing of the ACID and current-density cubes. Must be finite and
+positive. The cube size grows as the cube of the inverse spacing, so coarsen
+this for a quick look at a large molecule.
+
+### `acid_padding`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `5.0` |
+| Units | bohr |
+| Used by | `scf_prop=acid` |
+
+Padding added around the molecular bounding box for the ACID cube grid. Must be
+finite and non-negative.
+
+```ini
+[properties]
+scf_prop=nmr,acid
+nmr_gauge=giao
+acid_spacing=0.5
+acid_padding=3.0
+```
 
 ### `td_prop`
 
