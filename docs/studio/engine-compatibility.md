@@ -29,7 +29,8 @@ The source identity must be the same across all platform builds of a candidate.
 | Magnetic properties | NMR shielding, ACID/AICD maps and induced-current vectors |
 | macOS | Apple Silicon or Intel; macOS 15 or later |
 | Windows | x64 |
-| Linux | x86_64; DEB or AppImage |
+| Linux desktop | x86_64; Ubuntu 24.04+/compatible glibc 2.39+, GTK 3, WebKitGTK 4.1 |
+| Standalone Linux engine | x86_64; built on glibc 2.28 |
 
 [Download Studio](download.md). The package version 1.3.1 does not imply that
 this later snapshot equals the formal OpenQP v1.3.1 release. Every platform uses
