@@ -31,6 +31,19 @@ mkdocs build --strict
 
 ## Maintenance
 
+Development is maintained in the Open Quantum Platform group's GitLab project.
+Use GitLab branches and merge requests for new documentation changes; its
+`mkdocs build --strict` pipeline must pass before merging.
+
+GitHub remains the public mirror and hosts the published manual. Updates to
+GitHub `main` automatically create a GitLab synchronization merge request when
+needed. That request is merged only after GitLab CI succeeds. Conflicts remain
+visible for manual resolution. Updates from GitLab to GitHub are made on demand,
+after checking that `main` is suitable for public release. Automatic outbound
+mirroring stays disabled; private branches and archived pull-request refs must
+not be published. The existing GitHub Pages workflow publishes the manual when
+GitHub `main` is updated.
+
 Keep keyword and API pages aligned with the OpenQP input schema, checker, and
 Python entry points:
 
