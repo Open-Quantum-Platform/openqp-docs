@@ -32,7 +32,7 @@ also supply the local runner for the standard Studio package after its
 ## Release asset names
 
 Replace `0.2.3` and `1.3.1` below with the versions shown on the
-[OpenQP releases page](https://github.com/Open-Quantum-Platform/openqp/releases).
+[Studio download page](download.md). Studio and engine versions are listed separately.
 
 ### macOS
 

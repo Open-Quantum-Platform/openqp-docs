@@ -22,6 +22,7 @@ extra_css:
   - stylesheets/extra.css
 
 markdown_extensions:
+  - attr_list
   - admonition
   - tables
   - toc:
@@ -37,6 +38,9 @@ nav:
   - Quickstart: quickstart.md
   - OQP Studio:
       - Overview: studio/index.md
+      - Download: studio/download.md
+      - Release notes: studio/whats-new.md
+      - Engine compatibility: studio/engine-compatibility.md
       - Installation: studio/installation.md
       - Standalone and integrated packages: studio/packages.md
       - Builder and Workflows: studio/builder-workflows.md
