@@ -52,6 +52,10 @@ The same-stem `.inp` file is retained for legacy use.
 | `cgo` | Common-gauge-origin shielding. |
 | `giao` | Gauge-including atomic orbital shielding where supported. |
 
+Adding `acid=true` to the same call writes ACID and induced-current-density
+cubes from the GIAO response; see
+[ACID Current-Density Maps](acid.md).
+
 `job.workflow.nmr(...)` requires an HF/DFT reference-SCF theory. CGO NMR is
 limited to closed-shell RHF; use `gauge="giao"` for open-shell UHF/ROHF
 references. The helper also blocks range-separated and meta-GGA functionals for
