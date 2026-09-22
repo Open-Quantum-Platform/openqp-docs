@@ -21,13 +21,10 @@ Choose the architecture that matches `uname -m`:
 | `x86_64` | `macos-intel` |
 
 The `.dmg` is the normal graphical installer. Open it and drag **OQP Studio** to
-**Applications**. Current builds are unsigned. If macOS blocks the first launch,
-remove quarantine after checking that the download came from the official
-release:
-
-```bash
-xattr -cr "/Applications/OQP Studio.app"
-```
+**Applications**. Studio 0.2.4 requires macOS 15 or later. Its ad-hoc signature
+is verified during packaging, but the app is not Apple-notarized. If the first
+launch is blocked, verify the download checksum, then use **System Settings →
+Privacy & Security → Open Anyway** for this app.
 
 The `.app.tar.gz` asset can instead be installed entirely from the terminal.
 Files downloaded by `curl` do not receive the browser quarantine attribute:
@@ -59,18 +56,21 @@ engine.
 
 ## Linux
 
-Use the package matching the release and distribution. A `.deb` can be
+The 0.2.4 desktop packages target Ubuntu 24.04 or a compatible newer Linux
+distribution (glibc 2.39+, GTK 3 and WebKitGTK 4.1). Debian 13 is a compatible
+base; older RHEL/Rocky systems can use the standalone engine or a remote engine
+without running the Studio desktop locally. A `.deb` can be
 installed with:
 
 ```bash
-VERSION=0.2.2  # replace with the release being installed
+VERSION=0.2.4  # replace when installing a later release
 sudo apt install "./OQP-Studio-${VERSION}-linux-x86_64-with-engine.deb"
 ```
 
 For an AppImage, make the downloaded file executable before opening it:
 
 ```bash
-VERSION=0.2.2  # replace with the release being installed
+VERSION=0.2.4  # replace when installing a later release
 chmod +x "OQP-Studio-${VERSION}-linux-x86_64.AppImage"
 "./OQP-Studio-${VERSION}-linux-x86_64.AppImage"
 ```

@@ -19,10 +19,25 @@ An engine built after its formal release must be identified as a snapshot,
 with its exact commit, rather than described as the unchanged formal release.
 The source identity must be the same across all platform builds of a candidate.
 
-The current historical Studio 0.2.3 downloads are listed on the
-[download page](download.md). Their location under the OpenQP 1.3.1 release
-does not establish the exact engine commit inside an installer; consult the
-artifact's own metadata. New releases must supply that provenance explicitly.
+## Studio 0.2.4 Stable
+
+| Component | Qualified identity |
+| --- | --- |
+| Studio | 0.2.4; exact source commit in the manifest and About |
+| Bundled OpenQP | 1.3.1 snapshot |
+| Engine commit | `1db79089b285406338bd28a255b967e4011f8df7` |
+| Magnetic properties | NMR shielding, ACID/AICD maps and induced-current vectors |
+| macOS | Apple Silicon or Intel; macOS 15 or later |
+| Windows | x64 |
+| Linux desktop | x86_64; Ubuntu 24.04+/compatible glibc 2.39+, GTK 3, WebKitGTK 4.1 |
+| Standalone Linux engine | x86_64; built on glibc 2.28 |
+
+[Download Studio](download.md). The package version 1.3.1 does not imply that
+this later snapshot equals the formal OpenQP v1.3.1 release. Every platform uses
+the same engine commit above.
+
+Historical Studio 0.2.3 remains available on the OpenQP v1.3.1 release page. Its
+location alone does not establish the exact engine commit inside an installer.
 
 ## Selecting another engine
 

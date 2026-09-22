@@ -25,7 +25,7 @@ the Cartesian coordinates used for calculation.
 ![OQP Studio Builder showing Cartesian coordinates for aniline and the corresponding three-dimensional molecular preview](../assets/studio/builder-aniline.png)
 
 *The built-in aniline sample populates the editable Cartesian coordinates and
-the three-dimensional preview together. The numbered sidebar shows where
+the three-dimensional preview together. The sidebar shows where
 Builder sits in the complete Studio sequence.*
 
 ### PDB and QM/MM

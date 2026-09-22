@@ -4,19 +4,18 @@
 
 Studio releases are numbered independently of OpenQP engine releases. Each
 entry below states whether it is available to download or still in development.
-The current public desktop release is **Studio 0.2.3**, released on
-**23 August 2026**.
+The current public desktop release is **Studio 0.2.4**.
 
-## Next Studio release — unreleased
+## Studio 0.2.4 — Stable
 
-The following changes are implemented in the development source reviewed for
-this page on **23 September 2026**. They are **not included in the current
-0.2.3 downloads**. The next version number, release date and bundled engine
-commit will be assigned after installer qualification.
+**Previous version:** 0.2.3. **Engine:** OpenQP 1.3.1 snapshot,
+commit [`1db79089b285`](https://github.com/Open-Quantum-Platform/openqp/commit/1db79089b285406338bd28a255b967e4011f8df7).
+Exact source commits and installer checksums are recorded in the
+[release manifest](https://github.com/Open-Quantum-Platform/oqp-studio-releases/releases/download/v0.2.4/manifest.json).
 
 ### Compared with Studio 0.2.3
 
-| Area | Studio 0.2.3 | Next release, in development |
+| Area | Studio 0.2.3 | Studio 0.2.4 |
 | --- | --- | --- |
 | Startup and engine discovery | A slow backend or engine probe can appear unresponsive | Rotating clock and elapsed time during startup, discovery and submission; explicit failure messages |
 | Interface responsiveness | Waiting for a backend response can block desktop interaction; a slow probe can delay other requests | Backend waits run off the desktop main thread; requests can progress independently |
@@ -27,33 +26,34 @@ commit will be assigned after installer qualification.
 | Navigation | Numbered steps such as Builder 1–5 | Feature names without step numbers |
 | Application identity | Previous desktop icon | Pink-and-blue orbital Q icon in the desktop packages and header |
 | Downloads | Studio installers are attached to an OpenQP engine release | Dedicated public Studio download page and independent Studio release numbering |
-| Engine identification | An engine package version does not uniquely identify a later development snapshot | Release information will distinguish Studio version, engine version and exact engine commit |
+| Engine identification | An engine package version does not uniquely identify a later development snapshot | Release information distinguishes Studio version, engine version and exact engine commit |
 
-### Qualification still required
+### Supported distributions
 
-Windows, macOS and Linux installer startup, upgrade and bundled-engine checks
-must pass before these changes are announced as a release. Source-level tests
-and a frontend build alone do not qualify an installer. No measured installer
-startup speedup is claimed yet.
+Native installers cover Windows x64, Linux x86_64, and macOS on Apple Silicon
+and Intel, with standard and with-engine variants. No measured installer
+startup speedup is claimed.
 
 Ray-tracing limits reduce sustained load, but they cannot interrupt a GPU driver
 that has stopped responding. Preview remains the supported fallback. WebKit
 uses preview-only rendering under the new policy.
 
-### ACID current-density maps — integrated, unreleased
+### ACID/AICD current-density maps
 
 The results viewer now includes ACID current-density vectors with arrow-density
 and arrow-length controls. Direct cube opening and the surface panel both load
 the associated current components. These source changes have been reviewed and
 integrated after backend tests and frontend checks on Windows, macOS and Linux.
 
-Installer startup and bundled-engine compatibility still need qualification
-before release. This is not a capability promised for the 0.2.3 installer.
+The bundled engine is qualified with NMR shielding and ACID calculations,
+including the ACID map and all three induced-current component cube grids.
+Older or unverified local/remote engines cannot run ACID through Studio until
+their capabilities are identified. This is not included in the 0.2.3 installer.
 
-### Upgrade notes for the next release
+### Upgrade notes
 
 - Existing 0.2.3 installers remain downloadable during the transition.
-- The first independent release may require a manual download: an already
+- Upgrading from 0.2.3 requires a manual download: an already
   installed updater that points to the previous repository cannot be repaired
   by changing this website alone.
 - Select the same installer variant when upgrading: **standard** or
