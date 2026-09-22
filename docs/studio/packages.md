@@ -31,15 +31,15 @@ also supply the local runner for the standard Studio package after its
 
 ## Release asset names
 
-Replace `0.2.3` and `1.3.1` below with the versions shown on the
+Replace `0.2.4` and `1.3.1` below with the versions shown on the
 [Studio download page](download.md). Studio and engine versions are listed separately.
 
 ### macOS
 
 | Machine | Standard Studio | Integrated Studio | Standalone engine |
 | --- | --- | --- | --- |
-| Apple Silicon (`arm64`) | `OQP-Studio-0.2.3-macos-apple-silicon.dmg` | `OQP-Studio-0.2.3-macos-apple-silicon-with-engine.dmg` | `openqp-1.3.1-macos-arm64.zip` |
-| Intel (`x86_64`) | `OQP-Studio-0.2.3-macos-intel.dmg` | `OQP-Studio-0.2.3-macos-intel-with-engine.dmg` | `openqp-1.3.1-macos-x86_64.zip` |
+| Apple Silicon (`arm64`) | `OQP-Studio-0.2.4-macos-apple-silicon.dmg` | `OQP-Studio-0.2.4-macos-apple-silicon-with-engine.dmg` | `openqp-1.3.1-macos-arm64.zip` |
+| Intel (`x86_64`) | `OQP-Studio-0.2.4-macos-intel.dmg` | `OQP-Studio-0.2.4-macos-intel-with-engine.dmg` | `openqp-1.3.1-macos-x86_64.zip` |
 
 Each macOS Studio build also has an `.app.tar.gz` alternative for terminal
 installation.
@@ -48,15 +48,16 @@ installation.
 
 | Platform | Standard Studio | Integrated Studio | Standalone engine |
 | --- | --- | --- | --- |
-| Windows x64 | `OQP-Studio-0.2.3-windows-x64-setup.exe` | `OQP-Studio-0.2.3-windows-x64-with-engine-setup.exe` | `openqp-1.3.1-windows-x86_64.zip` |
-| Debian/Ubuntu x86_64 | `OQP-Studio-0.2.3-linux-x86_64.deb` | `OQP-Studio-0.2.3-linux-x86_64-with-engine.deb` | `openqp-1.3.1-linux-x86_64.tar.gz` |
-| Other x86_64 Linux | `OQP-Studio-0.2.3-linux-x86_64.AppImage` | Use the standard AppImage with a standalone engine | `openqp-1.3.1-linux-x86_64.tar.gz` |
-| Linux AArch64 | No Studio installer | No Studio installer | `openqp-1.3.1-linux-aarch64.tar.gz` |
+| Windows x64 | `OQP-Studio-0.2.4-windows-x64-setup.exe` | `OQP-Studio-0.2.4-windows-x64-with-engine-setup.exe` | `openqp-1.3.1-windows-x86_64.zip` |
+| Debian/Ubuntu x86_64 | `OQP-Studio-0.2.4-linux-x86_64.deb` | `OQP-Studio-0.2.4-linux-x86_64-with-engine.deb` | `openqp-1.3.1-linux-x86_64.tar.gz` |
+| Other x86_64 Linux with glibc 2.39+ | `OQP-Studio-0.2.4-linux-x86_64.AppImage` | Use the standard AppImage with a standalone engine | `openqp-1.3.1-linux-x86_64.tar.gz` |
 
 The integrated Linux package is currently distributed as a `.deb`; there is no
-`with-engine` AppImage. The integrated Windows package uses the interactive
-`.exe` installer; the standard package additionally provides an `.msi` for
-managed deployment.
+`with-engine` AppImage. Both Windows variants use an `.exe` installer. Studio 0.2.4 does not include an MSI.
+
+The Linux desktop packages require GTK 3 and WebKitGTK 4.1. The standalone
+Linux engine supports glibc 2.28 or newer. Linux AArch64 is not included in
+this Studio release.
 
 ## Verify a download
 
@@ -64,21 +65,21 @@ Download `SHA256SUMS` from the same release. On macOS, verify one selected file
 with:
 
 ```bash
-FILE=OQP-Studio-0.2.3-macos-apple-silicon-with-engine.dmg
+FILE=OQP-Studio-0.2.4-macos-apple-silicon-with-engine.dmg
 grep "  $FILE$" SHA256SUMS | shasum -a 256 -c -
 ```
 
 On Linux:
 
 ```bash
-FILE=OQP-Studio-0.2.3-linux-x86_64-with-engine.deb
+FILE=OQP-Studio-0.2.4-linux-x86_64-with-engine.deb
 grep "  $FILE$" SHA256SUMS | sha256sum -c -
 ```
 
 On Windows PowerShell:
 
 ```powershell
-Get-FileHash .\OQP-Studio-0.2.3-windows-x64-with-engine-setup.exe -Algorithm SHA256
+Get-FileHash .\OQP-Studio-0.2.4-windows-x64-with-engine-setup.exe -Algorithm SHA256
 ```
 
 Compare the displayed Windows hash with the corresponding line in
