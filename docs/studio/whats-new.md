@@ -40,12 +40,15 @@ Ray-tracing limits reduce sustained load, but they cannot interrupt a GPU driver
 that has stopped responding. Preview remains the supported fallback. WebKit
 uses preview-only rendering under the new policy.
 
-### Under review, not yet part of a release
+### ACID current-density maps — integrated, unreleased
 
-ACID current-density vectors are being developed for the results viewer, with
-arrow-density and arrow-length controls. This work remains separate from the
-implemented changes above until review, integration and engine compatibility
-checks are complete. It is not a capability promised for the 0.2.3 installer.
+The results viewer now includes ACID current-density vectors with arrow-density
+and arrow-length controls. Direct cube opening and the surface panel both load
+the associated current components. These source changes have been reviewed and
+integrated after backend tests and frontend checks on Windows, macOS and Linux.
+
+Installer startup and bundled-engine compatibility still need qualification
+before release. This is not a capability promised for the 0.2.3 installer.
 
 ### Upgrade notes for the next release
 
