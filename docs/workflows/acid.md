@@ -131,3 +131,10 @@ this, with NICS(1)<sub>zz</sub> of −32.1 and +68.5 ppm respectively.
   harmonics and need `ispher=false`.
 - Ground state only. State-specific excited-state ACID is not exposed.
 - Under MPI the cubes are written by the world root only.
+- The map belongs to the calculation that produced it. The magnetic response is
+  tied to the geometry, the basis and the orbitals it was computed from, and it
+  is not reusable across a change in any of them: a new SCF drops it, and a
+  moved geometry or a replaced basis is refused with a message naming what
+  changed. Run the shielding again for a current map — that is a feature, not a
+  cache miss, since combining one geometry's response with another's
+  coordinates produces a map that is wrong without looking wrong.
