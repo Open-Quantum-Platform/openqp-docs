@@ -36,10 +36,10 @@ malicious software** warning. An ad-hoc signature is not an Apple approval.
    [verify the download against SHA256SUMS](packages.md#verify-a-download).
 2. Double-click **Applications → OQP Studio** once. If macOS blocks it, dismiss
    the warning with **Done** or **Cancel**; keep the app installed.
-3. Open **Apple menu → System Settings → Privacy & Security**
-   (**시스템 설정 → 개인정보 보호 및 보안**), then scroll to **Security**.
-4. Find the message about **OQP Studio** and click **Open Anyway**
-   (**확인 없이 열기**). Confirm **Open** in the next dialog and authenticate
+3. Open **Apple menu → System Settings → Privacy & Security**,
+   then scroll to **Security**.
+4. Find the message about **OQP Studio** and click **Open Anyway**.
+   Confirm **Open** in the next dialog and authenticate
    with your Mac login password or Touch ID if asked.
 5. Once approved, open Studio normally from Applications on subsequent launches.
 
