@@ -21,13 +21,13 @@ Choose the architecture that matches `uname -m`:
 
 The `.dmg` is the normal graphical installer. Open it and drag **OQP Studio** to
 **Applications**, then eject the disk image. Launch the installed copy from
-Applications, rather than the copy inside the disk image. Studio 0.2.5 requires
+Applications, rather than the copy inside the disk image. Studio 0.2.6 requires
 macOS 15 or later; both standard and `with-engine` installers use the same
 first-launch procedure below.
 
 ### macOS security: first launch
 
-Studio 0.2.5 has an ad-hoc signature checked during packaging, but it does not
+Studio 0.2.6 has an ad-hoc signature checked during packaging, but it does not
 have an Apple Developer ID signature or Apple notarization. macOS may therefore
 block the first launch with an **unidentified developer** or **cannot check for
 malicious software** warning. An ad-hoc signature is not an Apple approval.
@@ -105,21 +105,21 @@ engine.
 
 ## Linux
 
-The 0.2.5 desktop packages target Ubuntu 24.04 or a compatible newer Linux
+The 0.2.6 desktop packages target Ubuntu 24.04 or a compatible newer Linux
 distribution (glibc 2.39+, GTK 3 and WebKitGTK 4.1). Debian 13 is a compatible
 base; older RHEL/Rocky systems can use the standalone engine or a remote engine
 without running the Studio desktop locally. A `.deb` can be
 installed with:
 
 ```bash
-VERSION=0.2.5  # replace when installing a later release
+VERSION=0.2.6  # replace when installing a later release
 sudo apt install "./OQP-Studio-${VERSION}-linux-x86_64-with-engine.deb"
 ```
 
 For an AppImage, make the downloaded file executable before opening it:
 
 ```bash
-VERSION=0.2.5  # replace when installing a later release
+VERSION=0.2.6  # replace when installing a later release
 chmod +x "OQP-Studio-${VERSION}-linux-x86_64.AppImage"
 "./OQP-Studio-${VERSION}-linux-x86_64.AppImage"
 ```
