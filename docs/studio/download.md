@@ -28,6 +28,8 @@ See [installation instructions](installation.md) and
 [all release assets](https://github.com/Open-Quantum-Platform/oqp-studio-releases/releases/tag/v0.2.4)
 for alternative formats.
 
+**Mac first launch blocked?** Follow the [macOS security steps](installation.md#macos-security-first-launch) before opening Studio for the first time.
+
 ## Updates and historical releases
 
 Stable is the default update channel. Preview is an explicit opt-in in **About**;
