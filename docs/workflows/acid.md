@@ -77,9 +77,24 @@ Four Gaussian cubes, named after the log file:
 The ACID scalar is a tensor invariant and does not depend on the field
 direction; only the three vector cubes do. They are ordinary Gaussian cubes, so
 they load in VMD, Multiwfn and PyMOL, and the scalar cube renders as an
-isosurface in [OQP Studio](../studio/analysis.md) like any other. Drawing the
-current vectors on that isosurface is a separate Studio change and is not in the
-shipped viewer yet.
+isosurface in [OQP Studio](../studio/analysis.md) like any other. Studio 0.2.6 draws full current-vector arrows on the isosurface when the
+matching Jx, Jy and Jz cubes are present. Earlier versions may display
+arrowheads without visible shafts.
+
+## Plotting in OQP Studio
+
+1. In Studio 0.2.6, load the molecule in **Builder**, then search for and select
+   **ACID current density** in the workflow selector. This enables GIAO and
+   ACID cube generation. Select a method and basis and run the calculation.
+2. Open the completed calculation in **Analysis**. In the surface panel, choose
+   `<job>_acid.cube`, set **Isovalue** to `0.05`, and click **Show surface**.
+3. Enable **Induced current**. The matching `<job>_jx.cube`, `<job>_jy.cube` and
+   `<job>_jz.cube` files must belong to the same calculation. Adjust **Arrow
+   density** and **Arrow length** to make the circulation readable.
+
+If the four cubes already exist in a Studio calculation, start at step 2;
+upgrading the viewer does not require recalculation. An NMR calculation without
+ACID enabled must be rerun to generate the cubes.
 
 ## Grid controls
 

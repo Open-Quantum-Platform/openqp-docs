@@ -4,9 +4,32 @@
 
 Studio releases are numbered independently of OpenQP engine releases. Each
 entry below states whether it is available to download or still in development.
-The current public desktop release is **Studio 0.2.5**.
+The current public desktop release is **Studio 0.2.6**.
 
-## Studio 0.2.5 — Stable
+## Studio 0.2.6 — Stable
+
+**Released:** 23 September 2026. **Previous version:** 0.2.5.
+**Engine:** unchanged OpenQP 1.3.1 snapshot,
+commit [`1db79089b285`](https://github.com/Open-Quantum-Platform/openqp/commit/1db79089b285406338bd28a255b967e4011f8df7).
+Exact source identities and download checksums are in the
+[release manifest](https://github.com/Open-Quantum-Platform/oqp-studio-releases/releases/download/v0.2.6/manifest.json).
+
+| Area | Studio 0.2.5 | Studio 0.2.6 |
+| --- | --- | --- |
+| ACID current vectors | The Analysis viewer can show arrowheads without shafts | Full arrows have visible shafts and proportional heads |
+| Short arrows | A fixed minimum radius can make heads disproportionately large | Head and shaft dimensions scale with arrow length; the head occupies 25% of the length |
+
+This corrects the display of existing current-density vectors. It does not
+change the calculated current density, ACID scalar field, or vector direction.
+Existing ACID results can be reopened without rerunning the calculation.
+
+Standard and with-engine installers are available for Windows x64, macOS Apple
+Silicon, macOS Intel and Linux x86_64. Select the same platform and installer
+variant when upgrading. Earlier release assets remain available unchanged.
+Mac packages are ad-hoc signed, not notarized; Windows installers are unsigned.
+See [installation instructions](installation.md).
+
+## Studio 0.2.5 — previous stable release
 
 **Released:** 23 September 2026. **Previous version:** 0.2.4.
 **Engine:** the same qualified OpenQP 1.3.1 snapshot used in Studio 0.2.4,
