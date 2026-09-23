@@ -15,9 +15,16 @@ workflows.
 | Used by | Hessian dispatch |
 
 Selects numerical finite-difference or native analytical Hessian dispatch.
-Analytical Hessians are validated for supported HF/DFT ground-state cases. The
-input checker requests `type=numerical` when the method, state, or basis is
-outside the analytical path.
+Analytical Hessians are verified for supported HF/DFT ground-state cases and
+for the lowest isolated singlet state of restricted full-response TDHF and the
+verified TDDFT functionals. The TDHF/TDDFT analytical calculation requires
+`[scf] type=rhf`, `[tdhf] type=rpa`, `[tdhf] multiplicity=1`,
+`[tdhf] nstate>=2`, `[hess] state=1`, nondegenerate canonical occupied and
+virtual orbital subspaces, and one MPI rank. At least two excited states are
+calculated so OpenQP can verify the separation between the first and second
+roots. Use `type=numerical` outside these conditions. See
+[Hessian and Frequencies](../workflows/hessian.md#analytical-tdhftddft-hessian)
+for the functional list and degeneracy criteria.
 
 ### `state`
 
@@ -27,8 +34,9 @@ outside the analytical path.
 | Default | `0` |
 | Used by | Hessian target state |
 
-HF/DFT Hessians use state `0`. TDHF-family Hessian workflows use positive
-excited-state indices.
+HF/DFT Hessians use state `0`. TDHF-family Hessian calculations use positive
+excited-state indices. The analytical restricted TDHF/TDDFT calculation
+currently accepts only `state=1`; higher roots use a numerical Hessian.
 
 ### `dx`
 
@@ -75,7 +83,7 @@ rerun with `read=False` to generate a current sidecar.
 Continues an interrupted numerical Hessian workflow.
 
 Native TS/IRC drivers reject `restart=True` while their displaced-gradient
-artifacts lack geometry/model signatures. Use it only for the standalone
+files lack geometry/model signatures. Use it only for the standalone
 numerical Hessian workflow; native TS/IRC initial Hessians are recomputed.
 
 ### `temperature`
