@@ -4,9 +4,43 @@
 
 Studio releases are numbered independently of OpenQP engine releases. Each
 entry below states whether it is available to download or still in development.
-The current public desktop release is **Studio 0.2.4**.
+The current public desktop release is **Studio 0.2.5**.
 
-## Studio 0.2.4 — Stable
+## Studio 0.2.5 — Stable
+
+**Released:** 23 September 2026. **Previous version:** 0.2.4.
+**Engine:** the same qualified OpenQP 1.3.1 snapshot used in Studio 0.2.4,
+commit [`1db79089b285`](https://github.com/Open-Quantum-Platform/openqp/commit/1db79089b285406338bd28a255b967e4011f8df7).
+Exact application and packaging commits and installer checksums are recorded in
+the [release manifest](https://github.com/Open-Quantum-Platform/oqp-studio-releases/releases/download/v0.2.5/manifest.json).
+
+### Compared with Studio 0.2.4
+
+| Area | Studio 0.2.4 | Studio 0.2.5 |
+| --- | --- | --- |
+| NMR setup | Gauge selection can appear unset | GIAO is explicitly selected by default |
+| ACID discovery | Current-density tools are harder to find | Dedicated ACID workflow, searchable as ACID or AICD |
+| Atomic-property maps | Overlapping molecular representations and strong colors | One molecular representation, thin neutral bonds and a subdued blue–ivory–terracotta scale with a matching legend |
+| Labels and camera | Updating a property can reset the view | Optional three-decimal labels and preserved camera position |
+| Viewer controls | An initialization probe control is visible | Unnecessary probe control removed |
+
+The NMR atomic-property view displays **atomic shielding values**, not a
+continuous shielding field. The bundled engine has not changed in this release;
+upgrading Studio does not add new capabilities to another local or remote engine.
+
+Native standard and with-engine installers are available for macOS Apple Silicon,
+macOS Intel, Windows x64 and Linux x86_64. All four targets passed installer and
+backend checks and NMR/ACID engine qualification. Mac packages require macOS 15
+or later and are ad-hoc signed, not Apple-notarized; see the
+[first-launch security instructions](installation.md#macos-security-first-launch).
+Windows installers are unsigned.
+
+Upgrade using the same operating system, architecture and installer variant.
+Studio 0.2.3 users must install the latest package manually once because that
+version points to the former update repository. Published 0.2.4 installers
+remain available unchanged.
+
+## Studio 0.2.4 — previous stable release
 
 **Previous version:** 0.2.3. **Engine:** OpenQP 1.3.1 snapshot,
 commit [`1db79089b285`](https://github.com/Open-Quantum-Platform/openqp/commit/1db79089b285406338bd28a255b967e4011f8df7).
