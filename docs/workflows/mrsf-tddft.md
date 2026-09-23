@@ -186,5 +186,11 @@ The same-stem `.inp` file is retained for legacy use.
 - For ordinary TDDFT, see [TDDFT and TDHF](tddft.md).
 - For spin-flip TDDFT without mixed-reference correction, use
   [SF-TDDFT](sf-tddft.md).
-- UMRSF-TDDFT uses `[tdhf] type=umrsf` with a UHF reference and is currently an
-  energy-only workflow.
+- UMRSF-TDDFT uses `[tdhf] type=umrsf` with a UHF triplet reference. Besides
+  energies it provides analytic nuclear gradients (`runtype=grad`) and the
+  gradient-driven `optimize`, `meci`, `mecp` and `tci` workflows for HF, LDA/GGA
+  and global-hybrid functionals; `job.theory.umrsf(...)` is the compact-API
+  counterpart of `job.theory.mrsf(...)`. Range-separated, meta-GGA and
+  double-hybrid functionals and custom spin-pair-coupling scales are
+  energy-only, and Hessians, NACME and SOC are not available for UMRSF.
+  See `examples/UMRSF-TDDFT/H2CO_BHHLYP_UMRSFTDDFT_GRAD.inp`.
