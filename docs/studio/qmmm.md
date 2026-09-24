@@ -132,7 +132,8 @@ Studio's **Molecular dynamics analysis** panel plots those observables and can
 calculate periodic radial distribution functions. Atom groups use explicit
 selections such as `element=O`, `name=OW`, or
 `resname=HOH,name=OW`. RDF distances use the minimum-image convention, and the
-maximum radius is limited to half the shortest periodic cell height. Use the
+maximum radius is limited to half the shortest periodic cell height across every
+analyzed frame. Use the
 start-frame and stride controls to omit equilibration and reduce correlated
 sampling; report both choices with the resulting `g(r)`.
 
