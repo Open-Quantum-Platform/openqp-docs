@@ -193,4 +193,10 @@ The same-stem `.inp` file is retained for legacy use.
   counterpart of `job.theory.mrsf(...)`. Range-separated, meta-GGA and
   double-hybrid functionals and custom spin-pair-coupling scales are
   energy-only, and Hessians, NACME and SOC are not available for UMRSF.
-  See `examples/UMRSF-TDDFT/H2CO_BHHLYP_UMRSFTDDFT_GRAD.inp`.
+  Gradient-driven UMRSF runs accept singlet and triplet response states
+  (`[tdhf] multiplicity=1` or `3`) and effective core potentials, and the
+  input checker rejects `[properties] td_prop=True`, `[tdhf] ixcore` and
+  QM/MM (`qmmm_flag=True`) for them because the relaxed density and ESPF
+  charges those paths consume are not produced. See
+  `examples/UMRSF-TDDFT/H2CO_BHHLYP_UMRSFTDDFT_GRAD.inp` and, with an ECP,
+  `examples/UMRSF-TDDFT/HBr_BHHLYP_UMRSFTDDFT_GRAD_ECP.inp`.
