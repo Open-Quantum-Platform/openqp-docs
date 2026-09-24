@@ -133,9 +133,10 @@ calculate periodic radial distribution functions. Atom groups use explicit
 selections such as `element=O`, `name=OW`, or
 `resname=HOH,name=OW`. RDF distances use the minimum-image convention, and the
 maximum radius is limited to half the shortest periodic cell height across every
-analyzed frame. Use the
-start-frame and stride controls to omit equilibration and reduce correlated
-sampling; report both choices with the resulting `g(r)`.
+analyzed frame. A variable-cell trajectory must record `CRYST1` for every PDB
+frame; Studio does not guess frame cells from a separately sampled volume array.
+Use the start-frame and stride controls to omit equilibration and reduce
+correlated sampling; report both choices with the resulting `g(r)`.
 
 Analysis shows only the currently selected calculation. Older calculations are
 kept on disk and can be selected from **Load previous calculation**, so a long
