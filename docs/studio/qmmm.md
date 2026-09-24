@@ -103,7 +103,6 @@ degrees of freedom and must be recorded.
 For a nonperiodic electrostatic calculation, Studio can generate:
 
 ```text
-route qmmm_flag=true
 dft/b3lyp/6-31g*
 qmmm(pdb_file="enzyme.pdb",forcefield_files="amber14-all.xml",qm_atoms="18-27 31")
 geom="enzyme.pdb 18-27 31"
@@ -117,6 +116,29 @@ qmmm(pdb_file="solvated.pdb",forcefield_files="amber14-all.xml,amber14/tip3p.xml
 
 The PDB file is copied into the calculation directory beside the `.oqp` input.
 Keep both files together when moving or archiving the calculation.
+
+## Periodic dynamics and trajectory analysis
+
+Ground-state QM/MM dynamics supports NVE, NVT, and NPT ensembles. NVE uses a
+Verlet integrator; NVT uses Langevin dynamics; NPT combines Langevin dynamics
+with an OpenMM Monte Carlo barostat. NPT therefore requires `PME`, `Ewald`, or
+`CutoffPeriodic` and a valid PDB `CRYST1` cell. Temperature, friction, pressure,
+time step, report interval, and PDB or DCD trajectory output are selected in the
+workflow details.
+
+OpenQP saves potential, kinetic, and total energies, instantaneous temperature,
+and periodic volume in `total_energy.npz`. When a PDB trajectory is available,
+Studio's **Molecular dynamics analysis** panel plots those observables and can
+calculate periodic radial distribution functions. Atom groups use explicit
+selections such as `element=O`, `name=OW`, or
+`resname=HOH,name=OW`. RDF distances use the minimum-image convention, and the
+maximum radius is limited to half the shortest periodic cell height. Use the
+start-frame and stride controls to omit equilibration and reduce correlated
+sampling; report both choices with the resulting `g(r)`.
+
+Analysis shows only the currently selected calculation. Older calculations are
+kept on disk and can be selected from **Load previous calculation**, so a long
+project history does not push the active analysis controls down the page.
 
 ## Run and verify
 
