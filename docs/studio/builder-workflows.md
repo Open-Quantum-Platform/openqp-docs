@@ -35,9 +35,12 @@ whole-molecule quantum calculation without chemical preparation. PDB entries
 commonly omit hydrogens and may contain solvent, ions, alternate positions, or
 an incomplete chemical environment.
 
-After loading a PDB entry, Studio exposes **QM/MM region**. Select the atoms to
-be treated quantum mechanically and confirm the QM atom list and MM force field
-before generating input.
+After loading a PDB entry, Studio exposes **QM/MM calculation**. Select the
+atoms to be treated quantum mechanically, choose the MM force-field files,
+embedding, boundary-charge scheme, nonbonded method, and constraints, then
+confirm the generated input before execution. Periodic electrostatics require a
+PDB `CRYST1` record. See [QM/MM preparation and calculation](qmmm.md) for region
+selection, boundary treatment, and validation.
 
 ### Symmetry
 
@@ -56,11 +59,16 @@ options to combinations represented by its current OpenQP schema.
 | Fixed geometry | Single-point energy, Energy gradient, Molecular properties, NMR shielding, PCM solvation, Vertical excited states, NAC, NACME, SOC, Ionization/EA (EKT) |
 | Structure and path | Geometry optimization, Excited-state optimization, Bond-distance scan, TS, IRC, MEP, NEB |
 | Crossings | MECI, MECP, Three-state intersection |
-| Vibrations and dynamics | Frequencies (Hessian), Nonadiabatic dynamics |
+| Vibrations and dynamics | Frequencies (Hessian), Ground-state QM/MM dynamics, Nonadiabatic dynamics |
 
 The Method list includes single-reference, response, and multiconfigurational
 methods. DFT methods expose representative functionals, the DTCAM series, and
 a custom functional field. Basis sets also accept a custom OpenQP basis name.
+
+The [workflow scientific reference](workflow-reference.md) explains the
+scientific purpose, principal result, and required validity checks for every
+Workflow menu entry. Read it before interpreting a completed job as a minimum,
+transition state, state crossing, spectrum, or dynamical prediction.
 
 ### State-specific calculations
 

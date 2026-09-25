@@ -4,9 +4,35 @@
 
 Studio releases are numbered independently of OpenQP engine releases. Each
 entry below states whether it is available to download or still in development.
-The current public desktop release is **Studio 0.2.6**.
+The current public desktop release is **Studio 0.2.7**.
 
-## Studio 0.2.6 — Stable
+## Studio 0.2.7 — Stable
+
+**Released:** 25 September 2026. **Previous version:** 0.2.6.
+**Engine:** unchanged OpenQP 1.3.1 snapshot,
+commit [`1db79089b285`](https://github.com/Open-Quantum-Platform/openqp/commit/1db79089b285406338bd28a255b967e4011f8df7).
+Exact source identities and download checksums are in the
+[release manifest](https://github.com/Open-Quantum-Platform/oqp-studio-releases/releases/download/v0.2.7/manifest.json).
+
+| Area | Studio 0.2.6 | Studio 0.2.7 |
+| --- | --- | --- |
+| PDB structures | Molecular display | Interactive QM-atom selection and validated OpenMM QM/MM input generation |
+| QM/MM setup | Not exposed in Studio | Force-field, embedding, frontier-charge, nonbonded, constraint and rigid-water controls |
+| Ground-state dynamics | No dedicated setup | QM/MM MD with NVE, NVT and periodic NPT controls |
+| MD analysis | No trajectory analysis panel | Energy, temperature and density series, periodic radial-distribution functions and CSV export |
+| Calculation history | Results accumulate in the active list | Current calculation is shown first; earlier calculations load separately |
+| Analysis view | Some view changes can reset the camera | Current zoom and orientation are preserved across redraws |
+
+The QM/MM interface follows the capabilities of the bundled engine: OpenMM PDB
+systems can run single-point energies, ground-state molecular dynamics and
+nonadiabatic dynamics. Studio rejects generic QM/MM gradients and geometry
+optimizations because this engine snapshot does not provide those paths.
+
+This release also corrects element inference from PDB atom names and prevents a
+slower, older calculation request from replacing a newer Analysis selection.
+The bundled engine is unchanged from 0.2.6.
+
+## Studio 0.2.6 — previous stable release
 
 **Released:** 23 September 2026. **Previous version:** 0.2.5.
 **Engine:** unchanged OpenQP 1.3.1 snapshot,

@@ -44,9 +44,12 @@ nav:
       - Installation: studio/installation.md
       - Standalone and integrated packages: studio/packages.md
       - Builder and Workflows: studio/builder-workflows.md
+      - Workflow scientific reference: studio/workflow-reference.md
+      - QM/MM preparation and calculation: studio/qmmm.md
       - Execution and Projects: studio/execution.md
       - Analysis: studio/analysis.md
       - Art Rendering: studio/art.md
+      - Feedback and scientific issues: studio/feedback.md
       - Troubleshooting: studio/troubleshooting.md
   - Input Styles:
       - .oqp Input: oqp-input.md

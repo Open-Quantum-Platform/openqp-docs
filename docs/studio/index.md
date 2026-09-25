@@ -72,4 +72,8 @@ generates concise `.oqp` input; it does not generate legacy sectioned input.
 
 Continue with [installation](installation.md), compare
 [standalone and integrated packages](packages.md), or go directly to
-[Builder and Workflows](builder-workflows.md).
+[Builder and Workflows](builder-workflows.md). The
+[workflow scientific reference](workflow-reference.md) explains what each
+calculation measures and how to validate it. For biomolecular models, continue
+with [QM/MM preparation and calculation](qmmm.md). Suggestions and reproducible
+problem reports can be submitted through [Feedback](feedback.md).
