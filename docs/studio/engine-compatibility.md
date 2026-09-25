@@ -19,11 +19,11 @@ An engine built after its formal release must be identified as a snapshot,
 with its exact commit, rather than described as the unchanged formal release.
 The source identity must be the same across all platform builds of a candidate.
 
-## Studio 0.2.6 Stable
+## Studio 0.2.7 Stable
 
 | Component | Qualified identity |
 | --- | --- |
-| Studio | 0.2.6; exact source commit in the manifest and About |
+| Studio | 0.2.7; exact source commit in the manifest and About |
 | Bundled OpenQP | 1.3.1 snapshot |
 | Engine commit | `1db79089b285406338bd28a255b967e4011f8df7` |
 | Magnetic properties | NMR shielding, ACID/AICD maps and induced-current vectors |
