@@ -163,7 +163,9 @@ full nonadiabatic QM/MM setup.
 | Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
 
 Path to the PDB file that defines the full QM+MM system (coordinates and
-topology) for ground-state `runtype=md` and nonadiabatic `runtype=namd`.
+topology) for ground-state `runtype=md`, nonadiabatic `runtype=namd` and
+QM/MM geometry optimisation (`runtype=optimize`, see
+[the optimize page](optimize.md#qmmm-geometry-optimisation)).
 Single-point QM/MM energy instead takes its PDB path and QM indices together
 from `[input] system = file.pdb <indices>`.
 
