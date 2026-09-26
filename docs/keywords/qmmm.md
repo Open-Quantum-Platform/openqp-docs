@@ -200,15 +200,17 @@ explicit `forcefield_files` value. New QM/MM-MD decks should set
 | Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
 
 Zero-based indices of the atoms placed in the QM region, as individual indices
-and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. Give the indices in
-**ascending order**. This key is required by ground-state QM/MM MD and NAMD;
+and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. The selection is
+normalised to ascending (topology) order by every driver, so the order you
+write does not matter. This key is required by ground-state QM/MM MD and NAMD;
 single-point energy writes the equivalent selection after its PDB path in
 `[input] system`. Whole-molecule QM selections (e.g. a solute in a solvent box)
-are the common case, and the only case supported by the nonadiabatic
-(`runtype=namd`) path. In single-point energy and ground-state QM/MM MD, a
-selection that cuts a covalent bond is capped with a hydrogen [link
-atom](#link-atoms) and the MM frontier charge is treated per
-[`frontier_scheme`](#frontier_scheme); see the [SOC-NAMD-QMMM scope
+are the common case. A selection that cuts a covalent bond is capped with a
+hydrogen [link atom](#link-atoms) and the MM frontier charge is treated per
+[`frontier_scheme`](#frontier_scheme). For the nonadiabatic (`runtype=namd`)
+paths the QM molecule must then be built from the PDB with
+`[input] system = file.pdb <1-based indices>` (the same atoms as the 0-based
+`qm_atoms`), which appends the link hydrogens; see the [SOC-NAMD-QMMM scope
 note](../workflows/soc-namd-qmmm.md#scope-and-limitations).
 
 ### `cutoff`
@@ -220,10 +222,24 @@ note](../workflows/soc-namd-qmmm.md#scope-and-limitations).
 | Values | `NoCutoff`, `PME`, `Ewald`, `CutoffNonPeriodic`, `CutoffPeriodic` |
 | Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
 
-OpenMM nonbonded method for the MM region. `NoCutoff` is used for isolated
-(non-periodic) clusters. `PME` (particle-mesh Ewald) or `Ewald` select a
-periodic box and enable ESPF-PME electrostatics for a solvated/periodic system;
-these turn on the periodic branch of the driver.
+OpenMM nonbonded method for the MM region. `NoCutoff` (and `CutoffNonPeriodic`)
+treat the system as an isolated cluster with a direct Coulomb sum, even when the
+PDB carries a `CRYST1` record. `PME` (particle-mesh Ewald), `Ewald` and
+`CutoffPeriodic` select a periodic (orthorhombic) box: the MM-MM part is
+evaluated by OpenMM with that method, and the QM/MM electrostatics of the
+`electrostatic` embedding are evaluated by Ewald summation — the MM potential
+and its gradient at every QM centre, the forces on the MM atoms from the ESPF
+charges and their images, and the interaction of the QM charges with their own
+periodic images, which is made self-consistent with the ESPF charges outside
+the SCF — in NAMD with the relaxed charges of the propagated state — (the run
+stops with an error if that loop does not converge). The periodic branch is
+available to `runtype = md` and to same-spin FSSH (`runtype = namd`,
+`[md] soc = false`); SOC-NAMD requires `NoCutoff`. See
+[`ewald_tol`](#ewald_tol), [`lj_switch`](#lj_switch), [`h_lj`](#h_lj) and
+[`mm_charge_width`](#mm_charge_width) for the related controls. These
+controls belong to the molecular-dynamics drivers (`runtype = md` / `namd`);
+a single-point QM/MM energy uses the non-periodic point-charge path and the
+input checker rejects them there rather than ignoring them.
 
 ### `embedding`
 
@@ -239,7 +255,7 @@ Selects how the MM environment couples to the QM subsystem.
 | Value | Meaning |
 | --- | --- |
 | `electrostatic` | Full ESPF electrostatic embedding. The MM charges polarize the QM density through the ESPF operator, and the QM density reacts on the MM atoms via ESPF-fitted charges. This is the production value and gives the analytic, energy-conserving QM/MM gradient. |
-| `mechanical` | No electrostatic coupling into the QM Hamiltonian; the QM/MM interaction is mechanical (bonded/van der Waals) only. |
+| `mechanical` | No electrostatic coupling into the QM Hamiltonian: the QM subsystem runs a gas-phase SCF (zero embedding field), and OpenMM evaluates the QM–MM electrostatics with the fixed force-field charges of the QM atoms (intra-QM non-bonded pairs excluded). The MM energy is then differentiated at the charges it was built with, so the force is the exact gradient of the energy and the scheme conserves energy in dynamics; it simply omits the polarisation of the QM density by the environment. |
 
 Legacy spellings such as `espf` and `split` appear in older decks; new inputs
 should use `electrostatic`.
@@ -257,9 +273,8 @@ When the QM/MM partition cuts a covalent bond, the MM host atom (`M1`, the MM en
 of the severed bond) sits ~1.5 Å from the QM density. `frontier_scheme` selects
 how that frontier charge is treated in the ESPF embedding. It is a **no-op for
 whole-molecule QM regions** (no cut bond). Covalent QM/MM boundaries are handled
-by the single-point and ground-state QM/MM MD paths; the nonadiabatic
-(`runtype=namd`) path builds its QM molecule from `qm_atoms` only and does not
-support a covalent cut.
+by the single-point, ground-state QM/MM MD and nonadiabatic (`runtype=namd`,
+FSSH and SOC-NAMD) paths; see [Link atoms](#link-atoms).
 
 | Value | Meaning |
 | --- | --- |
@@ -284,6 +299,73 @@ Apply rigid-water (SHAKE/RATTLE) constraints to MM water molecules. QM atoms are
 never constrained. Rigid water removes the stiff O-H stretch from the MM region
 and allows a normal MD timestep (~0.5-1 fs). The nonadiabatic velocity-Verlet
 loop always constrains MM rigid water; QM atoms move under the QM forces.
+
+### `ewald_tol`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | unset (OpenMM default, `5e-4`) |
+| Used by | periodic QM/MM MD and NAMD-QMMM (`cutoff = PME` / `Ewald`) |
+
+Error tolerance of the OpenMM PME/Ewald evaluation of the MM-MM electrostatics.
+OpenMM's default gives a force error of about 0.5 kJ/mol/nm, which is the floor
+of any finite-difference force check or NVE energy-conservation test on a
+periodic box; use `1e-6` for such validation work. Ignored for non-periodic
+cutoffs. Must be a positive number.
+
+### `lj_switch`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | QM/MM MD and NAMD-QMMM with a finite cutoff |
+
+Switch the MM Lennard-Jones interactions smoothly to zero over the last 15 % of
+the nonbonded cutoff (OpenMM `setUseSwitchingFunction`). A plain truncation makes
+the MM energy discontinuous when pairs cross the cutoff, which shows up as a
+drift of the total energy in NVE dynamics (about +10 kJ/mol/ps for a solvated
+dipeptide with the OpenMM defaults). No effect under `NoCutoff`.
+
+### `h_lj`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | QM/MM MD and NAMD-QMMM (`electrostatic` embedding) |
+
+Give Lennard-Jones parameters to MM hydrogens that have none in the force field
+(TIP3P water hydrogens), using the CHARMM TIP3P values (R_min/2 = 0.2245 Å,
+ε = 0.046 kcal/mol). Without them nothing but the QM density keeps a water
+hydrogen from approaching a QM oxygen too closely, since a point charge has no
+Pauli wall. QM atoms are never modified. On its own this is a weak barrier; see
+[`mm_charge_width`](#mm_charge_width).
+
+### `mm_charge_width`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Å) |
+| Default | unset (point charges) |
+| Used by | QM/MM MD and NAMD-QMMM (`electrostatic` embedding) |
+
+Represent the MM charges as Gaussians of this width in the QM/MM electrostatics
+(full-ESPF `embedding = electrostatic` only; other embeddings reject it).
+The QM-MM pair potential `1/r` becomes `erf(μr)/r` with `μ = 1/(√2 w)`,
+consistently in the energy, the QM and MM forces, the direct sum and the
+real-space part of the Ewald sum; the MM-MM interactions and the QM-image term
+are untouched. This is the erf damping of the reference Tinker ESPF
+implementation (its `ERFMU` keyword); `0.7` Å corresponds to its default
+`μ = 1/Å`. It removes the `1/r` singularity a bare point charge presents to the
+QM density, which otherwise lets a solvent hydrogen collapse onto a QM carbonyl
+oxygen through a polarisation runaway of the ESPF charges, after which the MRSF
+Z-vector equations diverge. Must be a positive number; `0` or unset means point
+charges. In a periodic box the damping correction is summed over the minimum
+image inside the real-space cutoff (half the shortest box edge) only, so the
+width must be short-ranged on that scale: `w ≤ L_min / (9 √2)` (1.26 Å for a
+16 Å box); larger values are rejected with a message giving the bound.
 
 ### `nonbondedmethod`
 
@@ -379,7 +461,11 @@ legacy bookkeeping with its own default of one.
 | --- | --- |
 | Type | string |
 | Default | `nve` |
-| Values | `nve`, `nvt`, `npt` |
+| Values | `nve`, `nvt` (`npt` is rejected) |
+
+`npt` is not available for QM/MM MD: the QM/MM electrostatics carry no
+lattice derivative and would be evaluated with the initial box while the
+barostat rescales the MM system, so the driver stops with a clear error.
 
 ### `friction`
 
@@ -563,13 +649,24 @@ Across a covalent boundary the MM frontier-host charge is treated per
 the ESPF grid switching width is selected automatically — see
 [ESPF grid switching](#espf-grid-switching) below.
 
-!!! note "Covalent boundaries are not supported in nonadiabatic dynamics"
-    Automatic link-atom capping applies to the single-point and ground-state
-    QM/MM MD paths. The nonadiabatic (`runtype=namd`,
-    [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md)) path builds the QM molecule
-    from `qm_atoms` only, so it supports **whole-molecule** QM regions and raises
-    on a covalent cut; use the ground-state QM/MM MD path for covalent-boundary
-    QM/MM.
+!!! note "Covalent boundaries in nonadiabatic dynamics"
+    The nonadiabatic (`runtype=namd`, FSSH and
+    [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md)) paths support link atoms
+    when the QM molecule is built from the PDB with
+    `[input] system = file.pdb <1-based QM indices>` (the same atoms as the
+    0-based [`qm_atoms`](#qm_atoms)); the link hydrogens are appended
+    automatically and the driver checks the layout. The link atoms carry no
+    dynamical degrees of freedom: their positions follow the two host atoms,
+    their forces are chain-ruled onto the hosts, and the surface-hopping
+    velocity rescaling acts on the real QM atoms only. Examples:
+    `examples/QMMM/ala-dipeptide_BHHLYP-MRSF-NAMD-QMMM-linkatom.inp` (vacuum)
+    and `ala-box_BHHLYP-MRSF-NAMD-QMMM-PME.inp` (periodic box).
+
+The ESPF gradient accounts for the fitting grid moving with the atoms (the
+translational counter-terms of every grid point are charged to its parent
+atom), so the force is the exact derivative of the embedded energy and QM/MM
+molecular dynamics conserves the total energy in vacuum and in a periodic box,
+with or without a link atom.
 
 ## ESPF grid switching
 
@@ -637,4 +734,7 @@ native ESPF module:
   [`[md]`](md.md) section and see the
   [SOC-NAMD-QMMM workflow](../workflows/soc-namd-qmmm.md).
 - Use `cutoff = PME` (or `Ewald`) with a solvated periodic water box for
-  production QM/MM-MD; `NoCutoff` is for isolated clusters.
+  production QM/MM-MD; `NoCutoff` is for isolated clusters. For energy
+  conservation in solution set `ewald_tol = 1e-6` and `lj_switch = true`; for
+  excited-state (MRSF) dynamics in water add `mm_charge_width = 0.7` (and
+  optionally `h_lj = true`).
