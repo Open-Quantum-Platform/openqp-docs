@@ -1,0 +1,100 @@
+# Transition-state searches without a calculated Hessian
+
+The native optimizer supports `prfo` (default), `qst2`, and `qst3`. QST searches
+combine synchronous transit with the existing P-RFO optimizer and Bofill updates
+of a model Hessian. They evaluate electronic energies and nuclear gradients;
+they do not calculate an initial or final molecular Hessian, frequencies, or an IRC.
+A converged geometry is a **candidate transition state** until its stationary-point
+character and connection to the intended reactant and product are established.
+
+## QST2 and QST3
+
+Supply optimized reactant and product structures with identical atoms in the
+same order, charge, multiplicity, and electronic-state definition. OpenQP reads
+the reactant from `geom` and the product from an XYZ file in Å. It aligns the
+product by a proper rotation and translation; it never permutes atoms.
+
+QST2 interpolates redundant internal coordinates at the midpoint. If the internal
+back-transformation fails, the log explicitly identifies the Cartesian fallback.
+QST3 additionally reads a supplied approximate transition-state structure.
+Its geometry is aligned to the reactant and used as the starting point.
+
+```text
+rhf/sto-3g
+ts(S0,search="qst2",product="product.xyz",maxit=50)
+geom="reactant.xyz"
+```
+
+```text
+rhf/sto-3g
+ts(S0,search="qst3",product="product.xyz",guess="guess.xyz",maxit=50)
+geom="reactant.xyz"
+```
+
+```python
+from oqp.openqp import OpenQP
+job = OpenQP().molecule(geometry="reactant.xyz", basis="sto-3g").hf()
+job.workflow.ts(search="qst3", product="product.xyz", guess="guess.xyz", maxit=50)
+job.run()
+```
+
+In sectioned input, use `[input] runtype=ts`, `[optimize] lib=oqp` and
+`[oqp] ts_search=qst2|qst3`, `ts_product=product.xyz`, and, for QST3,
+`ts_guess=guess.xyz`. Relative endpoint paths resolve against the input file.
+Both searches require `init_hessian=model`. Frozen-distance constraints and
+QM/MM are currently unsupported. Endpoints are not optimized automatically.
+
+The synchronous-transit direction follows the circle through the two endpoints
+and the current structure (Peng–Schlegel Eq. 8), evaluated in the active working
+coordinates. The first two steps ascend along that tangent. Steps three and four
+retain tangent-only ascent when its estimated displacement exceeds 0.05 in atomic
+units. Otherwise P-RFO follows the model-Hessian eigenvector with greatest tangent
+overlap if that overlap exceeds 0.8, or the lowest eigenvalue. P-RFO takes over from
+step five; after that step, the existing mode-overlap tracking continues. Native
+trust-radius controls apply throughout. This implements the published STQN
+strategy within OpenQP's optimizer; it is not a reproduction of Gaussian's defaults.
+
+## IDPP initialization for NEB
+
+For a poorly known reaction path, a band calculation can be more informative
+than a single candidate saddle search. `interpolation="idpp"` refines the initial
+NEB band using image-dependent target pair distances before any electronic
+band evaluation. Climbing-image NEB then runs on the requested electronic surface.
+
+```text
+rhf/sto-3g
+neb(S0,product="product.xyz",images=7,interpolation="idpp",opt_ends=false,maxit=100)
+geom="reactant.xyz"
+```
+
+In sectioned input use `[oqp] neb_interpolation=idpp`; the default is `linear`.
+The Python API accepts `job.workflow.neb(interpolation="idpp")`, with product and
+image count set through `job.settings.neb(product="product.xyz", nimage=7)`.
+
+IDPP minimizes the sum of squared deviations from interpolated endpoint pair
+distances, weighted by the inverse fourth power of the **current** distance.
+The gradient includes the derivative of that weight. A fixed-endpoint NEB/FIRE
+optimization uses this surrogate objective, without electronic energies or Hessians.
+Near-coincident intermediate pairs receive deterministic transverse displacements;
+for collinear exchanges this selects one of equivalent Cartesian directions.
+Coincident endpoints are rejected. If IDPP fails to converge within 1000 steps,
+the calculation stops before electronic NEB and reports the failure.
+The optimized surrogate band is available as `mol.neb_idpp_result`.
+
+IDPP often improves Cartesian initial paths with atom crowding. It is an
+initialization method, not evidence that NEB or QST will find the lowest barrier
+or a particular mechanism. Compare candidate paths when multiple mechanisms are
+plausible. This implementation is for nonperiodic molecular geometries; it does
+not apply minimum-image distances or cell interpolation.
+
+## References and alternatives
+
+- [Peng and Schlegel, Isr. J. Chem. 33, 449–454 (1993)](https://doi.org/10.1002/ijch.199300051): synchronous transit plus quasi-Newton searches.
+- [Smidstrup et al., J. Chem. Phys. 140, 214106 (2014)](https://arxiv.org/abs/1406.1512): IDPP and comparisons with linear interpolation.
+- [Sharada et al., J. Chem. Theory Comput. 8, 5166–5174 (2012)](https://doi.org/10.1021/ct300659d): freezing-string searches with BFGS and no evaluated Hessian.
+- [Zimmerman, J. Chem. Theory Comput. 9, 3043–3050 (2013)](https://doi.org/10.1021/ct400319w): growing-string searches in internal coordinates.
+- [Heyden, Bell and Keil, J. Chem. Phys. 123, 224101 (2005)](https://doi.org/10.1063/1.2104507): improved dimer searches.
+
+The latter methods are alternatives considered in the literature survey, not
+additional workflows implemented here. Neither QST nor IDPP has a universal
+convergence advantage across reactions.

@@ -72,6 +72,7 @@ nav:
       - Hessian and Frequencies: workflows/hessian.md
       - Orbital and Vibrational Output: workflows/orbital-vibrational-output.md
       - Optimization: workflows/optimization.md
+      - Transition-State Searches: workflows/transition-state-search.md
       - BaekA Multistate MECI: workflows/baeka-multistate-meci.md
       - Spin-Orbit Coupling: workflows/soc.md
       - NACME: workflows/nacme.md

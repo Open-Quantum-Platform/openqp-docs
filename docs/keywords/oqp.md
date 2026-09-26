@@ -287,3 +287,25 @@ MEP step size.
 Euclidean-norm threshold on the mass-weighted gradient used to stop native IRC
 and MEP path tracing. Concise `.oqp` exposes this value as `gtol`, for example
 `irc(S0,gtol=1e-4)` or `mep(S0,gtol=1e-4)`.
+
+### `ts_search`, `ts_product`, `ts_guess`
+
+| Keyword | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `ts_search` | string | `prfo` | Native TS search: `prfo`, `qst2`, or `qst3` |
+| `ts_product` | string | empty | Product XYZ for QST2/QST3; same atoms and order as reactant |
+| `ts_guess` | string | empty | Approximate TS XYZ required by QST3 |
+
+QST2/QST3 require `runtype=ts`, `lib=oqp`, and `init_hessian=model`.
+They use only electronic energies and gradients. The reactant is the input
+geometry. XYZ coordinates are Å; relative paths resolve from the input file.
+In concise input write `ts(search="qst3",product="p.xyz",guess="g.xyz")`.
+See [transition-state searches](../workflows/transition-state-search.md).
+
+### `neb_interpolation`
+
+String, default `linear`. Selects `linear` or `idpp` initialization for native NEB.
+In concise input write `neb(interpolation="idpp",...)`. IDPP uses interpolated
+pair distances to prepare the band without electronic calculations. It supports
+nonperiodic molecules only. Failed surrogate convergence prevents electronic NEB.
+See [transition-state searches](../workflows/transition-state-search.md).
