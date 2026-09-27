@@ -294,3 +294,30 @@ constraints_file=my.constraints
 No standard shipped regression now depends on geomeTRIC. General minimum,
 frozen-distance, crossing-point, TS, IRC, MEP, and NEB examples use the native
 engine.
+
+## Experimental initial and updated curvature
+
+Native unconstrained minimum searches can select a geometry-dependent modified
+Lindh initial model and a local energy/gradient-based Gaussian process correction:
+`opt(S0,model_hessian=lindh,hessian_update=gpr)`. By default, `model_hessian=auto` selects modified Lindh for supported isolated
+unconstrained H–Ar molecules and retains the constant model elsewhere. BFGS
+remains the default update; GPR is opt-in. `model_hessian=constant` restores the
+earlier initial model. These options do not request a molecular Hessian
+or frequencies. See [model-curvature controls](transition-state-search.md#experimental-model-curvature)
+for element support, bounds, restrictions, fallback behavior, and Python examples.
+
+
+The automatic Lindh selection is shared by ground-state and excited-state
+**state-specific** minimum optimizations. It depends on the elements and geometry,
+not on the state index. The selected state's actual gradient supplies subsequent
+BFGS updates; the initial model is not an excited-state molecular Hessian. The
+same initial model can be used for a state-specific TS search with Bofill updates.
+Crossing objectives (MECI, MECP, TCI, including BaekA) remain on the constant
+initial model, as do NEB endpoint relaxations in the current implementation.
+
+The H2O and HCN examples ending in `_OQP_AUTO.oqp` exercise the automatic
+initial model. Their historical counterparts explicitly use
+`model_hessian=constant` because their committed numerical references include
+optimizer-dependent intermediate coordinates (the HCN TS examples stop after
+two steps). These short execution examples do not establish Lindh speedup or
+certify convergence to a stationary point.
