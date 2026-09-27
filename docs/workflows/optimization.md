@@ -314,3 +314,10 @@ BFGS updates; the initial model is not an excited-state molecular Hessian. The
 same initial model can be used for a state-specific TS search with Bofill updates.
 Crossing objectives (MECI, MECP, TCI, including BaekA) remain on the constant
 initial model, as do NEB endpoint relaxations in the current implementation.
+
+The H2O and HCN examples ending in `_OQP_AUTO.oqp` exercise the automatic
+initial model. Their historical counterparts explicitly use
+`model_hessian=constant` because their committed numerical references include
+optimizer-dependent intermediate coordinates (the HCN TS examples stop after
+two steps). These short execution examples do not establish Lindh speedup or
+certify convergence to a stationary point.
