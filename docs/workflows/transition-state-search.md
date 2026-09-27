@@ -126,8 +126,12 @@ steps using only a predicted energy and gradient. This is an experimental
 combination, not a reproduction of a published full GPR TS optimizer.
 
 The GPR history limit is 3–20 observations and the fixed length scale is
-0.001–10 bohr (defaults 8 and 0.5 bohr). Insufficient data or a failed fit leaves
-BFGS/Bofill curvature in use, with a diagnostic in the log. A recovery attempt
+0.001–10 bohr (defaults 8 and 0.5 bohr). Insufficient data, uncertain curvature, or a failed fit leaves
+BFGS/Bofill curvature in use, with a diagnostic in the log. The uncertainty
+check uses the largest posterior-to-prior variance ratio over symmetric
+Hessian components in the sampled subspace (limit 0.05); a well-sampled
+transverse direction cannot mask an uncertain reaction direction. This is
+a model-based rejection criterion, not a guarantee of curvature accuracy. A recovery attempt
 starts a fresh history. No extra electronic evaluations or calculated molecular
 Hessians are requested by either option. Neither model curvature nor its GPR
 correction establishes the stationary-point order or supplies frequencies.
