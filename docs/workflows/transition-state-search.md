@@ -44,6 +44,28 @@ In sectioned input, use `[input] runtype=ts`, `[optimize] lib=oqp` and
 Both searches require `init_hessian=model`. Frozen-distance constraints and
 QM/MM are currently unsupported. Endpoints are not optimized automatically.
 
+### Coordinate selection and inversion endpoints
+
+The examples above leave `coordsys=auto`, which initially selects DLC for an
+isolated molecule. Before constructing the model Hessian, QST2/QST3 check whether
+the selected internal coordinates distinguish the two endpoints. Distinct
+Cartesian structures can have identical internal coordinates: for example, the
+two pyramidal NH3 inversion structures have the same bond lengths and angles.
+In this case OpenQP automatically uses Cartesian coordinates for the search and
+reports `DLC->CART(fallback)` in the coordinate label. This also applies to an
+explicit internal-coordinate selection; endpoints that remain distinguishable
+retain the selected internal coordinates.
+
+The model Hessian is initialized in the chosen coordinates, consistently with
+the transit tangent and gradient. This fallback does not evaluate a molecular
+Hessian or frequencies. The engine example
+`examples/OPT/NH3_RHF-HF_QST3_OQP.oqp` demonstrates the default selection with the
+supplied NH3 endpoint and guess XYZ files; no `coordsys="cartesian"` override is
+needed. Its three-step limit is a short execution example, not a convergence
+criterion. Truly coincident Cartesian endpoints are still rejected.
+
+### Search steps
+
 The synchronous-transit direction follows the circle through the two endpoints
 and the current structure (Peng–Schlegel Eq. 8), evaluated in the active working
 coordinates. The first two steps ascend along that tangent. Steps three and four

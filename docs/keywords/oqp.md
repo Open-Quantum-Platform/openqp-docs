@@ -27,6 +27,13 @@ complexes are supplemented with interfragment distances when their primitive
 internal-coordinate metric is poorly conditioned. Explicit `tric`, `ric`, and
 Cartesian selections remain available as expert overrides.
 
+For QST2/QST3, distinct Cartesian endpoints may coincide in the selected
+internal coordinates, as in NH3 inversion. The engine then switches to Cartesian
+coordinates before initializing the model Hessian and reports the fallback in
+its coordinate label, for example `DLC->CART(fallback)`. This check applies to
+`auto` and explicit internal-coordinate selections. See
+[QST coordinate selection](../workflows/transition-state-search.md#coordinate-selection-and-inversion-endpoints).
+
 ### `trust`
 
 | Field | Value |
@@ -300,6 +307,8 @@ QST2/QST3 require `runtype=ts`, `lib=oqp`, and `init_hessian=model`.
 They use only electronic energies and gradients. The reactant is the input
 geometry. XYZ coordinates are Å; relative paths resolve from the input file.
 In concise input write `ts(search="qst3",product="p.xyz",guess="g.xyz")`.
+The default `coordsys=auto` handles inversion endpoints through automatic
+Cartesian fallback when necessary; an explicit Cartesian override is not required.
 See [transition-state searches](../workflows/transition-state-search.md).
 
 ### `neb_interpolation`
