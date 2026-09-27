@@ -305,3 +305,12 @@ remains the default update; GPR is opt-in. `model_hessian=constant` restores the
 earlier initial model. These options do not request a molecular Hessian
 or frequencies. See [model-curvature controls](transition-state-search.md#experimental-model-curvature)
 for element support, bounds, restrictions, fallback behavior, and Python examples.
+
+
+The automatic Lindh selection is shared by ground-state and excited-state
+**state-specific** minimum optimizations. It depends on the elements and geometry,
+not on the state index. The selected state's actual gradient supplies subsequent
+BFGS updates; the initial model is not an excited-state molecular Hessian. The
+same initial model can be used for a state-specific TS search with Bofill updates.
+Crossing objectives (MECI, MECP, TCI, including BaekA) remain on the constant
+initial model, as do NEB endpoint relaxations in the current implementation.
