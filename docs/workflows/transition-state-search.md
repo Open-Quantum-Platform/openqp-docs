@@ -73,7 +73,10 @@ retain tangent-only ascent when its estimated displacement exceeds 0.05 in atomi
 units. Otherwise P-RFO follows the model-Hessian eigenvector with greatest tangent
 overlap if that overlap exceeds 0.8, or the lowest eigenvalue. P-RFO takes over from
 step five; after that step, the existing mode-overlap tracking continues. Native
-trust-radius controls apply throughout. This implements the published STQN
+trust-radius controls apply throughout. If a nonfinite internal step triggers
+Cartesian recovery, the followed mode is converted and the previous internal
+QST tangent is discarded; the next QST step recomputes it in Cartesian coordinates.
+This implements the published STQN
 strategy within OpenQP's optimizer; it is not a reproduction of Gaussian's defaults.
 
 ## Experimental model curvature
@@ -180,8 +183,11 @@ IDPP minimizes the sum of squared deviations from interpolated endpoint pair
 distances, weighted by the inverse fourth power of the **current** distance.
 The gradient includes the derivative of that weight. A fixed-endpoint NEB/FIRE
 optimization uses this surrogate objective, without electronic energies or Hessians.
-Near-coincident intermediate pairs receive deterministic transverse displacements;
-for collinear exchanges this selects one of equivalent Cartesian directions.
+Near-coincident pairs are detected both at images and along the straight segments
+between adjacent images. A smooth deterministic transverse displacement breaks
+collinear exchange symmetry, including even image counts with no coincident
+sampled image; endpoints remain fixed. A final segment check rejects unresolved
+near-collisions even when the projected band force is small.
 Coincident endpoints are rejected. If IDPP fails to converge within 1000 steps,
 the calculation stops before electronic NEB and reports the failure.
 The optimized surrogate band is available as `mol.neb_idpp_result`.
