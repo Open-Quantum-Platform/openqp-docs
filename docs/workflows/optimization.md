@@ -294,3 +294,12 @@ constraints_file=my.constraints
 No standard shipped regression now depends on geomeTRIC. General minimum,
 frozen-distance, crossing-point, TS, IRC, MEP, and NEB examples use the native
 engine.
+
+## Experimental initial and updated curvature
+
+Native unconstrained minimum searches can select a geometry-dependent modified
+Lindh initial model and a local energy/gradient-based Gaussian process correction:
+`opt(S0,model_hessian=lindh,hessian_update=gpr)`. The defaults remain the existing
+constant model and BFGS update. These options do not request a molecular Hessian
+or frequencies. See [model-curvature controls](transition-state-search.md#experimental-model-curvature)
+for element support, bounds, restrictions, fallback behavior, and Python examples.

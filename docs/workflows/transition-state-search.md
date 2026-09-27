@@ -1,8 +1,8 @@
 # Transition-state searches without a calculated Hessian
 
 The native optimizer supports `prfo` (default), `qst2`, and `qst3`. QST searches
-combine synchronous transit with the existing P-RFO optimizer and Bofill updates
-of a model Hessian. They evaluate electronic energies and nuclear gradients;
+combine synchronous transit with the existing P-RFO optimizer and, by default,
+Bofill updates of a model Hessian. They evaluate electronic energies and nuclear gradients;
 they do not calculate an initial or final molecular Hessian, frequencies, or an IRC.
 A converged geometry is a **candidate transition state** until its stationary-point
 character and connection to the intended reactant and product are established.
@@ -75,6 +75,73 @@ overlap if that overlap exceeds 0.8, or the lowest eigenvalue. P-RFO takes over 
 step five; after that step, the existing mode-overlap tracking continues. Native
 trust-radius controls apply throughout. This implements the published STQN
 strategy within OpenQP's optimizer; it is not a reproduction of Gaussian's defaults.
+
+## Experimental model curvature
+
+The existing default remains `model_hessian=constant,hessian_update=auto`.
+To use geometry-dependent initial curvature and an energy/gradient-based local
+Gaussian process correction together, set:
+
+```text
+rhf/sto-3g
+ts(S0,search="qst3",product="product.xyz",guess="guess.xyz",model_hessian="lindh",hessian_update="gpr",gpr_history=8,gpr_length_scale=0.5,maxit=50)
+geom="reactant.xyz"
+```
+
+The same options work for a minimum search:
+
+```text
+rhf/sto-3g
+opt(S0,model_hessian="lindh",hessian_update="gpr",maxit=50)
+geom="initial.xyz"
+```
+
+In sectioned input, keep `[input] runtype=optimize` or `ts`, and add:
+
+```ini
+[oqp]
+init_hessian=model
+model_hessian=lindh
+hessian_update=gpr
+gpr_history=8
+gpr_length_scale=0.5
+```
+
+The Python API accepts the same names:
+
+```python
+job.workflow.ts(search="qst3", product="product.xyz", guess="guess.xyz",
+                model_hessian="lindh", hessian_update="gpr",
+                gpr_history=8, gpr_length_scale=0.5)
+# For a minimum: job.workflow.optimize(model_hessian="lindh", hessian_update="gpr")
+```
+
+The modified Lindh model estimates initial curvature from the geometry and
+covalent radii (H–Ar). It constructs Cartesian curvature first, so a QST
+Cartesian fallback uses the same model. The local derivative Gaussian process
+then uses the optimization's own energies and gradients in a bounded span of
+recent Cartesian displacements. It corrects the current quasi-Newton model in
+that span; it does not replace the rest of the approximate Hessian or take
+steps using only a predicted energy and gradient. This is an experimental
+combination, not a reproduction of a published full GPR TS optimizer.
+
+The GPR history limit is 3–20 observations and the fixed length scale is
+0.001–10 bohr (defaults 8 and 0.5 bohr). Insufficient data or a failed fit leaves
+BFGS/Bofill curvature in use, with a diagnostic in the log. A recovery attempt
+starts a fresh history. No extra electronic evaluations or calculated molecular
+Hessians are requested by either option. Neither model curvature nor its GPR
+correction establishes the stationary-point order or supplies frequencies.
+
+These options currently support only unconstrained native minimum and TS
+searches, including QST2/QST3. Nondefault controls are rejected for frozen
+distances, QM/MM, crossing searches, NEB, IRC, MEP, external optimizers, or an
+initial Hessian calculated analytically or numerically. The example
+`examples/OPT/NH3_RHF-HF_QST3_LINDH_GPR_OQP.oqp` demonstrates the controls with
+three iterations and recovery disabled; it is not a molecular speed benchmark.
+No convergence or speedup advantage is claimed. Compare actual energy/gradient
+call counts only after confirming that searches reach the same candidate saddle.
+See the [keyword definitions](../keywords/oqp.md#model_hessian) for defaults,
+bounds, regularization, and element support.
 
 ## IDPP initialization for NEB
 

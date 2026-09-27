@@ -130,10 +130,94 @@ Mode-following selector for transition-state style steps.
 | Used by | native transition-state optimization |
 
 Initial Hessian policy for native P-RFO transition-state searches. `model`
-uses the inexpensive internal-coordinate model Hessian. `numerical` and
+uses the inexpensive approximate Hessian selected by `model_hessian`. `numerical` and
 `analytical` calculate a real Cartesian Hessian for the selected state before
 the first TS step. In concise input, use
 `ts(S0,hessian=model|numerical|analytical)`.
+
+### `model_hessian`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `constant` |
+| Values | `constant`, `lindh` |
+| Used by | native `optimize` and `ts` with `init_hessian=model` |
+
+`constant` preserves the existing initialization: fixed force constants for
+internal-coordinate types, or `0.5 I` in Cartesian coordinates. The experimental
+`lindh` option constructs a geometry-dependent approximate Cartesian Hessian
+from bond, angle, and torsion contributions and transforms it to the optimizer's
+coordinates. It also applies when QST switches to Cartesian coordinates.
+
+The present model is the **modified Lindh variant using covalent radii**,
+following the [pysisyphus reference implementation at revision
+`a4ce10dd`](https://github.com/eljost/pysisyphus/tree/a4ce10dd6d7fdcb3d813f1c730eb365d29041999).
+Its parameter support is H–Ar; heavier elements are rejected rather than assigned
+extrapolated coefficients. A Cartesian eigenvalue floor of
+`0.05 hartree/bohr²` regularizes null and weakly represented directions before
+transformation. This model is a search preconditioner, not a calculated molecular
+Hessian and not a source of frequencies.
+
+Nondefault model/GPR controls require the native `optimize` or `ts` driver and
+`init_hessian=model`. Frozen-distance constraints, QM/MM, crossing searches,
+NEB, IRC, MEP, and external optimizers are currently unsupported and rejected.
+See [experimental model curvature](../workflows/transition-state-search.md#experimental-model-curvature).
+
+### `hessian_update`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `auto` |
+| Values | `auto`, `gpr` |
+| Used by | native `optimize` and `ts` with `init_hessian=model` |
+
+`auto` retains BFGS for minimum searches and Bofill for TS searches. The
+experimental `gpr` option fits a local Gaussian process to electronic energies
+and gradients already obtained during optimization. Its fixed-length-scale
+radial-basis-function kernel supplies a curvature correction only in the span
+of recent Cartesian displacements; the remaining curvature retains the
+quasi-Newton approximation. Both `constant` and `lindh` initial models can be
+combined with `gpr`.
+
+Insufficient, redundant, ill-conditioned, or otherwise unreliable observations
+leave the ordinary quasi-Newton update in use. The optimizer logs accepted
+corrections and fallback diagnostics. Every optimization step still evaluates
+the actual electronic energy and gradient. GPR adds no electronic evaluations,
+uses no pretrained potential, and does not calculate a molecular Hessian.
+This combination is experimental; a reduction in molecular optimization cost
+has not been demonstrated for OpenQP.
+
+### `gpr_history`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `8` |
+| Range | `3`–`20`, inclusive |
+| Used by | `hessian_update=gpr` |
+
+Maximum number of recent energy/gradient observations retained for the local
+fit. The displacement span has rank at most `gpr_history - 1`, limiting the
+dense fit to at most 400 observations even for a large molecule. This is a
+maximum history length, not a request for additional electronic calculations.
+A nondefault value requires `hessian_update=gpr`.
+
+### `gpr_length_scale`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.5` |
+| Units | bohr |
+| Range | finite values in `[0.001, 10]` |
+| Used by | `hessian_update=gpr` |
+
+Fixed kernel length scale for displacements in the orthonormal Cartesian
+history span. It remains in bohr when the optimizer uses internal coordinates.
+A nondefault value requires `hessian_update=gpr`. This parameter controls the
+local fit, not the optimizer's trust radius.
 
 ### `spring`
 
