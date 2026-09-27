@@ -299,7 +299,9 @@ engine.
 
 Native unconstrained minimum searches can select a geometry-dependent modified
 Lindh initial model and a local energy/gradient-based Gaussian process correction:
-`opt(S0,model_hessian=lindh,hessian_update=gpr)`. The defaults remain the existing
-constant model and BFGS update. These options do not request a molecular Hessian
+`opt(S0,model_hessian=lindh,hessian_update=gpr)`. By default, `model_hessian=auto` selects modified Lindh for supported isolated
+unconstrained H–Ar molecules and retains the constant model elsewhere. BFGS
+remains the default update; GPR is opt-in. `model_hessian=constant` restores the
+earlier initial model. These options do not request a molecular Hessian
 or frequencies. See [model-curvature controls](transition-state-search.md#experimental-model-curvature)
 for element support, bounds, restrictions, fallback behavior, and Python examples.

@@ -140,12 +140,23 @@ the first TS step. In concise input, use
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `constant` |
-| Values | `constant`, `lindh` |
+| Default | `auto` |
+| Values | `auto`, `constant`, `lindh` |
 | Used by | native `optimize` and `ts` with `init_hessian=model` |
 
-`constant` preserves the existing initialization: fixed force constants for
-internal-coordinate types, or `0.5 I` in Cartesian coordinates. The experimental
+`auto` selects the modified Lindh model for isolated, unconstrained native
+minimum and TS searches with a model initial Hessian, at least two atoms, and
+only H–Ar elements. The update remains BFGS for minima and Bofill for TS searches;
+GPR is opt-in. This is a practical default based on a geometry-dependent initial
+estimate, not a claim that it is fastest for every molecule. Auto retains the
+constant model for unsupported elements, single atoms, constraints, QM/MM, and
+crossing/path searches; an explicitly calculated initial Hessian takes precedence.
+The log reports the selected model. Low-level `OQPEngine` callers must set
+`project_global_rigid_modes=True` to identify an isolated molecular objective
+before automatic Lindh selection; a lab-frame objective retains the constant model.
+
+`constant` explicitly restores the previous initialization: fixed force constants for
+internal-coordinate types, or `0.5 I` in Cartesian coordinates. The explicit
 `lindh` option constructs a geometry-dependent approximate Cartesian Hessian
 from bond, angle, and torsion contributions and transforms it to the optimizer's
 coordinates. It also applies when QST switches to Cartesian coordinates.
@@ -159,7 +170,7 @@ extrapolated coefficients. A Cartesian eigenvalue floor of
 transformation. This model is a search preconditioner, not a calculated molecular
 Hessian and not a source of frequencies.
 
-Nondefault model/GPR controls require the native `optimize` or `ts` driver and
+Explicit `lindh` or `gpr` controls require the native `optimize` or `ts` driver and
 `init_hessian=model`. Frozen-distance constraints, QM/MM, crossing searches,
 NEB, IRC, MEP, and external optimizers are currently unsupported and rejected.
 See [experimental model curvature](../workflows/transition-state-search.md#experimental-model-curvature).

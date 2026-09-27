@@ -78,9 +78,21 @@ strategy within OpenQP's optimizer; it is not a reproduction of Gaussian's defau
 
 ## Experimental model curvature
 
-The existing default remains `model_hessian=constant,hessian_update=auto`.
-To use geometry-dependent initial curvature and an energy/gradient-based local
-Gaussian process correction together, set:
+The default is `model_hessian=auto,hessian_update=auto`: supported isolated,
+unconstrained H–Ar molecules use modified Lindh initial curvature with Bofill
+updates for TS searches (BFGS for minimum searches). Unsupported cases retain
+the constant model, and a calculated initial Hessian takes precedence. Explicit
+`model_hessian=constant` restores the earlier model. GPR remains optional because
+a molecular performance advantage has not been established for this implementation.
+
+These controls are independent of the TS initial-guess method. QST2/QST3 use
+reactant/product structures to determine the initial uphill direction; Lindh
+sets the initial model Hessian; Bofill or the optional GPR correction updates
+curvature as the search proceeds. Thus QST can use either model/update choice,
+and both curvature controls also work with a single-guess P-RFO TS search or
+ordinary minimum optimization. Selecting a Hessian model does not enable QST.
+
+To additionally enable the energy/gradient-based local Gaussian process, set:
 
 ```text
 rhf/sto-3g
