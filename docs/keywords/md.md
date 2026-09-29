@@ -27,16 +27,32 @@ is described (SOC-NAMD). Enabling [`[input] qmmm_flag=true`](input.md#qmmm_flag)
 embeds the MRSF-TDDFT QM region in an OpenMM MM environment via the ESPF
 operator.
 
-## Minimal NAMD Example
+## Minimal Reproducible NAMD Example
 
-Gas-phase FSSH on MRSF-TDDFT states:
+Gas-phase FSSH on MRSF-TDDFT states, starting from a specified geometry and
+velocity file:
 
 `.oqp`:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g* namd(S1)
+mrsf(nstate=5)/bhhlyp/6-31g*
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",rescale=auto)
 geom="molecule.xyz"
 ```
+
+Here `dt=0.5` fs and `nstep=400` give a total propagation time of 200 fs:
+
+\[
+t_{\mathrm{total}} = n_{\mathrm{step}}\,\Delta t.
+\]
+
+The geometry and velocity files form one initial condition and must list atoms
+in the same order. Here `rescale=auto` uses hop-triggered analytic-NAC
+directional rescaling when that route is supported and otherwise uses isotropic
+rescaling. It does not alter the initial velocity file; it controls velocity
+adjustment only when a surface hop occurs. See [`velocity`](#velocity) for the
+file format, units, unit conversion, and preparation of Maxwell--Boltzmann or
+externally sampled velocities.
 
 Python:
 
@@ -46,7 +62,8 @@ from oqp.openqp import OpenQP
 job = OpenQP("molecule_namd")
 job.molecule("molecule.xyz")
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
-job.workflow.namd(init_state="S1")
+job.workflow.namd(init_state="S1", dt=0.5, nstep=400,
+                  velocity="molecule.vel", rescale="auto")
 mol = job.run()
 ```
 
@@ -70,10 +87,66 @@ nstate = 5
 
 [md]
 active    = 2
-nstep     = 200
+nstep     = 400
 dt        = 0.5
-init_temp = 300.0
+velocity  = molecule.vel
+rescale   = auto
 ```
+
+## Choosing a Surface-Hopping Treatment
+
+The propagation coupling and the momentum adjustment at a hop are separate
+choices. The following combinations reproduce the four representative
+treatments commonly compared for MRSF NAMD. The two finite values of `thrshe`
+are expressed in Hartree: 10 kcal mol⁻¹ is `0.015936`, whereas the
+10 eV numerical ceiling is `0.367493`.
+
+| Treatment | Propagation TDC | Hop adjustment | Low-gap cutoff | Frustrated hop | Required options |
+| --- | --- | --- | --- | --- | --- |
+| Baeck–An | energy-curvature approximation | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=baeck_an`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
+| Overlap TDC | norm-preserving interpolation of state overlaps | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=npi`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
+| NAC-guided TDC reversal | norm-preserving interpolation of state overlaps | along `d_IJ`, evaluated for the selected hop | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=npi`, `rescale=hop_analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
+| Full NAC | velocity-contracted analytic derivative coupling | along `d_IJ` | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=analytic`, `rescale=analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
+
+After the MRSF method specification, choose exactly one of the following
+concise `.oqp` NAMD requests:
+
+```text
+# Baeck–An
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",tdc=baeck_an,rescale=isotropic,thrshe=0.015936,frustrated=none)
+
+# Overlap TDC
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",tdc=npi,rescale=isotropic,thrshe=0.015936,frustrated=none)
+
+# NAC-guided TDC reversal
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",tdc=npi,rescale=hop_analytic_nac,thrshe=0.367493,frustrated=reflect)
+
+# Full NAC
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",tdc=analytic,rescale=analytic_nac,thrshe=0.367493,frustrated=reflect)
+```
+
+The NAC-guided and Full NAC choices require the supported gas-phase,
+same-spin singlet MRSF model on a restricted open-shell triplet reference.
+They do not apply to SOC-NAMD or QM/MM NAMD. Both the SCF and MRSF response
+thresholds must be at most `1e-8`, for example:
+
+```text
+mrsf(nstate=4)/bhhlyp/6-31g* scf(conv=1e-8) tdhf(conv=1e-8)
+```
+
+`tdc` determines the scalar time-derivative coupling used to propagate the
+electronic amplitudes. `rescale` determines how nuclear momentum is adjusted
+after an energetically allowed hop. `thrshe` limits the energy gap for a hop
+attempt, and `frustrated` determines whether the momentum component along
+`d_IJ` is reflected when a directional hop lacks sufficient
+kinetic energy. For `tdc=baeck_an`, the separate `ba_gap_max` value limits the
+state pairs included in the Baeck–An approximation; its default of
+`0.0734986` Hartree corresponds to 2 eV.
+
+These four lines specify the treatment-dependent choices only. A comparative
+ensemble must also keep the electronic-structure model, initial
+geometry/velocity pairs, `seed`, `rng_stream`, `dt`, `substep`, `decoherence`,
+state count, and numerical continuity settings identical among treatments.
 
 ## Core Dynamics Keywords
 
@@ -85,7 +158,9 @@ init_temp = 300.0
 | Default | `100` |
 | Used by | nuclear propagation |
 
-Number of nuclear (velocity-Verlet) steps.
+Number of nuclear (velocity-Verlet) steps. The requested propagation time is
+`nstep * dt`; there is no separate `total_time` keyword. For example,
+`nstep=400` and `dt=0.5` request 200 fs.
 
 ### `dt`
 
@@ -95,7 +170,8 @@ Number of nuclear (velocity-Verlet) steps.
 | Default | `0.5` |
 | Used by | nuclear propagation |
 
-Nuclear timestep in femtoseconds.
+Nuclear timestep in femtoseconds. Choose `dt` together with `nstep`, so that
+both the time resolution and total propagation time are explicit.
 
 ### `active`
 
@@ -115,10 +191,11 @@ manifold (`1 <= active <= ns + 3*nt`; see [`soc`](#soc)). For SOC runs,
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `200` |
+| Default | `50000` |
 | Used by | electronic propagation |
 
-Number of electronic sub-steps integrated per nuclear step.
+Number of electronic-amplitude integration sub-steps per nuclear step. This is
+not the number of nuclear steps and does not change the total propagation time.
 
 ### `decoherence`
 
@@ -150,25 +227,29 @@ used when `decoherence=edc`.
 | Field | Value |
 | --- | --- |
 | Type | float (Ha) |
-| Default | `0.1` |
-| Used by | hop gating |
+| Default | disabled (largest finite floating-point value) |
+| Used by | energy-gap condition for attempted hops |
 
-Energy-gap gate for hops: a hop is blocked when the state gap exceeds `thrshe`.
-The `0.1` Ha default applies to both same-spin and SOC dynamics and blocks
-large-gap transitions outside the intended local crossing region.
+Maximum state-energy gap for an attempted hop. The default does not impose a
+finite cutoff. Set an explicit positive value in Hartree only when the chosen
+surface-hopping protocol defines such a restriction.
 
 ### `tdc`
 
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `fd` |
-| Values | `fd`, `baeck_an` (`npi` pending) |
+| Default | `npi` |
+| Values | `fd`, `npi`, `analytic`, `baeck_an` |
 | Used by | time-derivative couplings |
 
 Time-derivative coupling scheme. `fd` uses the finite-difference
-(Hammes-Schiffer / Tully) overlap form. The norm-preserving interpolation
-(`npi`) option is pending.
+(Hammes-Schiffer--Tully) overlap form. `npi` uses norm-preserving interpolation
+of the phase-aligned state-overlap matrix. `analytic` contracts each analytic
+MRSF derivative-coupling vector with the nuclear velocity. The analytic route
+is available for same-spin singlet MRSF states built from a two-SOMO
+ROHF/ROKS triplet reference; the SCF and response convergence thresholds must
+both be at most `1e-8`.
 
 `baeck_an` propagates the electronic amplitudes with the lagged
 time-dependent Baeck-An (TD-BA) coupling instead of the overlap TDC. From the
@@ -209,6 +290,29 @@ comparisons and restart signatures. Pair it with `rescale=isotropic` to test the
 approximate electronic coupling without adding an analytic NAC-vector
 calculation at a hop.
 
+### `rescale`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `auto` |
+| Values | `auto`, `isotropic`, `analytic_nac`, `hop_analytic_nac` |
+| Used by | velocity adjustment after a successful or frustrated hop |
+
+Select the direction used to adjust the nuclear velocity while conserving the
+total energy at a surface hop. `isotropic` scales all velocity components.
+`analytic_nac` uses the analytic derivative-coupling vector already evaluated
+for every state pair. `hop_analytic_nac` evaluates only the active--candidate
+pair when a hop is selected. `auto` chooses `hop_analytic_nac` for a supported
+gas-phase, same-spin singlet MRSF calculation with sufficiently converged SCF
+and response states, and otherwise uses `isotropic`.
+
+The `tdc` and `rescale` choices are independent. For example,
+`tdc=npi,rescale=auto` propagates the electronic amplitudes from state overlaps
+and evaluates an analytic derivative-coupling vector only for a selected hop.
+`tdc=analytic,rescale=analytic_nac` uses analytic derivative couplings for both
+electronic propagation and directional velocity adjustment.
+
 ### `trivial`
 
 | Field | Value |
@@ -232,6 +336,139 @@ it off unless the chosen protocol has been validated with it.
 
 State-overlap threshold that flags a trivial crossing. Only used when
 `trivial=True`.
+
+## Electronic-Structure Continuity and Energy-Discontinuity Treatment
+
+### `mo_reuse`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `True` |
+| Used by | SCF initial guess after the first nuclear step |
+
+Reuse the converged orbitals from the preceding geometry as the initial guess
+for the next SCF calculation. This helps retain the same two-SOMO triplet
+reference along an MRSF trajectory. When disabled, each step uses the configured
+standalone SCF guess.
+
+### `scf_guess_retry`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `True` |
+| Used by | recovery from a failed continuation SCF calculation |
+
+After an SCF calculation starting from the preceding-step orbitals fails,
+attempt one fresh-guess calculation. A successful ordinary SCF step does not
+invoke this retry.
+
+### `scf_fail`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `escalate` |
+| Values | `escalate`, `restart` |
+| Used by | response to a failed continuation SCF calculation |
+
+`escalate` retains the standard OpenQP sequence of increasingly robust SCF
+convergers. `restart` instead recomputes the reference from a fresh guess with
+SOSCF and treats that geometry as a discontinuous reference boundary: the
+electronic coefficients are retained and no surface hop is attempted during
+that step.
+
+### `ref_follow`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `soscf` |
+| Values | `off`, `soscf`, `diis_vshift` |
+| Used by | continuity of the ROHF/ROKS two-SOMO reference |
+
+Select the SCF procedure used after the initial step to retain the preceding
+two-SOMO reference. `soscf` uses SOSCF. `diis_vshift` uses DIIS with a
+0.2-Hartree level shift. `off` leaves reference continuity to the ordinary SCF
+settings.
+
+### `ref_switch_rescale`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `True` |
+| Used by | total-energy treatment at a detected reference change |
+
+When the SOMO-overlap criterion identifies a change of reference, adjust the
+nuclear velocity isotropically so that the total energy is continuous across
+the change. The event and energy adjustment are recorded separately from a
+physical surface hop.
+
+### `somo_tol`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.5` |
+| Used by | detection of a two-SOMO reference change |
+
+Minimum aligned overlap retained by the two-SOMO subspace. A smaller overlap
+is recorded as a reference-change event.
+
+### `frustrated`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `reflect` |
+| Values | `none`, `reflect` |
+| Used by | frustrated directional hops |
+
+Choose the treatment when the available kinetic energy is insufficient for a
+hop whose velocity adjustment uses an analytic derivative-coupling direction.
+`none` leaves the velocity unchanged. `reflect` reverses its component along
+the derivative-coupling vector.
+
+### `disc_rescale`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `True` |
+| Used by | residual numerical total-energy discontinuities |
+
+After the finer nuclear integrations selected by `disc_substeps` are exhausted,
+permit an isotropic numerical velocity adjustment when the electronic
+calculation is converged and the target kinetic energy is positive. This
+adjustment is recorded separately and is not a physical surface hop.
+
+### `disc_tol`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Ha) |
+| Default | `0.002` |
+| Used by | detection of a numerical total-energy discontinuity |
+
+Absolute pre-hop change in total energy that initiates finer nuclear
+integration. It is a trigger for recalculation, not an upper bound on the final
+numerical velocity adjustment.
+
+### `disc_substeps`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `10` |
+| Used by | finer nuclear integration after an energy discontinuity |
+
+Maximum number of equal nuclear substeps used to repeat an interval whose
+pre-hop energy change exceeds `disc_tol`. OpenQP tries progressively finer
+partitions (`2`, `4`, `8`, and then the configured maximum when necessary).
+Set `0` to disable this recalculation; when either `disc_rescale` or
+`ref_switch_rescale` is enabled, at least two substeps are used.
 
 ## Initial Conditions
 
@@ -260,6 +497,77 @@ Initial velocity source: `maxwell` samples a Maxwell-Boltzmann distribution at
 file. `maxwell` is a classical distribution, not a vibrational Wigner sample.
 One `.oqp` NAMD request uses one initial geometry; a Wigner ensemble must supply
 one independently sampled geometry/velocity pair per trajectory.
+
+#### Velocity-file format
+
+A velocity file contains exactly one `vx vy vz` line per atom, in the same atom
+order as the geometry. It has no atom labels, atom count, or comment line. The
+components are Cartesian velocities in atomic units, bohr per atomic unit of
+time, not momenta. For a six-atom geometry the file therefore has six lines:
+
+```text
+ 1.2345678901234567e-04  -2.3456789012345678e-04   3.4567890123456789e-05
+-4.5678901234567890e-05   5.6789012345678901e-05  -6.7890123456789012e-05
+ 7.8901234567890123e-05  -8.9012345678901234e-05   9.0123456789012345e-05
+-1.0123456789012345e-04   1.1234567890123456e-04  -1.2345678901234567e-04
+ 1.3456789012345678e-04  -1.4567890123456789e-04   1.5678901234567890e-04
+-1.6789012345678901e-04   1.7890123456789012e-04  -1.8901234567890123e-04
+```
+
+OpenQP reads the numerical array, requires `3N` values, reshapes it to
+`(N, 3)`, and removes centre-of-mass translation. It does not remove overall
+rotation. For an exact comparison among dynamics programs, prepare a velocity
+set whose centre-of-mass velocity is already zero, use the same atomic masses,
+and supply the same full-precision values to every program.
+
+Common conversions to the velocity unit required by the file are:
+
+```text
+v [bohr / atomic unit of time] = 0.0457102876725563 * v [angstrom / fs]
+v [bohr / atomic unit of time] = v [bohr / fs] / 41.341374575751
+```
+
+Do not copy velocities from a trajectory file without checking its units.
+
+#### Preparing a velocity file
+
+For a Wigner or other vibrationally sampled ensemble, export each sampled
+geometry together with its paired velocity, convert the velocity components to
+atomic units, remove centre-of-mass translation consistently, and write one
+`.vel` file per trajectory. Do not combine a Wigner-sampled geometry with an
+independently generated Maxwell--Boltzmann velocity unless that is the intended
+initial-condition distribution.
+
+For a classical Maxwell--Boltzmann initial condition, OpenQP can generate the
+velocity internally with
+`velocity=maxwell,init_temp=300,seed=SEED,rng_stream=TRAJECTORY_ID`. To create a
+portable file before running any dynamics program, place one atomic mass in
+dalton per line in `molecule.mass`, in geometry order, and run:
+
+```python
+import numpy as np
+
+temperature = 300.0
+seed = 20260929
+
+kb_hartree_per_k = 3.166811563e-6
+amu_to_electron_mass = 1822.888486209
+
+mass_au = np.loadtxt("molecule.mass", dtype=float) * amu_to_electron_mass
+rng = np.random.default_rng(seed)
+sigma = np.sqrt(kb_hartree_per_k * temperature / mass_au)
+velocity = rng.normal(size=(mass_au.size, 3)) * sigma[:, None]
+
+# Remove centre-of-mass translation in the same mass-weighted form used by OpenQP.
+velocity -= np.sum(mass_au[:, None] * velocity, axis=0) / np.sum(mass_au)
+
+np.savetxt("molecule.vel", velocity, fmt="%.16e")
+```
+
+This NumPy example defines a reproducible Maxwell--Boltzmann sample, but its
+random sequence is not the OpenQP counter-based sequence. Use the generated
+file, rather than regenerating the velocity independently, when two programs
+must start from exactly the same initial condition.
 
 ### `seed`
 
@@ -319,8 +627,8 @@ random threshold.
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `baeck_an` for same-spin NAMD; contextually `off` for SOC-NAMD |
-| Values | `off`, `baeck_an` |
+| Default | `off` |
+| Values | `off`, `baeck_an`, `analytic` |
 | Used by | independent NACME validation |
 
 Enable an energy-only time-dependent Baeck–An (TD-BA) diagnostic alongside the
@@ -336,9 +644,10 @@ peak location, not as an oracle or a replacement for TLF. It is based on a
 two-state near-crossing approximation and may overestimate couplings, especially
 outside its intended region. The current implementation supports same-spin
 NAMD. SOC-NAMD records its full complex spin-adiabatic overlap and anti-Hermitian
-TDC instead, so its inherited default is disabled contextually. An explicit
-non-`off` request through the Python workflow API is rejected rather than
-silently ignored. See the
+TDC instead. An explicit non-`off` request through the Python workflow API is
+rejected rather than silently ignored. `analytic` contracts each analytic
+derivative-coupling vector with the nuclear velocity and compares that signed
+quantity with the coupling used for electronic propagation. See the
 [Baeck-An references](../references.md#nonadiabatic-dynamics).
 
 ### `ba_gap_max`
@@ -434,8 +743,8 @@ non-finite failures are not delayed.
 | Values | `off`, `warn`, `error` |
 | Used by | same-spin NVE/FSSH energy validation |
 
-Validate the nominally microcanonical gas-phase or QM/MM trajectory, including
-same-spin and SOC drivers.
+Validate the nominally microcanonical gas-phase or QM/MM
+trajectory, including same-spin and SOC calculations.
 The driver records total-energy drift from step zero, the change from the
 previous step, the energy discontinuity at a successful hop or trivial state
 change, and drift per femtosecond. `warn` prints the NVE table without stopping;
@@ -499,12 +808,12 @@ integrator drift.
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `0` (automatic, approximately 10 fs) |
+| Default | `1` (every nuclear step) |
 | Used by | dense NAMD trajectory |
 
 Positive values write every Nth MD step to the dense binary trajectory. Zero
 chooses `round(10 fs / dt)`, with a minimum of one step. The final point and a
-point that triggers either strict NACME or NVE validation are written even when
+point that triggers either strict NACME or NVE validation is written even when
 they are not on the regular interval.
 
 ### `trajectory_file`
@@ -551,7 +860,7 @@ continued trajectory. Committed records are not rewritten.
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `0` (automatic, approximately 10 fs) |
+| Default | `10` (every ten nuclear steps) |
 | Used by | atomic NAMD checkpoint |
 
 Positive values write the restart checkpoint every Nth step. Zero chooses
@@ -603,6 +912,100 @@ same-spin/SOC and gas-phase/QM/MM driver combinations. The independent TD-BA
 NACME comparison remains same-spin only; SOC stores its complex overlap/TDC but
 does not reinterpret TD-BA as a spin-adiabatic reference.
 
+## Local Continuation with a Different Time Step
+
+### `continuation_checkpoint`
+
+| Field | Value |
+| --- | --- |
+| Type | string (file path) |
+| Default | *(empty)* |
+| Used by | source numerical state for a local continuation |
+
+Start a new same-spin analytic-TDC NAMD calculation from an existing restart
+checkpoint while writing new output files. This differs from `restart=true`:
+ordinary restart appends the original calculation with the same time step,
+whereas local continuation may reduce `dt` and keeps the source files
+unchanged. `continuation_checkpoint` and `continuation_trajectory` are both
+required, and `restart=true` must not be present.
+
+### `continuation_trajectory`
+
+| Field | Value |
+| --- | --- |
+| Type | string (file path) |
+| Default | *(empty)* |
+| Used by | source trajectory prefix for a local continuation |
+
+Dense trajectory paired with `continuation_checkpoint`. OpenQP requires the
+committed trajectory prefix to match the checkpoint step and calculation
+identity. The child calculation must use unused trajectory, checkpoint, log,
+and audit-file paths. In a continuation input, `nstep` is the absolute final
+step index, not the number of additional steps. Local continuation currently
+supports fixed-step, same-spin NAMD with `tdc=analytic`; the new `dt` cannot
+exceed the original time step recorded in the continuation history.
+
+Example:
+
+```text
+mrsf(nstate=2)/bhhlyp/sto-3g
+namd(S1,nstep=3,dt=0.05,tdc=analytic,
+     continuation_checkpoint="source.npz",
+     continuation_trajectory="source.trj",
+     trajectory_file="child.trj",restart_file="child.npz")
+geom="molecule.xyz"
+```
+
+## Ensemble and Thermostat
+
+### `ensemble`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `nve` |
+| Values | `nve`, `nvt` |
+| Used by | nuclear ensemble during NAMD |
+
+Select microcanonical (`nve`) propagation or Langevin canonical (`nvt`)
+propagation. NAMD owns this setting; the separate `[qmmm] ensemble` keyword for
+ground-state OpenMM dynamics does not control surface-hopping trajectories.
+
+### `thermostat`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `off` |
+| Values | `off`, `langevin` |
+| Used by | NVT nuclear propagation |
+
+Select the NAMD thermostat. `ensemble=nvt` requires `thermostat=langevin`.
+Conversely, an NVE calculation requires `thermostat=off`.
+
+### `thermostat_temperature`
+
+| Field | Value |
+| --- | --- |
+| Type | float (K) |
+| Default | value of `init_temp` |
+| Used by | Langevin thermostat |
+
+Target temperature for `ensemble=nvt,thermostat=langevin`. This controls the
+thermostat after propagation begins; `init_temp` separately controls internally
+sampled Maxwell--Boltzmann initial velocities.
+
+### `thermostat_friction`
+
+| Field | Value |
+| --- | --- |
+| Type | float (ps^-1) |
+| Default | `1.0` |
+| Used by | Langevin thermostat |
+
+Positive Langevin friction coefficient. It is required to be finite and
+strictly positive when the Langevin thermostat is enabled.
+
 ## SOC-NAMD (Intersystem Crossing)
 
 ### `soc`
@@ -640,7 +1043,7 @@ Selects the SOC-NAMD representation.
 
 The `mch` basis is the recommended production mode from the current validation
 work because it avoids the approximate weighted-gradient force used by the
-spin-adiabatic path.
+the spin-adiabatic path.
 
 ### `soc_du_dt_corr`
 

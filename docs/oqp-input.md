@@ -286,16 +286,19 @@ apply to the native minimum, crossing-point, and transition-state optimizers.
 MEP and IRC own their path step and gradient threshold, while NEB owns its FIRE
 band controls; those drivers do not use `ENGINE`. `NAMD`
 means the current `[md]` controls `nstep`,
-`dt`, `active`, `substep`, `decoherence`, `edc_c`, `thrshe`, `tdc`, `trivial`,
-`trivial_thresh`, `init_temp`, `velocity`, `seed`, `rng_stream`,
+`dt`, `active`, `substep`, `decoherence`, `edc_c`, `thrshe`, `tdc`, `rescale`,
+`trivial`, `trivial_thresh`, `init_temp`, `velocity`, `seed`, `rng_stream`,
 `first_hop_step`, `nacme_check`, `ba_gap_max`, `nacme_gate`,
 `nacme_gate_invariant_tol`, `nacme_gate_abs_tol`, `nacme_gate_rel_tol`,
 `nacme_gate_consecutive`, `nve_gate`, `nve_gate_abs_tol`,
 `nve_gate_step_tol`, `nve_gate_transition_tol`, `nve_gate_consecutive`,
-`trajectory_interval`, `restart_interval`,
-`trajectory_file`, `restart_file`, `restart`, `soc`,
-`soc_basis`, `soc_du_dt_corr`, `soc_tdc_grad_corr`, `grad_wthr`, `init_state`,
-`econs`, `dt_adaptive`, `dt_min`, and `dx_max`.
+`mo_reuse`, `scf_fail`, `scf_guess_retry`, `ref_follow`,
+`ref_switch_rescale`, `somo_tol`, `frustrated`, `disc_rescale`, `disc_tol`,
+`disc_substeps`, `trajectory_interval`, `restart_interval`, `trajectory_file`,
+`restart_file`, `restart`, `continuation_checkpoint`, `continuation_trajectory`,
+`ensemble`, `thermostat`, `thermostat_temperature`, `thermostat_friction`,
+`soc`, `soc_basis`, `soc_du_dt_corr`, `soc_tdc_grad_corr`, `grad_wthr`,
+`init_state`, `econs`, `dt_adaptive`, `dt_min`, and `dx_max`.
 `NEB` means the native options `product`, `images`/`nimage`, `spring`, `climb`,
 `fmax`, `frms`, `climb_fmax`, `dt`/`neb_dt`, `maxmove`, `align`, `opt_ends`,
 `end_fmax`, and `output`.
