@@ -134,7 +134,7 @@ The remaining options are separated by scientific purpose:
 | [NAMD Numerical Continuity](md-continuity.md) | Analytic-NAC cases A--D, `continuity=on|manual`, SCF/reference controls, retained-state criterion, substepping, and numerical energy correction |
 | [NAMD Diagnostics](md-diagnostics.md) | NACME comparison and NVE energy criteria, including which `error` policies can terminate a run |
 | [Initial Conditions and Restart](md-initial-restart.md) | velocity files and units, temperature, random streams, trajectory output, checkpoint restart, and local continuation |
-| [Ensembles and SOC-NAMD](md-ensemble-soc.md) | NVE/NVT/NPT, OpenMM restrictions, adaptive timestep, SOC basis, initialization, and SOC force diagnostics |
+| [Ensembles and experimental SOC-NAMD](md-ensemble-soc.md) | NVE/NVT/NPT, OpenMM restrictions, adaptive timestep, SOC development status, basis, initialization, and force diagnostics |
 | [NAMD Advanced Controls](md-advanced.md) | compact index of rarely changed settings and links to the detailed group pages |
 
 ## Sectioned `.inp` Compatibility

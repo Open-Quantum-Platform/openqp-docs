@@ -38,6 +38,14 @@ documented under [NAMD Numerical Continuity](md-continuity.md).
 
 ## SOC-NAMD
 
+!!! warning "Development status"
+    SOC-NAMD, including SOC-NAMD-QMMM, is still under active development and
+    must be treated as experimental. The inputs and restart records are
+    available for method development and numerical verification, but their
+    availability does not establish that the present force and coupling
+    approximations are ready for production scientific conclusions. Report the
+    selected basis and all approximations with any result.
+
 ### `soc`
 
 Default: `False`. `soc=True` enables surface hopping with spin--orbit coupling
@@ -52,9 +60,10 @@ spin-adiabatic transformation.
 | `adiabatic` | Propagate spin-adiabatic SOC eigenstates; the force uses the weighted-MCH approximation. |
 | `mch` | Propagate the spin-pure MCH basis with the active-root MCH gradient. |
 
-Default: `adiabatic`. The `mch` form is recommended for current production
-calculations because it avoids the approximate weighted force of the
-spin-adiabatic implementation.
+Default: `adiabatic`. For current development and numerical verification, the
+`mch` form is preferred because it avoids the approximate weighted force of
+the spin-adiabatic implementation. This preference does not change the
+experimental status of SOC-NAMD.
 
 ### `init_state`
 

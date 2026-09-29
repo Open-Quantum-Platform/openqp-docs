@@ -44,8 +44,10 @@ md(nstep=400,dt=0.5,velocity="molecule.vel")
 ```
 
 QM/MM NAMD supports `TDC_NAC` and `NAC` for a QM region without link atoms,
-using the documented frozen-embedding-field QM-region NAC approximation. Only
-SOC-NAMD requires a defined overlap/isotropic custom scheme, for example:
+using the documented frozen-embedding-field QM-region NAC approximation.
+SOC-NAMD remains experimental and is provided for method development and
+numerical verification. It requires a defined overlap/isotropic custom scheme,
+for example:
 
 ```text
 namd(scheme=custom,tdc=npi,rescale=isotropic,

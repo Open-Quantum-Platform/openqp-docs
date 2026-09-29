@@ -97,7 +97,7 @@ nav:
       - NAMD numerical continuity: keywords/md-continuity.md
       - NAMD diagnostics: keywords/md-diagnostics.md
       - Initial conditions and restart: keywords/md-initial-restart.md
-      - Ensembles and SOC-NAMD: keywords/md-ensemble-soc.md
+      - Ensembles and experimental SOC-NAMD: keywords/md-ensemble-soc.md
       - NAMD advanced controls: keywords/md-advanced.md
       - qmmm: keywords/qmmm.md
       - properties: keywords/properties.md

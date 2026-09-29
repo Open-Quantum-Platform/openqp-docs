@@ -57,7 +57,7 @@ full bibliographies inside each keyword entry.
 | [`[pt2]`](wavefunction.md#pt2) | CASPT2, NEVPT2, and QDPT controls. |
 | [`[dftgrid]`](dftgrid.md) | DFT quadrature and hybrid/range-separated functional controls. |
 | [`[tdhf]`](tdhf.md) | TDHF/TDDFT/SF/MRSF/UMRSF response settings. |
-| [`[md]`](md.md) | Nonadiabatic surface-hopping molecular dynamics (`runtype=namd`), including SOC-NAMD. |
+| [`[md]`](md.md) | Nonadiabatic surface-hopping molecular dynamics (`runtype=namd`), including experimental SOC-NAMD. |
 | [NAMD advanced controls](md-advanced.md) | Custom schemes, diagnostic criteria, electronic-structure continuity, restart, and SOC-specific controls. |
 | [`[qmmm]`](qmmm.md) | Hybrid QM/MM setup: QM region, force field, ESPF embedding, and link atoms. |
 | [`[properties]`](properties.md) | Gradients, NMR, export, and property requests. |

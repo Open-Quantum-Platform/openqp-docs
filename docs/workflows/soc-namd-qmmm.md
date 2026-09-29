@@ -14,8 +14,12 @@ It is dispatched by `runtype=namd` with `[md] soc=true` and
 and [`[qmmm]`](../keywords/qmmm.md) sections. This page introduces the method and
 gives a complete, runnable input deck.
 
-!!! note "Available in OpenQP 1.3.0"
-    SOC-NAMD-QMMM and `runtype=namd` are included in OpenQP 1.3.0.
+!!! warning "Under active development"
+    SOC-NAMD and SOC-NAMD-QMMM are included in OpenQP 1.3.0 but remain
+    experimental. A runnable input does not imply that the present force and
+    coupling approximations are ready for production scientific conclusions.
+    Use this workflow for method development and numerical verification, and
+    report the selected basis and the limitations below with every result.
 
 ## Overview and theory
 
@@ -58,10 +62,12 @@ the active spin-adiabatic state, with components below
 through strong spin mixing. The `soc_du_dt_corr` and `soc_tdc_grad_corr` flags
 are optional approximate corrections for this adiabatic force path.
 
-For production trajectories, `soc_basis=mch` propagates in the spin-pure MCH
-basis and uses exact active-root MCH gradients; with QM/MM this selects the
-`NAMD_SOC_MCH_QMMM` driver. At an ISC hop, velocities are rescaled to conserve
-the total energy (including the ESPF embedding energy change).
+For current development and numerical verification, `soc_basis=mch` is the
+preferred path because it propagates in the spin-pure MCH basis and uses exact
+active-root MCH gradients; with QM/MM this selects the `NAMD_SOC_MCH_QMMM`
+driver. At an ISC hop, velocities are rescaled to conserve the total energy
+(including the ESPF embedding energy change). This preference does not change
+the experimental status of SOC-NAMD.
 
 ### ESPF QM/MM embedding
 
@@ -221,10 +227,9 @@ Notes on the deck:
   periodic ESPF-PME branch for a solvated box; use `NoCutoff` for an isolated
   cluster.
 
-## Production records, restart, and energy conservation
+## Trajectory records, restart, and energy conservation
 
-SOC-NAMD writes the same restartable production record family as same-spin
-NAMD:
+SOC-NAMD writes the same restartable record family as same-spin NAMD:
 
 - `<project>.namd.trj` is an appendable packed binary trajectory intended for
   memory-mapped analysis. Besides geometry, velocity, energy, population, hop,
@@ -259,9 +264,10 @@ for SOC; the SOC record itself retains the complete complex overlap/TDC.
 
 If a SOC force path produces a slow drift,
 [`econs=true`](../keywords/md-ensemble-soc.md#spin-adiabatic-force-diagnostics) rescales velocities each step to conserve
-`E_tot` as a temporary stabilizer. Prefer `soc_basis=mch` for production
-SOC-NAMD-QMMM trajectories because it uses exact active-root MCH gradients; see
-the [force-basis note](#soc-namd-intersystem-crossing) above.
+`E_tot` as a temporary stabilizer. For development and numerical verification,
+prefer `soc_basis=mch` because it uses exact active-root MCH gradients; see the
+[force-basis note](#soc-namd-intersystem-crossing) above. Do not interpret this
+as production-readiness of the complete SOC-NAMD method.
 
 ## References
 
