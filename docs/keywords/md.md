@@ -756,9 +756,10 @@ invariant failure and stops after `nacme_policy_consecutive` consecutive referen
 failures.
 
 The exact invariants are a zero diagonal and antisymmetry of both the MD TDC and
-the supplied reference. TD-BA is compared by magnitude. A future phase-aligned
-analytic NAC reference can use the same policy in signed mode after contracting
-the analytic vector with the nuclear velocity, `d_IJ . v`, at the matching time.
+the supplied reference. TD-BA is compared by magnitude. With
+`nacme_check=analytic`, the same policy compares the signed, phase-aligned
+analytic NAC reference after contracting the derivative-coupling vector with
+the nuclear velocity, `d_IJ . v`, at the matching time.
 
 ### `nacme_policy_invariant_tol`
 

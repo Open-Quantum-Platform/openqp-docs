@@ -286,13 +286,16 @@ so it is the first TLF2 interval and the first electronic-coefficient
 propagation and hopping decision. Setting `first_hop_step=2` explicitly delays
 only the active-state transition and hopping RNG: step 1 still propagates the
 coefficients and computes hop probabilities.
-Same-spin NAMD defaults to `nacme_check="baeck_an"`, which logs an independent
-energy-curvature estimate beside the overlap/TLF TDC. The comparison is
-magnitude-only because TD-BA has no wavefunction phase information. The default
-`nacme_policy="off"` records the diagnostic without enforcing it; use `warn` or
-`error` only after calibrating the absolute and relative
-tolerances for the target system. The same policy accepts a signed, phase-aligned
-analytic `d_IJ . v` reference when that provider is connected in a later release.
+Independent NACME comparison is disabled by default
+(`nacme_check="off"`). Set `nacme_check="baeck_an"` to log an independent
+energy-curvature estimate beside the overlap/TLF TDC; this comparison is
+magnitude-only because TD-BA has no wavefunction phase information. Set
+`nacme_check="analytic"` to compare against the signed, phase-aligned analytic
+`d_IJ . v` reference when that provider is available for the selected
+electronic-structure route. The default `nacme_policy="off"` records an enabled
+comparison without enforcing it. Select `warn` or `error` only together with an
+explicit `nacme_check` and after calibrating the absolute and relative tolerances
+for the target system.
 
 All same-spin/SOC and gas-phase/QM/MM NAMD drivers write a dense appendable,
 packed-binary `<project>.namd.trj` and an atomic compressed checkpoint.
