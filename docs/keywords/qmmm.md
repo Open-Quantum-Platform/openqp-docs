@@ -384,13 +384,14 @@ legacy bookkeeping with its own default of one.
 | --- | --- |
 | Type | string |
 | Default | `nve` |
-| Values | `nve`, `nvt`, `npt` |
+| Supported values | `nve`, `nvt` |
 
 This is a legacy `[qmmm]` propagation key. New `.oqp` and Python inputs use
 `md(ensemble=nve|nvt)` instead. The current unified `md(...)` surface supports
-NVE and Langevin NVT; legacy ground-state QM/MM NPT remains sectioned-input
-functionality because it additionally requires `pressure` and
-`barostat_interval`.
+NVE and Langevin NVT. NPT is a defined ensemble and the schema retains
+`pressure` and `barostat_interval`, but the current QM/MM runtime rejects it:
+the OpenMM barostat trial would otherwise use a linearized external force
+instead of a newly evaluated QM/MM energy for the proposed box.
 
 ### `friction`
 

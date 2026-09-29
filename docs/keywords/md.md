@@ -1048,6 +1048,13 @@ geom="molecule.xyz"
 initial velocities are prepared. `nvt` selects canonical propagation with a
 Langevin thermostat at `temperature` and with the damping set by `friction`.
 
+NPT is a standard ensemble, but it is not yet available in OpenQP dynamics.
+For QM/MM NPT, the pressure-control move must evaluate the QM/MM energy at each
+trial box. The current ESPF-QM/MM driver does not provide that barostat-trial
+energy and therefore rejects `ensemble=npt` instead of running an invalid NPT
+trajectory. Its intended future public spelling is
+`md(ensemble=npt,temperature=...,pressure=...,barostat_interval=...)`.
+
 The older public spelling `thermostat=off|langevin` remains accepted for input
 compatibility and is translated to `ensemble=nve|nvt`. New inputs should use
 `ensemble`. Do not specify both spellings in a new input.
