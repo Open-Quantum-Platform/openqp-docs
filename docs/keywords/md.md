@@ -234,12 +234,14 @@ used when `decoherence=edc`.
 | Field | Value |
 | --- | --- |
 | Type | float (Ha) |
-| Default | disabled (largest finite floating-point value) |
+| Default | `0.367493` (10 eV) |
 | Used by | energy-gap condition for attempted hops |
 
-Maximum state-energy gap for an attempted hop. The default does not impose a
-finite cutoff. Set an explicit positive value in Hartree only when the chosen
-surface-hopping protocol defines such a restriction.
+Maximum state-energy gap for an attempted hop. The default 10 eV ceiling
+excludes only exceptionally large-gap hop candidates. Set a smaller positive
+value in Hartree when the selected surface-hopping protocol defines a tighter
+restriction; the Baeck–An and Overlap presets use 10 kcal mol⁻¹
+(`0.015936` Hartree).
 
 ### `tdc`
 
