@@ -23,7 +23,7 @@ surviving ensemble.
 
 | Case | Numerical situation | Criterion or origin | Default action with `continuity=on` | Does the criterion terminate a trajectory? |
 | --- | --- | --- | --- | --- |
-| A | Rotation within the doubly occupied orbital space | Consecutive occupied orbitals can rotate even though the occupied subspace is unchanged. | Evaluate state overlaps with exact determinant-factorized minors (`state_overlap=exact`). | No. The exact overlap removes the false loss of state overlap caused by a truncated formula. |
+| A | Rotation within the doubly occupied orbital space | Consecutive occupied orbitals can rotate even though the occupied subspace is unchanged. | Always evaluate state overlaps with exact determinant-factorized minors (internal `tlf=0`). | No. The exact overlap removes the false loss of state overlap caused by a truncated formula. |
 | B | Change of the two-SOMO electronic reference | Either matched SOMO overlap is below `0.5`. | Reuse the preceding orbitals; use SOSCF, then the normal SCF escalation and one fresh-guess retry; diagnose the reference change and consider numerical energy correction after finer nuclear integration. | The SOMO criterion does not terminate the trajectory. Termination occurs only if every SCF attempt fails to converge. |
 | C | Loss of active-state character from the retained state space | The projection norm of the current active state onto the preceding retained states is below `0.7`. | Record the event and the missing squared norm; retain the specified state count. | No. It is a diagnostic requiring a larger-state convergence study, not a hop or velocity-rescaling condition by itself. |
 | D | Finite-step nuclear integration error | The pre-hop total-energy change exceeds `0.002` Ha in magnitude. | Repeat the nuclear interval with progressively finer subdivisions up to 10; if a residual change remains, permit the documented numerical energy correction when its physical positivity conditions are satisfied. | No. The condition requests recalculation. A separate `nve_policy=error` can stop a calculation under its own criteria. |
@@ -50,7 +50,6 @@ modified calculation from being mistaken for the complete treatment.
 ```text
 mrsf(nstate=6)/bhhlyp/6-31g*
 namd(S1,scheme=TDC_NAC,continuity=manual,
-     state_overlap=exact,
      state_check=true,state_tol=0.8,
      disc_tol=0.001,disc_substeps=20)
 md(nstep=400,dt=0.5,velocity="molecule.vel")
@@ -77,17 +76,11 @@ therefore yield an artificially small many-electron state overlap. This can
 produce an artificially large overlap time-derivative coupling or apparent
 loss of state identity.
 
-The automatic treatment is `state_overlap=exact`, which evaluates the required
-minor determinants exactly. It is the default and normally should be omitted
-from the input. With `continuity=manual`, `state_overlap=tlf1` and
-`state_overlap=tlf2` select first- and second-order truncated formulas for
-controlled method comparisons. They are not recommended as general NAMD
-settings.
-
-The legacy internal representation is `[tdhf] tlf=0`, `1`, or `2`. It remains
-accepted for old sectioned inputs because the determinant-minor evaluation was
-historically implemented in the TDHF/MRSF response code. New inputs should not
-place this NAMD choice in `tdhf(...)`; use the public `state_overlap` keyword.
+OpenQP always evaluates the required minor determinants exactly. The internal
+representation is `[tdhf] tlf=0`, retained only because the determinant-minor
+evaluation was historically implemented in the TDHF/MRSF response code. It is
+not a public NAMD choice: nonzero TLF orders are rejected, including when
+`continuity=manual`.
 
 Case A is not detected by a scalar threshold and then repaired. Exact overlap
 evaluation is used at every step, including steps without a large occupied-

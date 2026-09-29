@@ -92,7 +92,6 @@ well. Full definitions and `scheme=custom` are on
 | `ensemble` | `nve` | Choose `nve` or `nvt`; `npt` is reserved but currently rejected. |
 | `scheme` | required by `namd()` | One of the four schemes above or `custom`. |
 | `active` | `1` | Initial active response state if no state label is supplied. |
-| `state_overlap` | `exact` | Exact determinant-factorized state overlaps; truncated TLF forms require `continuity=manual`. |
 | `continuity` | `on` | Complete A--D numerical-continuity treatment; use `manual` only for individual controls. |
 | `decoherence` | `edc` | Energy-based decoherence; `off` disables it. |
 | `nve_policy` | `warn` | Report NVE energy deviations without terminating the trajectory. |

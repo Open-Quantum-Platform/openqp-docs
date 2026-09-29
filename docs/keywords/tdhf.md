@@ -201,11 +201,10 @@ Subspace dimension for GMRES when that solver is selected.
 | Default | `0` (exact) |
 | Used by | MRSF state-overlap minor determinants |
 
-This keyword remains in `[tdhf]` for compatibility because the state-overlap
-minor evaluation was historically implemented in the TDHF/MRSF response code.
-It is a NAMD state-overlap choice, not a TDDFT excitation-energy setting. New
-concise inputs should use `namd(state_overlap=exact|tlf1|tlf2)`; the truncated
-forms require `continuity=manual`.
+This internal keyword remains in `[tdhf]` because the state-overlap minor
+evaluation was historically implemented in the TDHF/MRSF response code. It is
+not a TDDFT excitation-energy setting and is not a user-selectable NAMD method.
+Only `tlf=0` is supported; nonzero TLF orders are rejected.
 
 The setting selects how the MRSF state overlap between consecutive geometries,
 `<Psi_I(t-dt)|Psi_J(t)>`, is evaluated. The reference determinant is shared, so
@@ -214,25 +213,25 @@ classes of minor determinants of the MO overlap matrix: `s_ij` one-hole
 occupied minors, `s_ab` particle minors, and `s_ia` mixed minors. `tlf` selects
 the treatment of `s_ij` and `s_ab`; `s_ia` is always exact.
 
-| `tlf` | Minors | Notes |
+| Internal value | Minors | Notes |
 | --- | --- | --- |
 | `0` (`notlf`, `exact`) | Exact Gaussian-elimination minors, no truncation | Invariant to orbital rotations between steps. This is *not* the zeroth-order TLF(0) of the paper, which is not implemented. |
-| `1` | First-order truncated Leibniz formula, TLF(1) | JCTC **15**, 882 (2019) |
-| `2` | Second-order truncated Leibniz formula, TLF(2) | Most accurate TLF approximation; KNU-GAMESS `ndtlf=2` |
 
 The truncated Leibniz formula assumes the MOs of consecutive steps are nearly
 orthonormal, i.e. that the MO overlap matrix is close to diagonal. When
 near-degenerate doubly occupied orbitals rotate into each other within one
 nuclear step -- a 45-degree mixing of two occupied orbitals has been observed in
-hot uracil trajectories -- the diagonal MO overlaps fall to about 0.7 and TLF(2)
-returns a collapsed state overlap (diagonal elements around 0.3-0.4) even though
+hot uracil trajectories -- the diagonal MO overlaps fall to about 0.7 and a
+truncated TLF treatment can return a collapsed state overlap (diagonal elements
+around 0.3-0.4) even though
 the SCF solution and the MRSF surfaces are continuous. Norm-preserving
 interpolation then turns that collapse into a large spurious time-derivative
 coupling.
 
 The exact minors are invariant to such rotations, and for molecules the size of
-uracil (30 occupied alpha orbitals, 6-31G*) they cost the same wall time as
-TLF(2). For large systems where the `nvir^2` particle minors dominate, the
+uracil (30 occupied alpha orbitals, 6-31G*) they cost the same wall time as the
+previous truncated implementation. For large systems where the `nvir^2`
+particle minors dominate, the
 recommended route is Jacobi's complementary-minor identity -- all one- and
 two-hole minors from one LU factorization of the occupied block -- rather than
 truncation.
