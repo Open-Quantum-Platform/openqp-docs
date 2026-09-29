@@ -13,6 +13,28 @@ Hamiltonian and force model; it does not select the electronic state.
 | `namd(...) md(...)` | excited-state gas-phase NAMD |
 | `namd(...) md(...) qmmm(...)` | excited-state QM/MM NAMD |
 
+## Dynamics Backend Selection
+
+OpenQP has two nuclear-propagation implementations. The input describes the
+physical system; the program selects the implementation from that information
+rather than asking the user to repeat it with an independent backend keyword.
+
+| Physical system | Selected implementation | Rule |
+| --- | --- | --- |
+| Ground-state all-QM gas phase, `md(...)` without `qmmm(...)` | native OpenQP velocity Verlet | The molecule is finite and has no MM topology. |
+| Ground-state QM/MM, including `cutoff=NoCutoff` | OpenMM `QMMM_MD` | OpenMM supplies the MM force field, constraints, thermostat, and integration. |
+| Periodic QM/MM, `cutoff=PME`, `Ewald`, or `CutoffPeriodic` | OpenMM `QMMM_MD` | Periodic dynamics always requires OpenMM. |
+| Gas-phase NAMD | native OpenQP NAMD propagator | Surface hopping and momentum adjustment are performed by the NAMD driver. |
+| QM/MM NAMD | native OpenQP NAMD propagator with OpenMM MM forces | OpenMM evaluates the MM part, while the NAMD driver propagates the nuclei and electronic amplitudes. |
+| Finite spherical containment, `droplet(...)` | native OpenQP NAMD propagator | This special nonperiodic boundary is currently connected to NAMD only. |
+
+Thus, the normal condensed-phase and QM/MM route uses OpenMM, and periodic
+systems cannot select the native gas-phase integrator. The native ground-state
+driver is retained for all-QM gas-phase BOMD. A ground-state QM/MM calculation
+with the finite spherical boundary is not yet connected; requesting
+`droplet(...)` with `md(...)` is rejected rather than silently selecting the
+wrong implementation.
+
 Sectioned legacy input stores both common and NAMD-specific controls under
 `[md]`. For excited-state dynamics, use an all-electron MRSF-TDDFT theory block
 (`method=tdhf`, `[tdhf] type=mrsf`). See the

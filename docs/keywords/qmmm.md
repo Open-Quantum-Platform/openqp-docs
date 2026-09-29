@@ -7,6 +7,13 @@ embedded in a classical force-field environment handled by
 single-point QM/MM energy and ground-state QM/MM molecular dynamics, while
 NAMD uses the separate embedded surface-hopping driver.
 
+Ground-state `md(...) qmmm(...)` always selects the OpenMM `QMMM_MD` engine,
+including nonperiodic `cutoff=NoCutoff` calculations. Periodic methods (`PME`,
+`Ewald`, and `CutoffPeriodic`) require that OpenMM path. By contrast, an
+all-QM gas-phase `md(...)` calculation without `qmmm(...)` uses the native
+OpenQP velocity-Verlet driver. See
+[Dynamics Backend Selection](md.md#dynamics-backend-selection).
+
 In `.oqp`, `qmmm(...)` is accepted with `energy`, ground-state `md`,
 and embedded `namd`; writing it also enables `qmmm_flag`. QM/MM gradients and
 geometry optimizations are rejected because those generic backends do not yet
