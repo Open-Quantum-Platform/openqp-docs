@@ -386,6 +386,12 @@ legacy bookkeeping with its own default of one.
 | Default | `nve` |
 | Values | `nve`, `nvt`, `npt` |
 
+This is a legacy `[qmmm]` propagation key. New `.oqp` and Python inputs use
+`md(ensemble=nve|nvt)` instead. The current unified `md(...)` surface supports
+NVE and Langevin NVT; legacy ground-state QM/MM NPT remains sectioned-input
+functionality because it additionally requires `pressure` and
+`barostat_interval`.
+
 ### `friction`
 
 | Field | Value |

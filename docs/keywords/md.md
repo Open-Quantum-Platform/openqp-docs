@@ -48,7 +48,7 @@ Ground-state gas-phase BOMD:
 
 ```text
 dft/pbe0/def2-svp
-md(S0,nstep=400,dt=0.5,temperature=300,velocity=maxwell)
+md(S0,nstep=400,dt=0.5,ensemble=nve,temperature=300,velocity=maxwell)
 geom="molecule.xyz"
 ```
 
@@ -169,11 +169,11 @@ Most calculations need only these options.
 | `nstep` | `100` | Set the trajectory length together with `dt`. |
 | `dt` | `0.5` fs | Change only after checking nuclear-time-step convergence. |
 | `velocity` | `maxwell` | Use `zero` or a velocity-file path for a specified initial condition. |
-| `temperature` | `300.0` K | Temperature for Maxwell--Boltzmann velocity generation and, with `thermostat=langevin`, the thermostat target. |
+| `temperature` | `300.0` K | Temperature for Maxwell--Boltzmann velocity generation and, with `ensemble=nvt`, the thermostat target. |
 | `seed` | `0` → local `YYYYMMDD` | Set explicitly for reproducible trajectory ensembles. |
 | `rng_stream` | `1` | Give each trajectory an independent counter-RNG stream. |
-| `thermostat` | `off` | `off` gives NVE; `langevin` gives NVT. |
-| `friction` | `1.0` ps⁻¹ | Langevin friction, used only with `thermostat=langevin`. |
+| `ensemble` | `nve` | Choose `nve` or `nvt`; NVT uses Langevin dynamics. |
+| `friction` | `1.0` ps⁻¹ | Langevin friction, used only with `ensemble=nvt`. |
 | `scheme` (`namd()` only) | none; required | Write `scheme=TDC_NAC` for the principal treatment on its supported route. |
 | `active` (`namd()` only) | `1` | Select the initial state when a physical state label is not supplied. |
 | `decoherence` | `edc` | Usually retain EDC; use `off` only for a controlled comparison. |
@@ -544,7 +544,7 @@ Set `0` to disable this recalculation; when either `disc_rescale` or
 
 Temperature for Maxwell--Boltzmann initial velocities (used when
 `velocity=maxwell`) and the target temperature when
-`thermostat=langevin`. It is ignored for initialization when `velocity` is
+`ensemble=nvt`. It is ignored for initialization when `velocity` is
 `zero` or a file path, and when a restart or local continuation supplies
 velocities from its checkpoint. Sectioned legacy input represents this public
 value with `init_temp` and `thermostat_temperature`.
@@ -562,7 +562,7 @@ Initial velocity source: `maxwell` samples a Maxwell--Boltzmann distribution at
 `temperature`, `zero` starts from rest, or a file path reads velocities from a
 file. `maxwell` is a classical distribution, not a vibrational Wigner sample.
 Because `maxwell` is the default, omitting `velocity` generates an initial
-300 K sample by default. This is also true for `thermostat=off`: NVE means that
+300 K sample by default. This is also true for `ensemble=nve`: NVE means that
 no thermostat exchanges heat after initialization, not that the initial
 temperature is zero or that `temperature` is unnecessary.
 One `.oqp` NAMD request uses one initial geometry; a Wigner ensemble must supply
@@ -1035,17 +1035,22 @@ geom="molecule.xyz"
 
 ## Ensemble and Thermostat
 
-### `thermostat`
+### `ensemble`
 
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `off` |
-| Values | `off`, `langevin` |
+| Default | `nve` |
+| Values | `nve`, `nvt` |
 | Used by | nuclear propagation |
 
-`off` selects NVE propagation. `langevin` selects NVT propagation. The public
-API therefore does not need a separate `ensemble` option.
+`nve` selects microcanonical propagation with no heat exchange after the
+initial velocities are prepared. `nvt` selects canonical propagation with a
+Langevin thermostat at `temperature` and with the damping set by `friction`.
+
+The older public spelling `thermostat=off|langevin` remains accepted for input
+compatibility and is translated to `ensemble=nve|nvt`. New inputs should use
+`ensemble`. Do not specify both spellings in a new input.
 
 ### `friction`
 
@@ -1056,8 +1061,8 @@ API therefore does not need a separate `ensemble` option.
 | Used by | Langevin thermostat |
 
 Positive Langevin friction coefficient. It is required to be finite and
-strictly positive when the Langevin thermostat is enabled. Sectioned legacy
-input calls this `thermostat_friction`.
+strictly positive for `ensemble=nvt`. Sectioned legacy input calls this
+`thermostat_friction`.
 
 ## SOC-NAMD (Intersystem Crossing)
 

@@ -93,14 +93,14 @@ the source checkpoint.
 
 | Purpose | Keywords and defaults |
 | --- | --- |
-| Langevin NVT | `md(thermostat=langevin,temperature=300.0,friction=1.0)` |
+| Langevin NVT | `md(ensemble=nvt,temperature=300.0,friction=1.0)` |
 | SOC initial MCH character | `init_state` empty by default |
 | SOC force diagnostics | `soc_du_dt_corr=False`, `soc_tdc_grad_corr=False`, `grad_wthr=0.001` |
 | Adaptive SOC timestep | `dt_adaptive=False`, `dt_min=0.05` fs, `dx_max=0.02` bohr |
 
 With the default `velocity=maxwell`, OpenQP samples initial velocities at
 `temperature=300.0` K even for NVE dynamics. `temperature` does not alter a
-velocity read from a file or set to zero; with `thermostat=langevin`, the same
+velocity read from a file or set to zero; with `ensemble=nvt`, the same
 value is the NVT target. The sectioned `.inp` compatibility names are
 `init_temp`, `thermostat_temperature`, and `thermostat_friction`.
 
