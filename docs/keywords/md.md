@@ -15,25 +15,28 @@ Hamiltonian and force model; it does not select the electronic state.
 
 ## Dynamics Backend Selection
 
-OpenQP has two nuclear-propagation implementations. The input describes the
+OpenQP has two molecular-dynamics implementations. The input describes the
 physical system; the program selects the implementation from that information
 rather than asking the user to repeat it with an independent backend keyword.
+The rule is intentionally simple: **only an all-QM gas-phase calculation uses
+the native OpenQP MD implementation; every non-gas-phase calculation uses
+OpenMM**.
 
 | Physical system | Selected implementation | Rule |
 | --- | --- | --- |
-| Ground-state all-QM gas phase, `md(...)` without `qmmm(...)` | native OpenQP velocity Verlet | The molecule is finite and has no MM topology. |
-| Ground-state QM/MM, including `cutoff=NoCutoff` | OpenMM `QMMM_MD` | OpenMM supplies the MM force field, constraints, thermostat, and integration. |
-| Periodic QM/MM, `cutoff=PME`, `Ewald`, or `CutoffPeriodic` | OpenMM `QMMM_MD` | Periodic dynamics always requires OpenMM. |
-| Gas-phase NAMD | native OpenQP NAMD propagator | Surface hopping and momentum adjustment are performed by the NAMD driver. |
-| QM/MM NAMD | native OpenQP NAMD propagator with OpenMM MM forces | OpenMM evaluates the MM part, while the NAMD driver propagates the nuclei and electronic amplitudes. |
-| Finite spherical containment, `droplet(...)` | native OpenQP NAMD propagator | This special nonperiodic boundary is currently connected to NAMD only. |
+| Ground-state all-QM gas phase, `md(...)` without `qmmm(...)` | native OpenQP velocity Verlet | This is the only native-MD route. |
+| Ground-state QM/MM or condensed phase, including `cutoff=NoCutoff` | OpenMM `QMMM_MD` | OpenMM supplies the MM force field, constraints, thermostat, and integration. |
+| Periodic QM/MM, `cutoff=PME`, `Ewald`, or `CutoffPeriodic` | OpenMM `QMMM_MD` | Periodic dynamics always uses OpenMM. |
+| Finite spherical QM/MM system | OpenMM | A future ground-state spherical-boundary implementation must use the OpenMM route. |
+| Gas-phase NAMD | OpenQP NAMD | OpenQP performs nuclear and electronic propagation, surface hopping, and momentum adjustment. |
+| QM/MM or condensed-phase NAMD | OpenQP NAMD with an OpenMM environment | OpenMM supplies MM/environmental forces and constraints; OpenQP retains electronic propagation, hop decisions, and momentum adjustment. |
 
-Thus, the normal condensed-phase and QM/MM route uses OpenMM, and periodic
-systems cannot select the native gas-phase integrator. The native ground-state
-driver is retained for all-QM gas-phase BOMD. A ground-state QM/MM calculation
-with the finite spherical boundary is not yet connected; requesting
-`droplet(...)` with `md(...)` is rejected rather than silently selecting the
-wrong implementation.
+The native ground-state driver is therefore retained only for all-QM gas-phase
+BOMD. A ground-state QM/MM calculation with a finite spherical boundary is not
+yet connected; requesting `droplet(...)` with `md(...)` is rejected rather than
+falling back to the native gas-phase implementation. The existing NAMD driver
+still owns the FSSH algorithm; using OpenMM for a non-gas environment does not
+move electronic propagation or hop decisions into OpenMM.
 
 Sectioned legacy input stores both common and NAMD-specific controls under
 `[md]`. For excited-state dynamics, use an all-electron MRSF-TDDFT theory block

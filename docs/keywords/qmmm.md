@@ -9,9 +9,12 @@ NAMD uses the separate embedded surface-hopping driver.
 
 Ground-state `md(...) qmmm(...)` always selects the OpenMM `QMMM_MD` engine,
 including nonperiodic `cutoff=NoCutoff` calculations. Periodic methods (`PME`,
-`Ewald`, and `CutoffPeriodic`) require that OpenMM path. By contrast, an
-all-QM gas-phase `md(...)` calculation without `qmmm(...)` uses the native
-OpenQP velocity-Verlet driver. See
+`Ewald`, and `CutoffPeriodic`) require that OpenMM path, and any future
+spherical-boundary QM/MM implementation must use it as well. Only an all-QM
+gas-phase `md(...)` calculation without `qmmm(...)` uses the native OpenQP
+velocity-Verlet driver. In QM/MM NAMD, OpenMM supplies the environmental force
+model and constraints, while OpenQP continues to perform electronic
+propagation, surface-hop decisions, and hop momentum adjustment. See
 [Dynamics Backend Selection](md.md#dynamics-backend-selection).
 
 In `.oqp`, `qmmm(...)` is accepted with `energy`, ground-state `md`,
