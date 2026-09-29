@@ -193,15 +193,21 @@ GMRES, `2` is MINRES, and `3` is AUTO.
 
 Subspace dimension for GMRES when that solver is selected.
 
-### `tlf`
+### `tlf` (legacy internal name)
 
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `2` |
+| Default | `0` (exact) |
 | Used by | MRSF state-overlap minor determinants |
 
-Selects how the MRSF state overlap between consecutive geometries,
+This keyword remains in `[tdhf]` for compatibility because the state-overlap
+minor evaluation was historically implemented in the TDHF/MRSF response code.
+It is a NAMD state-overlap choice, not a TDDFT excitation-energy setting. New
+concise inputs should use `namd(state_overlap=exact|tlf1|tlf2)`; the truncated
+forms require `continuity=manual`.
+
+The setting selects how the MRSF state overlap between consecutive geometries,
 `<Psi_I(t-dt)|Psi_J(t)>`, is evaluated. The reference determinant is shared, so
 the overlap factorizes into a contraction of the response amplitudes with three
 classes of minor determinants of the MO overlap matrix: `s_ij` one-hole

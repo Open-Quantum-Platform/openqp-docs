@@ -40,6 +40,12 @@ Do not combine a named scheme with `tdc`, `rescale`, `thrshe`, or
 singlet MRSF states from a two-SOMO ROHF/ROKS triplet reference and SCF and
 response convergence thresholds no larger than `1e-8`.
 
+`state_overlap=exact` is a separate preceding operation: it constructs the
+many-electron overlap matrix from consecutive molecular orbitals. `tdc=npi`
+then converts that matrix into a norm-preserving time-derivative coupling.
+NPI is therefore not TLF. The approximate `state_overlap=tlf1|tlf2` settings
+are available only with `continuity=manual`.
+
 The Baeck--An coupling at the central point is based on
 
 \[
@@ -98,4 +104,3 @@ under the frozen-embedding-field QM-region NAC approximation. The analytic
 vector omits embedding-operator and MM-coordinate derivatives, and hop
 rescaling changes QM velocities only. See [NAC](nac.md) before using this
 approximation in a production calculation.
-
