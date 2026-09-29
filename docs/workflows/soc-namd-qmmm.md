@@ -110,7 +110,9 @@ whole chromophore is the QM region (`qm_atoms`); the water is MM.
 `.oqp`:
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* namd(S1,soc=true,soc_basis=mch,nstep=200)
+mrsf(nstate=3)/bhhlyp/6-31g*
+namd(S1,scheme=custom,tdc=npi,rescale=isotropic,thrshe=0.367493,frustrated=reflect,
+     soc=true,soc_basis=mch,nstep=200)
 qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-14",cutoff=PME,rigidwater=true)
 geom="chromophore_water.pdb 0-14"
 ```
@@ -143,12 +145,16 @@ job.qmmm(
 
 # SOC-NAMD on the spin-adiabatic manifold, exact-gradient (MCH) force basis
 job.workflow.namd(
+    scheme="custom",
+    tdc="npi",
+    rescale="isotropic",
+    thrshe=0.367493,
+    frustrated="reflect",
     soc=True,
     soc_basis="mch",
     init_state="S1",
     nstep=200,
     dt=0.5,
-    thrshe=0.1,
     init_temp=300.0,
 )
 

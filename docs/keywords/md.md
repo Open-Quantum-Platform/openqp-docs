@@ -42,7 +42,7 @@ velocity file:
 
 ```text
 mrsf(nstate=5)/bhhlyp/6-31g*
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=TDC_NAC)
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=TDC_NAC)
 geom="molecule.xyz"
 ```
 
@@ -69,7 +69,7 @@ job = OpenQP("molecule_namd")
 job.molecule("molecule.xyz")
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
 job.workflow.namd(init_state="S1", dt=0.5, nstep=400,
-                  velocity="molecule.vel", coupling="TDC_NAC")
+                  velocity="molecule.vel", scheme="TDC_NAC")
 mol = job.run()
 ```
 
@@ -107,54 +107,53 @@ treatments commonly compared for MRSF NAMD. The two finite values of `thrshe`
 are expressed in Hartree: 10 kcal mol⁻¹ is `0.015936`, whereas the
 10 eV numerical ceiling is `0.367493`.
 
-| Treatment | `.oqp`/Python preset | Propagation TDC | Hop adjustment | Low-gap cutoff | Frustrated hop | Expanded options |
+| Treatment | `.oqp`/Python scheme | Propagation TDC | Hop adjustment | Low-gap cutoff | Frustrated hop | Expanded options |
 | --- | --- | --- | --- | --- | --- | --- |
-| Baeck–An | `coupling=BaeckAn` | energy-curvature approximation | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=baeck_an`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
-| Overlap TDC | `coupling=Overlap` | norm-preserving interpolation of state overlaps | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=npi`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
-| NAC-guided TDC reversal | `coupling=TDC_NAC` | norm-preserving interpolation of state overlaps | along `d_IJ`, evaluated for the selected hop | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=npi`, `rescale=hop_analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
-| Full NAC | `coupling=NAC` | velocity-contracted analytic derivative coupling | along `d_IJ` | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=analytic`, `rescale=analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
+| Baeck–An | `scheme=BaeckAn` | energy-curvature approximation | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=baeck_an`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
+| Overlap TDC | `scheme=Overlap` | norm-preserving interpolation of state overlaps | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=npi`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
+| NAC-guided TDC reversal | `scheme=TDC_NAC` | norm-preserving interpolation of state overlaps | along `d_IJ`, evaluated for the selected hop | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=npi`, `rescale=hop_analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
+| Full NAC | `scheme=NAC` | velocity-contracted analytic derivative coupling | along `d_IJ` | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=analytic`, `rescale=analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
 
 After the MRSF method specification, choose exactly one of the following
 concise `.oqp` NAMD requests:
 
 ```text
 # Baeck–An
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=BaeckAn)
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=BaeckAn)
 
 # Overlap TDC
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=Overlap)
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=Overlap)
 
 # NAC-guided TDC reversal
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=TDC_NAC)
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=TDC_NAC)
 
 # Full NAC
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=NAC)
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=NAC)
 ```
 
-`coupling` selects the complete treatment in this table; it is not merely the
-matrix used for electronic propagation. OpenQP expands the preset before the
-calculation starts. Do not combine it with `tdc`, `rescale`, `thrshe`, or
-`frustrated`; omit `coupling` when constructing a custom combination. The
-legacy sectioned `.inp` format continues to use the expanded `[md]` options
-shown in the final column.
+`scheme` selects the complete surface-hopping treatment in this table; it is
+not merely the electronic coupling. OpenQP expands the scheme before the
+calculation starts. A concise `.oqp` or Python NAMD request must state one
+scheme. Do not combine a named scheme with `tdc`, `rescale`, `thrshe`, or
+`frustrated`. Use `scheme=custom` and state all four low-level controls when a
+combination outside the table is intentionally required. The legacy sectioned
+`.inp` format continues to use the expanded `[md]` options shown in the final
+column.
 
-### `coupling` (`.oqp` and Python API)
+### `scheme` (`.oqp` and Python API)
 
 | Field | Value |
 | --- | --- |
-| Type | string preset |
-| Default | effective `TDC_NAC` for supported gas-phase same-spin singlet MRSF dynamics |
-| Values | `BaeckAn`, `Overlap`, `TDC_NAC`, `NAC` |
+| Type | string |
+| Default | none; required |
+| Values | `BaeckAn`, `Overlap`, `TDC_NAC`, `NAC`, `custom` |
 | Used by | complete Table-1 surface-hopping treatment selection |
 
-This concise option is expanded into `tdc`, `rescale`, `thrshe`, and
-`frustrated`. `TDC_NAC` is the central OpenQP treatment and should normally be
-written explicitly. If `coupling` is omitted, the low-level defaults
-`tdc=npi`, `rescale=auto`, `thrshe=0.367493`, and `frustrated=reflect` resolve
-to the same TDC--NAC treatment whenever analytic NAC is supported. For SOC,
-QM/MM, triplet, or other routes without analytic NAC, `rescale=auto` instead
-uses isotropic rescaling so that an omitted preset does not request an
-unsupported derivative-coupling vector.
+The four named values are expanded into `tdc`, `rescale`, `thrshe`, and
+`frustrated`. `TDC_NAC` is the principal OpenQP treatment for its supported
+route and should normally be written explicitly. `custom` is the expert escape
+hatch: it requires explicit values for all four low-level controls, preventing
+a calculation from silently inheriting a mixed treatment.
 
 The NAC-guided and Full NAC choices require the supported gas-phase,
 same-spin singlet MRSF model on a restricted open-shell triplet reference.
@@ -181,14 +180,13 @@ state count, and numerical continuity settings identical among treatments.
 
 ## Frequently Used Options
 
-Most trajectories need only the options in this table. The values are the
-defaults before a `coupling` preset is expanded. Every option, including the
-less frequently changed controls, has a separate reference entry with its
+Most trajectories need only the options in this table. Every option, including
+the less frequently changed controls, has a separate reference entry with its
 type, default, allowed values, and physical role below.
 
 | Option | Default | When to set it |
 | --- | --- | --- |
-| `coupling` | effective `TDC_NAC` on its supported route | Write `coupling=TDC_NAC` explicitly for the principal recommended treatment; select another preset only for a defined comparison. |
+| `scheme` | none; required | Write `scheme=TDC_NAC` for the principal treatment on its supported route; select another named scheme only for a defined comparison. |
 | `nstep` | `100` | Set the trajectory length together with `dt`. |
 | `dt` | `0.5` fs | Change only after checking nuclear-time-step convergence. |
 | `active` | `1` | Select the initial state when a physical state label is not supplied. |
@@ -199,10 +197,6 @@ type, default, allowed values, and physical role below.
 | `decoherence` | `edc` | Usually retain EDC; use `off` only for a controlled comparison. |
 | `edc_c` | `0.1` Ha | Change only when comparing decoherence models or parameters. |
 | `substep` | `50000` | Electronic propagation substeps; reduce only after a convergence test. |
-| `tdc` | `npi` | Low-level propagation-coupling selection for a custom treatment. |
-| `rescale` | `auto` | Low-level hop momentum-adjustment selection for a custom treatment. |
-| `thrshe` | `0.367493` Ha (10 eV) | Maximum gap for attempting a hop. |
-| `frustrated` | `reflect` | Treatment of an energetically frustrated directional hop. |
 | `nve_policy` | `warn` | Monitor total-energy behavior without terminating the trajectory. |
 | `trajectory_interval` | `1` step | Control packed-trajectory output frequency. |
 | `restart_interval` | `10` steps | Control atomic checkpoint frequency. |
@@ -218,6 +212,7 @@ They should not be copied into routine inputs without that specific need.
 
 | Purpose | Options and defaults | When to use them |
 | --- | --- | --- |
+| Custom surface-hopping scheme | `scheme=custom`; explicit `tdc`, `rescale`, `thrshe`, and `frustrated` | Only reproduce a defined treatment outside the four named schemes. These low-level controls are deliberately excluded from routine inputs. |
 | Trivial-crossing following | `trivial=False`, `trivial_thresh=0.5`, `first_hop_step=1` | Controlled tests of overlap-triggered state relabeling or delayed hopping. Standard FSSH leaves `trivial=False`. |
 | Independent NACME comparison | `nacme_check=off`, `ba_gap_max=0.0734986443513` Ha, `nacme_policy=off`, `nacme_policy_invariant_tol=1.0e-10`, `nacme_policy_abs_tol=1.0e-4` au⁻¹, `nacme_policy_rel_tol=1.0`, `nacme_policy_consecutive=3` | Compare the propagated TDC with Baeck--An or analytic NACME; turn on warning/error behavior only during method verification. |
 | NVE energy diagnostics | `nve_policy_abs_tol=5.0e-3` Ha, `nve_policy_step_tol=1.0e-3` Ha, `nve_policy_transition_tol=1.0e-6` Ha, `nve_policy_consecutive=3` | Tighten or relax the default `nve_policy=warn` criteria after examining the physical energy scale and numerical convergence. |
@@ -235,7 +230,7 @@ They should not be copied into routine inputs without that specific need.
 Enable independent coupling and NVE diagnostics without making them fatal:
 
 ```text
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=Overlap,
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=Overlap,
      nacme_check=baeck_an,nacme_policy=warn,nve_policy=warn)
 ```
 
@@ -244,7 +239,7 @@ orbitals, retry once from a fresh guess, and make a persistent reference change
 a restart boundary:
 
 ```text
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=Overlap,
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=Overlap,
      mo_reuse=true,scf_guess_retry=true,scf_fail=restart,
      ref_follow=soscf,disc_rescale=true,disc_tol=0.002,disc_substeps=10)
 ```
@@ -252,7 +247,7 @@ namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=Overlap,
 Run Langevin NVT dynamics only when thermostatting is intentional:
 
 ```text
-namd(S1,dt=0.5,nstep=400,velocity=maxwell,
+namd(S1,scheme=Overlap,dt=0.5,nstep=400,velocity=maxwell,
      ensemble=nvt,thermostat=langevin,
      thermostat_temperature=300,thermostat_friction=1.0)
 ```
@@ -261,7 +256,8 @@ For SOC-NAMD, select the initial MCH character without a positional state and
 optionally limit the nuclear displacement with the adaptive time step:
 
 ```text
-namd(soc=true,soc_basis=mch,init_state=S1,nstep=400,dt=0.5,
+namd(scheme=custom,tdc=npi,rescale=isotropic,thrshe=0.367493,
+     frustrated=reflect,soc=true,soc_basis=mch,init_state=S1,nstep=400,dt=0.5,
      dt_adaptive=true,dt_min=0.05,dx_max=0.02)
 ```
 
@@ -340,6 +336,12 @@ The EDC constant `C` (in Hartree) in the energy-based decoherence rate. Only
 used when `decoherence=edc`.
 
 ### `thrshe`
+
+!!! note "Advanced custom-scheme control"
+    In concise `.oqp` and Python input, set this option only with
+    `scheme=custom`, together with explicit `tdc`, `rescale`, and `frustrated`.
+    A named scheme supplies all four values itself. Sectioned `.inp` input
+    continues to state the low-level `[md]` controls directly.
 
 | Field | Value |
 | --- | --- |
@@ -604,7 +606,9 @@ Set `0` to disable this recalculation; when either `disc_rescale` or
 | Used by | initial velocities |
 
 Temperature for Maxwell-Boltzmann initial velocities (used when
-`velocity=maxwell`).
+`velocity=maxwell`). It is ignored when `velocity` is `zero` or a file path,
+and when a restart or local continuation supplies velocities from its
+checkpoint.
 
 ### `velocity`
 
@@ -618,6 +622,10 @@ Temperature for Maxwell-Boltzmann initial velocities (used when
 Initial velocity source: `maxwell` samples a Maxwell-Boltzmann distribution at
 `init_temp`, `zero` starts from rest, or a file path reads velocities from a
 file. `maxwell` is a classical distribution, not a vibrational Wigner sample.
+Because `maxwell` is the default, omitting `velocity` generates an initial
+300 K sample by default. This is also true for `ensemble=nve`: NVE means that
+no thermostat exchanges heat after initialization, not that the initial
+temperature is zero or that `init_temp` is unnecessary.
 One `.oqp` NAMD request uses one initial geometry; a Wigner ensemble must supply
 one independently sampled geometry/velocity pair per trajectory.
 
@@ -1072,7 +1080,7 @@ Example:
 
 ```text
 mrsf(nstate=2)/bhhlyp/sto-3g
-namd(S1,nstep=3,dt=0.05,tdc=analytic,
+namd(S1,scheme=NAC,nstep=3,dt=0.05,
      continuation_checkpoint="source.npz",
      continuation_trajectory="source.trj",
      trajectory_file="child.trj",restart_file="child.npz")
@@ -1304,8 +1312,11 @@ job.molecule(geometry="water", charge=0)
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
 
 # SOC-NAMD (intersystem crossing); drop soc=... for internal-conversion FSSH
-job.workflow.namd(soc=True, soc_basis="mch", nstep=200, dt=0.5,
-                  init_state="S1", thrshe=0.1, init_temp=300.0)
+job.workflow.namd(
+    scheme="custom", tdc="npi", rescale="isotropic",
+    thrshe=0.367493, frustrated="reflect", soc=True, soc_basis="mch",
+    nstep=200, dt=0.5, init_state="S1", init_temp=300.0,
+)
 
 mol = job.run()
 ```

@@ -144,7 +144,10 @@ job.qmmm(
     cutoff="PME",
     embedding="electrostatic",
 )
-job.workflow.namd(nstep=200, dt=0.5)   # add soc=True for SOC-NAMD-QMMM
+job.workflow.namd(
+    scheme="custom", tdc="npi", rescale="isotropic",
+    thrshe=0.367493, frustrated="reflect", nstep=200, dt=0.5,
+)  # add soc=True for SOC
 mol = job.run()
 ```
 

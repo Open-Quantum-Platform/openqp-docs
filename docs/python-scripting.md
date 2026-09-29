@@ -269,7 +269,11 @@ job.qmmm(
     embedding="electrostatic",
     rigidwater=True,
 )
-job.workflow.namd(soc=True, soc_basis="mch", nstep=200, dt=0.5, init_state="S1")
+job.workflow.namd(
+    scheme="custom", tdc="npi", rescale="isotropic",
+    thrshe=0.367493, frustrated="reflect",
+    soc=True, soc_basis="mch", nstep=200, dt=0.5, init_state="S1",
+)
 mol = job.run()
 ```
 
@@ -324,7 +328,7 @@ internal-conversion FSSH:
 job = OpenQP("gas_namd", silent=1)
 job.molecule(geometry="water", charge=0)
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=2)
-job.workflow.namd(nstep=100, dt=0.5, active=1, coupling="Overlap")
+job.workflow.namd(nstep=100, dt=0.5, active=1, scheme="Overlap")
 mol = job.run()
 ```
 

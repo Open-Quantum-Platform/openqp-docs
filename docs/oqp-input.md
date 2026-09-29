@@ -286,15 +286,16 @@ apply to the native minimum, crossing-point, and transition-state optimizers.
 MEP and IRC own their path step and gradient threshold, while NEB owns its FIRE
 band controls; those drivers do not use `ENGINE`. `NAMD`
 means the current `[md]` controls `nstep`,
-`dt`, `active`, `substep`, `decoherence`, `edc_c`, the Table-1 treatment preset
-`coupling=BaeckAn|Overlap|TDC_NAC|NAC`, `thrshe`, `tdc`, `rescale`,
+`dt`, `active`, `substep`, `decoherence`, `edc_c`, the required complete
+surface-hopping `scheme=BaeckAn|Overlap|TDC_NAC|NAC|custom`, and—only with
+`scheme=custom`—`thrshe`, `tdc`, `rescale`, and `frustrated`,
 `trivial`, `trivial_thresh`, `init_temp`, `velocity`, `seed`, `rng_stream`,
 `first_hop_step`, `nacme_check`, `ba_gap_max`, `nacme_policy`,
 `nacme_policy_invariant_tol`, `nacme_policy_abs_tol`, `nacme_policy_rel_tol`,
 `nacme_policy_consecutive`, `nve_policy`, `nve_policy_abs_tol`,
 `nve_policy_step_tol`, `nve_policy_transition_tol`, `nve_policy_consecutive`,
 `mo_reuse`, `scf_fail`, `scf_guess_retry`, `ref_follow`,
-`ref_switch_rescale`, `somo_tol`, `frustrated`, `disc_rescale`, `disc_tol`,
+`ref_switch_rescale`, `somo_tol`, `disc_rescale`, `disc_tol`,
 `disc_substeps`, `trajectory_interval`, `restart_interval`, `trajectory_file`,
 `restart_file`, `restart`, `continuation_checkpoint`, `continuation_trajectory`,
 `ensemble`, `thermostat`, `thermostat_temperature`, `thermostat_friction`,
@@ -322,7 +323,7 @@ means the current `[md]` controls `nstep`,
 | `nacme(STATE1,STATE2,dt=...,align=...)` | Coupling matrix element; requires `geom2` or `guess(file2=...)`. |
 | `soc(soc_2e=...,ns=...,nt=...)` | Spin-orbit coupling; accepts no single target state. `ns` and `nt` must be supplied together. |
 | `md([S0]) qmmm(...)` | Ground-state QM/MM molecular dynamics. `qmmm(...)` is mandatory and owns the OpenMM controls. |
-| `namd([STATE],NAMD...)` | MRSF nonadiabatic molecular dynamics using the controls listed above; defaults to `S1`. `coupling` expands one complete Table-1 treatment into the existing `[md]` controls. |
+| `namd([STATE],NAMD...)` | MRSF nonadiabatic molecular dynamics; defaults to `S1`. Required `scheme=BaeckAn`, `Overlap`, `TDC_NAC`, or `NAC` expands one complete Table-1 treatment into `[md]`. Expert combinations use `scheme=custom` plus all four low-level controls. |
 | <code>ekt([STATE],ip=true&#124;false,ea=true&#124;false)</code> | MRSF extended Koopmans IP/EA options; the parent state defaults to `S0`. |
 | <code>thermo([STATE],type=numerical&#124;analytical,dx=...,nproc=...,read=...,restart=...,temperature=...,clean=...)</code> | Alias that lowers to the supported Hessian path; the state defaults to `S0`. |
 | `prop([STATE],scf_prop=...,nmr_gauge=...,td_prop=...,export=...,title=...)` | MRSF-TDDFT/MRSF-TDHF property driver; defaults to `S0`. |
@@ -511,8 +512,9 @@ OpenQP also supplies the triplet ROHF reference for MRSF and the triplet UHF
 reference for UMRSF. These are implementation references, not requested
 triplet surfaces.
 MRSF NAMD uses exactly the same zero-based physical labels. For example,
-`namd(T0,soc=true)` lowers to legacy `[md] init_state=T0`; the first triplet is
-`T0`, not `T1`. A non-SOC `namd(T0)` selects internal active root 1, while an
+`namd(T0,scheme=Overlap,soc=true)` lowers to legacy `[md] init_state=T0`; the
+first triplet is `T0`, not `T1`. A non-SOC `namd(T0,scheme=Overlap)` selects
+internal active root 1, while an
 omitted NAMD state defaults to `S1`. Do not write the internal `active` or
 `init_state` selector alongside a physical driver state.
 
