@@ -1,7 +1,7 @@
 # NAMD Advanced Controls
 
 This page collects controls that are not needed in a standard NAMD input.
-Start with the four named [`scheme`](md.md#scheme-oqp-and-python-api) values in
+Start with the four named [`scheme`](md.md#choose-one-namd-scheme) values in
 the main [`[md]` manual](md.md). Add an option from this page only when the
 chosen physical treatment, diagnostic comparison, or restart procedure
 requires it.
@@ -65,16 +65,12 @@ system and timestep.
 
 ## Electronic-Structure Continuity
 
-| Purpose | Keywords and defaults |
-| --- | --- |
-| Reuse the preceding SCF solution | `mo_reuse=True`, `scf_guess_retry=True` |
-| Failed continuation SCF calculation | `scf_fail=escalate` |
-| Follow the two-SOMO reference | `ref_follow=soscf`, `somo_tol=0.5` |
-| Energy treatment at a reference change | `ref_switch_rescale=True` |
-| Non-hop energy discontinuity | `disc_rescale=True`, `disc_tol=0.002` Ha, `disc_substeps=10`, `econs=False` |
-
-These settings control numerical continuity of the electronic-structure
-calculation. They do not define a different surface-hopping scheme.
+Use the default `continuity=on` for the complete analytic-NAC cases A--D
+treatment. The physical origins, termination behavior, thresholds, and every
+manual control are documented on
+[NAMD Numerical Continuity](md-continuity.md). Do not copy an isolated
+continuity option from an old input; select `continuity=manual` and report the
+complete changed set.
 
 ## Output, Restart, and Continuation
 
@@ -106,6 +102,16 @@ value is the NVT target. The sectioned `.inp` compatibility names are
 
 ## Detailed Definitions
 
-The complete type, range, and physical meaning of each keyword remain in the
-[`[md]` keyword reference](md.md#standard-keyword-reference). This page is the
-short index for deciding whether an advanced control is needed.
+The complete definitions are separated by purpose: [coupling schemes](md-schemes.md),
+[numerical continuity](md-continuity.md), [diagnostics](md-diagnostics.md),
+[initial conditions and restart](md-initial-restart.md), and
+[ensembles and SOC-NAMD](md-ensemble-soc.md). This page is the short index for
+deciding whether an advanced control is needed.
+
+## Internal Concise-Input Markers
+
+`common_controls` and `common_control_keys` are generated internally when
+OpenQP lowers a concise `md(...)` call to the sectioned runtime configuration.
+They preserve which common nuclear controls were written by the user and are
+not user-facing scientific options. Do not place either keyword in a
+hand-written input.

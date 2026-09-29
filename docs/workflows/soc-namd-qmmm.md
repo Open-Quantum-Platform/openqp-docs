@@ -49,12 +49,12 @@ intersystem-crossing event. Continuity of the eigenvectors from step to step is
 maintained by **U-phase tracking** (the phase/ordering of the eigenvector matrix
 `U`), and the electronic amplitudes are propagated with local diabatization.
 
-**Active-surface force.** [`soc_basis`](../keywords/md.md#soc_basis) selects the
+**Active-surface force.** [`soc_basis`](../keywords/md-ensemble-soc.md#soc_basis) selects the
 force basis. The default `soc_basis=adiabatic` propagates on spin-adiabatic SOC
 eigenstates and uses the **weighted-MCH diagonal gradient**: each contributing
 spin-pure (MCH) component carries its own gradient, weighted by its population in
 the active spin-adiabatic state, with components below
-[`grad_wthr`](../keywords/md.md#grad_wthr) dropped so the force stays continuous
+[`grad_wthr`](../keywords/md-ensemble-soc.md#spin-adiabatic-force-diagnostics) dropped so the force stays continuous
 through strong spin mixing. The `soc_du_dt_corr` and `soc_tdc_grad_corr` flags
 are optional approximate corrections for this adiabatic force path.
 
@@ -93,7 +93,7 @@ periodic (PME) water box, with the whole chromophore in the QM region.
 `runfunc.compute_namd` picks the surface-hopping class from `qmmm_flag`, `soc`,
 and `soc_basis`:
 
-| [`[input] qmmm_flag`](../keywords/input.md#qmmm_flag) | [`[md] soc`](../keywords/md.md#soc) | [`[md] soc_basis`](../keywords/md.md#soc_basis) | Class |
+| [`[input] qmmm_flag`](../keywords/input.md#qmmm_flag) | [`[md] soc`](../keywords/md-ensemble-soc.md#soc) | [`[md] soc_basis`](../keywords/md-ensemble-soc.md#soc_basis) | Class |
 | --- | --- | --- | --- |
 | `false` | `false` | ignored | `NAMD` (gas-phase FSSH) |
 | `false` | `true`  | `adiabatic` | `NAMD_SOC` (gas-phase spin-adiabatic SOC-NAMD) |
@@ -205,13 +205,13 @@ Notes on the deck:
   ROHF reference (`[scf] type=rohf multiplicity=3`) and `[tdhf] type=mrsf`. With
   `[tdhf] nstate=3` the spin-adiabatic manifold has `ns + 3*nt = 3 + 9 = 12`
   states, so `[md] active` may range `1..12`.
-- **Initial surface.** [`init_state=S1`](../keywords/md.md#init_state) starts on
+- **Initial surface.** [`init_state=S1`](../keywords/md-ensemble-soc.md#init_state) starts on
   the state of dominant S1 character and overrides `active`.
-- **Force basis.** [`soc_basis=mch`](../keywords/md.md#soc_basis) uses exact
+- **Force basis.** [`soc_basis=mch`](../keywords/md-ensemble-soc.md#soc_basis) uses exact
   active-root MCH gradients and selects `NAMD_SOC_MCH_QMMM`. Use
   `soc_basis=adiabatic` to test the spin-adiabatic weighted-gradient path and
   its optional correction flags.
-- **Gap cutoff.** [`thrshe=0.367493`](../keywords/md.md#thrshe), approximately
+- **Gap cutoff.** [`thrshe=0.367493`](../keywords/md-schemes.md#thrshe), approximately
   10 eV, is the default for
   both same-spin and SOC dynamics and blocks large-gap transitions outside the
   intended local crossing region.
@@ -258,7 +258,7 @@ same-spin state pairs. Its global default is therefore contextually disabled
 for SOC; the SOC record itself retains the complete complex overlap/TDC.
 
 If a SOC force path produces a slow drift,
-[`econs=true`](../keywords/md.md#econs) rescales velocities each step to conserve
+[`econs=true`](../keywords/md-ensemble-soc.md#spin-adiabatic-force-diagnostics) rescales velocities each step to conserve
 `E_tot` as a temporary stabilizer. Prefer `soc_basis=mch` for production
 SOC-NAMD-QMMM trajectories because it uses exact active-root MCH gradients; see
 the [force-basis note](#soc-namd-intersystem-crossing) above.
