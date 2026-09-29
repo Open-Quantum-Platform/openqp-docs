@@ -6,6 +6,13 @@ the main [`[md]` manual](md.md). Add an option from this page only when the
 chosen physical treatment, diagnostic comparison, or restart procedure
 requires it.
 
+## Initial Electronic-State Index
+
+Use a state label such as `namd(S1,...)` in normal concise input. The
+lower-level `active` keyword selects the initial 1-based response-state index
+and defaults to `1`. A state label is clearer and takes precedence when both
+forms are present.
+
 ## Custom Surface-Hopping Scheme
 
 Use `scheme=custom` only when none of the four named schemes represents the

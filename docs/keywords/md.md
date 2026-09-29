@@ -38,19 +38,20 @@ Recommended MRSF-TDDFT NAMD:
 
 ```text
 mrsf(nstate=4)/bhhlyp/6-31g* geom="molecule.xyz"
-namd(S1,scheme=TDC_NAC)
+namd(S1,scheme=TDC_NAC,continuity=on)
 md(nstep=400,dt=0.5,velocity="molecule.vel",ensemble=nve)
 ```
 
-The default `continuity=on` activates the complete numerical-continuity
-treatment described in [NAMD Numerical Continuity](md-continuity.md). It does
-not need to be repeated in a standard input.
+`continuity=on` is shown explicitly because it is part of the recommended
+method definition. It is also the default and may be omitted after the input
+has been established. The complete treatment is described in
+[NAMD Numerical Continuity](md-continuity.md).
 
 QM/MM NAMD:
 
 ```text
 mrsf(nstate=4)/bhhlyp/6-31g* geom="system.xyz"
-namd(S1,scheme=TDC_NAC)
+namd(S1,scheme=TDC_NAC,continuity=on)
 md(nstep=400,dt=0.5,velocity="system.vel",ensemble=nve)
 qmmm(pdb_file="system.pdb",forcefield_files="forcefield.xml",
      qm_atoms="0-12")
@@ -81,22 +82,30 @@ well. Full definitions and `scheme=custom` are on
 
 ## Essential Options
 
+For a standard calculation, choose only the nuclear duration and initial
+conditions, the ensemble, one named NAMD scheme, and the continuity treatment.
+The defaults are suitable for a first input except for the system-dependent
+trajectory length and, when reproducibility is required, the initial velocity
+file or ensemble specification.
+
 | Keyword | Default | Meaning |
 | --- | --- | --- |
 | `nstep` | `100` | Number of nuclear steps. |
 | `dt` | `0.5` fs | Nuclear timestep. Total time is `nstep * dt`. |
 | `velocity` | `maxwell` | `maxwell`, `zero`, or a velocity-file path. |
 | `temperature` | `300.0` K | Maxwell--Boltzmann sampling temperature and NVT target. |
-| `seed` | `0` → local `YYYYMMDD` | Random seed; set explicitly for a reproducible ensemble. |
-| `rng_stream` | `1` | Independent counter-RNG stream or trajectory identifier. |
 | `ensemble` | `nve` | Choose `nve` or `nvt`; `npt` is reserved but currently rejected. |
 | `scheme` | required by `namd()` | One of the four schemes above or `custom`. |
-| `active` | `1` | Initial active response state if no state label is supplied. |
 | `continuity` | `on` | Complete A--D numerical-continuity treatment; use `manual` only for individual controls. |
-| `decoherence` | `edc` | Energy-based decoherence; `off` disables it. |
-| `nve_policy` | `warn` | Report NVE energy deviations without terminating the trajectory. |
 
-## Core Keyword Definitions
+Use a state label such as `namd(S1,...)` to select the initial electronic
+state. The lower-level `active` index is documented with the advanced controls.
+Random streams and detailed velocity preparation are on
+[Initial Conditions and Restart](md-initial-restart.md); decoherence and
+electronic substeps are on [NAMD Coupling Schemes](md-schemes.md); energy and
+coupling criteria are on [NAMD Diagnostics](md-diagnostics.md).
+
+## Essential Definitions
 
 ### `nstep`
 
@@ -108,25 +117,12 @@ Positive integer number of nuclear steps. The requested propagation time is
 Positive nuclear timestep in femtoseconds. Establish nuclear-time-step
 convergence for the system and observable of interest.
 
-### `active`
+### `continuity`
 
-Initial active state, using the 1-based internal response-state index. A state
-label in `namd(S1,...)` is clearer and takes precedence in concise input.
-
-### `substep`
-
-Number of electronic-amplitude integration substeps per nuclear step. Default:
-`50000`. This does not change the nuclear timestep or total propagation time.
-
-### `decoherence`
-
-`edc` (default) applies the Granucci--Persico energy-based decoherence
-correction. `off` disables decoherence for a controlled comparison.
-
-### `edc_c`
-
-Energy-based decoherence constant in Hartree. Default: `0.1` Ha. It is used
-only with `decoherence=edc`.
+`on` is the default and applies the complete A--D numerical-continuity
+treatment. Use `manual` only to reproduce or assess a specifically reported
+variation. The four numerical situations and every manual control are defined
+on [NAMD Numerical Continuity](md-continuity.md).
 
 ## Grouped Reference Pages
 
