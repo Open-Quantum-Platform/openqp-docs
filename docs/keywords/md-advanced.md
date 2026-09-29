@@ -36,9 +36,9 @@ namd(S1,scheme=custom,tdc=npi,rescale=isotropic,
 md(nstep=400,dt=0.5,velocity="molecule.vel")
 ```
 
-SOC-NAMD and QM/MM NAMD do not support the analytic-NAC rescaling required by
-`TDC_NAC` or `NAC`. A defined overlap/isotropic custom scheme is therefore
-written explicitly, for example:
+QM/MM NAMD supports `TDC_NAC` and `NAC` for a QM region without link atoms,
+using the documented frozen-embedding-field QM-region NAC approximation. Only
+SOC-NAMD requires a defined overlap/isotropic custom scheme, for example:
 
 ```text
 namd(scheme=custom,tdc=npi,rescale=isotropic,

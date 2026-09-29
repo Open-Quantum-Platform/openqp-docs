@@ -168,11 +168,11 @@ required in concise `.oqp` and Python input. Do not add `tdc`, `rescale`,
 | Values | `BaeckAn`, `Overlap`, `TDC_NAC`, `NAC`, `custom` |
 | Used by | complete Table-1 surface-hopping treatment selection |
 
-`TDC_NAC` is the principal OpenQP scheme for supported gas-phase, same-spin
-singlet MRSF dynamics. `NAC` has the same model restriction. Both require SCF
-and MRSF response convergence thresholds of at most `1e-8`. `Overlap` is the
-simple overlap/isotropic scheme. `BaeckAn` is intended for a defined comparison
-with the Baeck--An approximation.
+`TDC_NAC` is the principal OpenQP scheme for supported gas-phase and QM/MM
+same-spin singlet MRSF dynamics. `NAC` has the same electronic-model
+restriction. Both require SCF and MRSF response convergence thresholds of at
+most `1e-8`. `Overlap` is the simple overlap/isotropic scheme. `BaeckAn` is
+intended for a defined comparison with the Baeck--An approximation.
 
 For `TDC_NAC` or `NAC`, use for example:
 
@@ -180,8 +180,15 @@ For `TDC_NAC` or `NAC`, use for example:
 mrsf(nstate=4)/bhhlyp/6-31g* scf(conv=1e-8) tdhf(conv=1e-8)
 ```
 
-`TDC_NAC` and `NAC` do not apply to SOC-NAMD or QM/MM NAMD. Those calculations
-must use a physically defined `custom` scheme. See
+`TDC_NAC` and `NAC` also apply to QM/MM NAMD when the QM region has no link
+atoms. The analytic vector is evaluated for the QM centres while the
+instantaneous MM embedding contribution is held fixed; embedding-operator and
+MM-coordinate derivative components are omitted, and a hop rescales QM
+velocities only. This is the declared QM-region approximation, not a claim that
+the omitted derivative is zero. A covalent QM/MM boundary is
+rejected for these schemes until link-centre directions are projected onto the
+physical QM and MM hosts. SOC-NAMD still requires a physically defined
+`custom` scheme. See
 [NAMD Advanced Controls](md-advanced.md) for the four expanded low-level
 keywords and supported examples.
 

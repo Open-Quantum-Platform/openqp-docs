@@ -91,10 +91,20 @@ type = rhf
 Embedded nonadiabatic molecular dynamics in `.oqp`:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g namd
+mrsf(nstate=5)/bhhlyp/6-31g scf(conv=1e-8) tdhf(conv=1e-8)
+namd(S1,scheme=TDC_NAC) md(dt=0.5,nstep=400,velocity="water_box.vel")
 qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-2",cutoff=PME)
 geom="water_box.pdb 0-2"
 ```
+
+For `TDC_NAC` and `NAC`, the current QM/MM implementation evaluates the
+analytic vector on the QM centres while holding the instantaneous embedding
+contribution fixed. Embedding-operator and MM-coordinate derivative components
+are omitted, and only QM velocities are rescaled. The QM region must contain no
+link atoms. `TDC_NAC` still propagates the electronic amplitudes with the
+phase-tracked overlap TDC, so the environment's change along the actual
+trajectory remains present in electronic propagation; the QM-region analytic
+vector is requested only for a selected hop direction.
 
 The legacy `.inp` spelling is:
 
@@ -109,10 +119,19 @@ basis      = 6-31g
 [scf]
 type = rohf
 multiplicity = 3
+conv = 1.0e-8
 
 [tdhf]
 type   = mrsf
 nstate = 5
+conv   = 1.0e-8
+
+[md]
+active     = 1
+tdc        = npi
+rescale    = hop_analytic_nac
+thrshe     = 0.367493
+frustrated = reflect
 
 [qmmm]
 pdb_file         = water_box.pdb
