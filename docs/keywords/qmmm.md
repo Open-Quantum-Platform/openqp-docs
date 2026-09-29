@@ -318,8 +318,9 @@ path (for example, constrain X-H bonds).
 | Default | `300.0` |
 | Used by | ground-state QM/MM MD |
 
-Target/initial temperature for the ground-state QM/MM MD path. The nonadiabatic
-path sets the initial temperature from [`[md] init_temp`](md.md#init_temp).
+Legacy target/initial temperature for ground-state QM/MM MD. New concise input
+uses [`md(temperature=...)`](md.md) for both ground-state and nonadiabatic
+dynamics.
 
 ### `timestep`
 
@@ -329,8 +330,8 @@ path sets the initial temperature from [`[md] init_temp`](md.md#init_temp).
 | Default | `1` |
 | Used by | ground-state QM/MM MD |
 
-MD timestep for the ground-state QM/MM MD path. The nonadiabatic path uses
-[`[md] dt`](md.md#dt).
+Legacy QM/MM MD timestep. New concise input uses
+[`md(dt=...)`](md.md#dt) for all dynamics.
 
 ### `nsteps`
 
@@ -341,10 +342,9 @@ MD timestep for the ground-state QM/MM MD path. The nonadiabatic path uses
 | Used by | legacy static QM/MM bookkeeping |
 
 Retained for compatibility with the older static-driver configuration. The
-current ground-state OpenMM MD engine uses [`n_steps`](#n_steps); the
-nonadiabatic path uses [`[md] nstep`](md.md#nstep). In concise `.oqp`, however,
-`qmmm(nsteps=N)` is accepted as an alias and lowered to the active `n_steps`
-key; this does not change the meaning of `nsteps` in a sectioned `.inp`.
+current ground-state OpenMM MD engine also reads [`n_steps`](#n_steps). New
+concise input uses [`md(nstep=...)`](md.md#nstep) for all dynamics;
+`qmmm(nsteps=N)` remains a compatibility alias.
 
 ### `istate`
 
@@ -359,10 +359,12 @@ retained in the sectioned schema for compatibility but is reserved in `.oqp`;
 do not write `qmmm(istate=...)`. Ground-state canonical `md` uses `S0`, and
 state-aware drivers own their physical state labels.
 
-## Ground-state OpenMM MD Keywords
+## Legacy Ground-state OpenMM MD Keywords
 
-These keys are consumed by the command-line ground-state QM/MM-MD driver. The
-command must run without MPI.
+These `[qmmm]` propagation keys remain available to old sectioned inputs. New
+concise inputs put propagation in `md(...)` and keep `qmmm(...)` limited to the
+QM/MM structure, force field, embedding, boundary, and periodic settings. The
+ground-state QM/MM command must run without MPI.
 
 ### `n_steps`
 

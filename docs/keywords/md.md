@@ -1,12 +1,21 @@
-# `[md]`
+# `md()`, `namd()`, and `[md]`
 
-The `[md]` section controls nonadiabatic molecular dynamics (`runtype=namd`):
-Tully fewest-switches surface hopping (FSSH) on MRSF states, optionally
-with spin-orbit-coupled intersystem crossing (SOC-NAMD) and ESPF QM/MM
-embedding. It is used together with [`[input] runtype=namd`](input.md#runtype)
-and an all-electron MRSF-TDDFT theory block (`method=tdhf`,
-`[tdhf] type=mrsf`). For embedded dynamics, use the [`[qmmm]`](qmmm.md)
-section. See the
+`md(...)` owns the nuclear propagation controls. Used alone, it runs
+ground-state gas-phase Born--Oppenheimer molecular dynamics (BOMD). Adding
+`namd(...)` changes the electronic dynamics to excited-state fewest-switches
+surface hopping (FSSH). Adding `qmmm(...)` applies the corresponding QM/MM
+Hamiltonian and force model; it does not select the electronic state.
+
+| Concise input | Dynamics |
+| --- | --- |
+| `md(...)` | ground-state gas-phase BOMD |
+| `md(...) qmmm(...)` | ground-state QM/MM MD |
+| `namd(...) md(...)` | excited-state gas-phase NAMD |
+| `namd(...) md(...) qmmm(...)` | excited-state QM/MM NAMD |
+
+Sectioned legacy input stores both common and NAMD-specific controls under
+`[md]`. For excited-state dynamics, use an all-electron MRSF-TDDFT theory block
+(`method=tdhf`, `[tdhf] type=mrsf`). See the
 [SOC-NAMD-QMMM workflow](../workflows/soc-namd-qmmm.md) for complete decks and
 theory.
 
@@ -35,6 +44,14 @@ operator.
 
 ## Quick Start
 
+Ground-state gas-phase BOMD:
+
+```text
+dft/pbe0/def2-svp
+md(S0,nstep=400,dt=0.5,temperature=300,velocity=maxwell)
+geom="molecule.xyz"
+```
+
 Gas-phase FSSH on MRSF-TDDFT states, starting from a specified geometry and
 velocity file:
 
@@ -42,7 +59,8 @@ velocity file:
 
 ```text
 mrsf(nstate=5)/bhhlyp/6-31g*
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=TDC_NAC)
+namd(S1,scheme=TDC_NAC)
+md(dt=0.5,nstep=400,velocity="molecule.vel")
 geom="molecule.xyz"
 ```
 
@@ -68,8 +86,8 @@ from oqp.openqp import OpenQP
 job = OpenQP("molecule_namd")
 job.molecule("molecule.xyz")
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
-job.workflow.namd(init_state="S1", dt=0.5, nstep=400,
-                  velocity="molecule.vel", scheme="TDC_NAC")
+job.workflow.md(dt=0.5, nstep=400, velocity="molecule.vel")
+job.workflow.namd(init_state="S1", scheme="TDC_NAC")
 mol = job.run()
 ```
 
@@ -96,16 +114,16 @@ concise `.oqp` NAMD requests:
 
 ```text
 # Baeck–An
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=BaeckAn)
+namd(S1,scheme=BaeckAn) md(dt=0.5,nstep=400,velocity="molecule.vel")
 
 # Overlap TDC
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=Overlap)
+namd(S1,scheme=Overlap) md(dt=0.5,nstep=400,velocity="molecule.vel")
 
 # NAC-guided TDC reversal
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=TDC_NAC)
+namd(S1,scheme=TDC_NAC) md(dt=0.5,nstep=400,velocity="molecule.vel")
 
 # Full NAC
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=NAC)
+namd(S1,scheme=NAC) md(dt=0.5,nstep=400,velocity="molecule.vel")
 ```
 
 `scheme` selects the complete surface-hopping treatment: electronic
@@ -145,18 +163,18 @@ Most calculations need only these options.
 
 | Option | Default | When to set it |
 | --- | --- | --- |
-| `scheme` | none; required | Write `scheme=TDC_NAC` for the principal treatment on its supported route; select another named scheme only for a defined comparison. |
 | `nstep` | `100` | Set the trajectory length together with `dt`. |
 | `dt` | `0.5` fs | Change only after checking nuclear-time-step convergence. |
-| `active` | `1` | Select the initial state when a physical state label is not supplied. |
 | `velocity` | `maxwell` | Use `zero` or a velocity-file path for a specified initial condition. |
-| `init_temp` | `300.0` K | Set the temperature of internally sampled Maxwell--Boltzmann velocities. |
+| `temperature` | `300.0` K | Temperature for Maxwell--Boltzmann velocity generation and, with `thermostat=langevin`, the thermostat target. |
 | `seed` | `0` → local `YYYYMMDD` | Set explicitly for reproducible trajectory ensembles. |
 | `rng_stream` | `1` | Give each trajectory an independent counter-RNG stream. |
+| `thermostat` | `off` | `off` gives NVE; `langevin` gives NVT. |
+| `friction` | `1.0` ps⁻¹ | Langevin friction, used only with `thermostat=langevin`. |
+| `scheme` (`namd()` only) | none; required | Write `scheme=TDC_NAC` for the principal treatment on its supported route. |
+| `active` (`namd()` only) | `1` | Select the initial state when a physical state label is not supplied. |
 | `decoherence` | `edc` | Usually retain EDC; use `off` only for a controlled comparison. |
 | `nve_policy` | `warn` | Monitor total-energy behavior without terminating the trajectory. |
-| `ensemble` | `nve` | Use `nvt` only with the Langevin thermostat controls. |
-| `thermostat` | `off` | Set to `langevin` for NVT propagation. |
 | `soc` | `False` | Enable spin-adiabatic or MCH-basis SOC-NAMD. |
 | `soc_basis` | `adiabatic` | Select `mch` for the current recommended production SOC force path. |
 
@@ -513,7 +531,7 @@ Set `0` to disable this recalculation; when either `disc_rescale` or
 
 ## Initial Conditions
 
-### `init_temp`
+### `temperature`
 
 | Field | Value |
 | --- | --- |
@@ -521,10 +539,12 @@ Set `0` to disable this recalculation; when either `disc_rescale` or
 | Default | `300.0` |
 | Used by | initial velocities |
 
-Temperature for Maxwell-Boltzmann initial velocities (used when
-`velocity=maxwell`). It is ignored when `velocity` is `zero` or a file path,
-and when a restart or local continuation supplies velocities from its
-checkpoint.
+Temperature for Maxwell--Boltzmann initial velocities (used when
+`velocity=maxwell`) and the target temperature when
+`thermostat=langevin`. It is ignored for initialization when `velocity` is
+`zero` or a file path, and when a restart or local continuation supplies
+velocities from its checkpoint. Sectioned legacy input represents this public
+value with `init_temp` and `thermostat_temperature`.
 
 ### `velocity`
 
@@ -535,13 +555,13 @@ checkpoint.
 | Values | `maxwell`, `zero`, *(file path)* |
 | Used by | initial velocities |
 
-Initial velocity source: `maxwell` samples a Maxwell-Boltzmann distribution at
-`init_temp`, `zero` starts from rest, or a file path reads velocities from a
+Initial velocity source: `maxwell` samples a Maxwell--Boltzmann distribution at
+`temperature`, `zero` starts from rest, or a file path reads velocities from a
 file. `maxwell` is a classical distribution, not a vibrational Wigner sample.
 Because `maxwell` is the default, omitting `velocity` generates an initial
-300 K sample by default. This is also true for `ensemble=nve`: NVE means that
+300 K sample by default. This is also true for `thermostat=off`: NVE means that
 no thermostat exchanges heat after initialization, not that the initial
-temperature is zero or that `init_temp` is unnecessary.
+temperature is zero or that `temperature` is unnecessary.
 One `.oqp` NAMD request uses one initial geometry; a Wigner ensemble must supply
 one independently sampled geometry/velocity pair per trajectory.
 
@@ -587,7 +607,7 @@ initial-condition distribution.
 
 For a classical Maxwell--Boltzmann initial condition, OpenQP can generate the
 velocity internally with
-`velocity=maxwell,init_temp=300,seed=SEED,rng_stream=TRAJECTORY_ID`. To create a
+`md(velocity=maxwell,temperature=300,seed=SEED,rng_stream=TRAJECTORY_ID)`. To create a
 portable file before running any dynamics program, place one atomic mass in
 dalton per line in `molecule.mass`, in geometry order, and run:
 
@@ -1000,27 +1020,15 @@ Example:
 
 ```text
 mrsf(nstate=2)/bhhlyp/sto-3g
-namd(S1,scheme=NAC,nstep=3,dt=0.05,
+namd(S1,scheme=NAC,
      continuation_checkpoint="source.npz",
      continuation_trajectory="source.trj",
-     trajectory_file="child.trj",restart_file="child.npz")
+     restart_file="child.npz")
+md(nstep=3,dt=0.05,trajectory_file="child.trj")
 geom="molecule.xyz"
 ```
 
 ## Ensemble and Thermostat
-
-### `ensemble`
-
-| Field | Value |
-| --- | --- |
-| Type | string |
-| Default | `nve` |
-| Values | `nve`, `nvt` |
-| Used by | nuclear ensemble during NAMD |
-
-Select microcanonical (`nve`) propagation or Langevin canonical (`nvt`)
-propagation. NAMD owns this setting; the separate `[qmmm] ensemble` keyword for
-ground-state OpenMM dynamics does not control surface-hopping trajectories.
 
 ### `thermostat`
 
@@ -1029,24 +1037,12 @@ ground-state OpenMM dynamics does not control surface-hopping trajectories.
 | Type | string |
 | Default | `off` |
 | Values | `off`, `langevin` |
-| Used by | NVT nuclear propagation |
+| Used by | nuclear propagation |
 
-Select the NAMD thermostat. `ensemble=nvt` requires `thermostat=langevin`.
-Conversely, an NVE calculation requires `thermostat=off`.
+`off` selects NVE propagation. `langevin` selects NVT propagation. The public
+API therefore does not need a separate `ensemble` option.
 
-### `thermostat_temperature`
-
-| Field | Value |
-| --- | --- |
-| Type | float (K) |
-| Default | `300.0` |
-| Used by | Langevin thermostat |
-
-Target temperature for `ensemble=nvt,thermostat=langevin`. This controls the
-thermostat after propagation begins; `init_temp` separately controls internally
-sampled Maxwell--Boltzmann initial velocities.
-
-### `thermostat_friction`
+### `friction`
 
 | Field | Value |
 | --- | --- |
@@ -1055,7 +1051,8 @@ sampled Maxwell--Boltzmann initial velocities.
 | Used by | Langevin thermostat |
 
 Positive Langevin friction coefficient. It is required to be finite and
-strictly positive when the Langevin thermostat is enabled.
+strictly positive when the Langevin thermostat is enabled. Sectioned legacy
+input calls this `thermostat_friction`.
 
 ## SOC-NAMD (Intersystem Crossing)
 
@@ -1237,10 +1234,11 @@ job.molecule(geometry="water", charge=0)
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=3)
 
 # SOC-NAMD (intersystem crossing); drop soc=... for internal-conversion FSSH
+job.workflow.md(nstep=200, dt=0.5, temperature=300.0)
 job.workflow.namd(
     scheme="custom", tdc="npi", rescale="isotropic",
     thrshe=0.367493, frustrated="reflect", soc=True, soc_basis="mch",
-    nstep=200, dt=0.5, init_state="S1", init_temp=300.0,
+    init_state="S1",
 )
 
 mol = job.run()

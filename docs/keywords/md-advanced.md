@@ -32,8 +32,8 @@ custom scheme must state all four explicitly:
 
 ```text
 namd(S1,scheme=custom,tdc=npi,rescale=isotropic,
-     thrshe=0.367493,frustrated=reflect,
-     nstep=400,dt=0.5,velocity="molecule.vel")
+     thrshe=0.367493,frustrated=reflect)
+md(nstep=400,dt=0.5,velocity="molecule.vel")
 ```
 
 SOC-NAMD and QM/MM NAMD do not support the analytic-NAC rescaling required by
@@ -43,7 +43,8 @@ written explicitly, for example:
 ```text
 namd(scheme=custom,tdc=npi,rescale=isotropic,
      thrshe=0.367493,frustrated=reflect,
-     soc=true,soc_basis=mch,init_state=S1,nstep=400,dt=0.5)
+     soc=true,soc_basis=mch,init_state=S1)
+md(nstep=400,dt=0.5)
 ```
 
 ## Diagnostic and Numerical Controls
@@ -92,15 +93,16 @@ the source checkpoint.
 
 | Purpose | Keywords and defaults |
 | --- | --- |
-| Langevin NVT | `ensemble=nvt`, `thermostat=langevin`, `thermostat_temperature=300.0` K, `thermostat_friction=1.0` ps⁻¹ |
+| Langevin NVT | `md(thermostat=langevin,temperature=300.0,friction=1.0)` |
 | SOC initial MCH character | `init_state` empty by default |
 | SOC force diagnostics | `soc_du_dt_corr=False`, `soc_tdc_grad_corr=False`, `grad_wthr=0.001` |
 | Adaptive SOC timestep | `dt_adaptive=False`, `dt_min=0.05` fs, `dx_max=0.02` bohr |
 
-The initial-temperature control is independent of the ensemble. With the
-default `velocity=maxwell`, OpenQP samples initial velocities at
-`init_temp=300.0` K even for NVE dynamics. `init_temp` is ignored when the
-velocity is read from a file, set to zero, or restored from a checkpoint.
+With the default `velocity=maxwell`, OpenQP samples initial velocities at
+`temperature=300.0` K even for NVE dynamics. `temperature` does not alter a
+velocity read from a file or set to zero; with `thermostat=langevin`, the same
+value is the NVT target. The sectioned `.inp` compatibility names are
+`init_temp`, `thermostat_temperature`, and `thermostat_friction`.
 
 ## Detailed Definitions
 
