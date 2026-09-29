@@ -285,9 +285,9 @@ coefficients and computes hop probabilities.
 Same-spin NAMD defaults to `nacme_check="baeck_an"`, which logs an independent
 energy-curvature estimate beside the overlap/TLF TDC. The comparison is
 magnitude-only because TD-BA has no wavefunction phase information. The default
-`nacme_gate="off"` records the diagnostic without enforcing it; use `warn` or
+`nacme_policy="off"` records the diagnostic without enforcing it; use `warn` or
 `error` only after calibrating the absolute and relative
-tolerances for the target system. The same gate accepts a signed, phase-aligned
+tolerances for the target system. The same policy accepts a signed, phase-aligned
 analytic `d_IJ . v` reference when that provider is connected in a later release.
 
 All same-spin/SOC and gas-phase/QM/MM NAMD drivers write a dense appendable,

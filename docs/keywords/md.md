@@ -11,8 +11,14 @@ section. See the
 theory.
 
 !!! note "Available in OpenQP 1.3.0"
-    NAMD, validation gates, packed trajectory/restart records, and the SOC
+    NAMD, verification policies, packed trajectory/restart records, and the SOC
     trajectory/restart extensions are included in OpenQP 1.3.0.
+
+!!! note "Policy terminology and legacy aliases"
+    Use `nacme_policy*` and `nve_policy*` in `.oqp`, Python, and sectioned
+    `.inp` input. The former `nacme_gate*` and `nve_gate*` spellings remain
+    accepted as compatibility aliases, but new inputs and documentation should
+    use `policy`. Do not specify both spellings for the same setting.
 
 ## Background
 
@@ -197,7 +203,7 @@ type, default, allowed values, and physical role below.
 | `rescale` | `auto` | Low-level hop momentum-adjustment selection for a custom treatment. |
 | `thrshe` | `0.367493` Ha (10 eV) | Maximum gap for attempting a hop. |
 | `frustrated` | `reflect` | Treatment of an energetically frustrated directional hop. |
-| `nve_gate` | `warn` | Monitor total-energy behavior without terminating the trajectory. |
+| `nve_policy` | `warn` | Monitor total-energy behavior without terminating the trajectory. |
 | `trajectory_interval` | `1` step | Control packed-trajectory output frequency. |
 | `restart_interval` | `10` steps | Control atomic checkpoint frequency. |
 | `ensemble` | `nve` | Use `nvt` only with the Langevin thermostat controls. |
@@ -213,8 +219,8 @@ They should not be copied into routine inputs without that specific need.
 | Purpose | Options and defaults | When to use them |
 | --- | --- | --- |
 | Trivial-crossing following | `trivial=False`, `trivial_thresh=0.5`, `first_hop_step=1` | Controlled tests of overlap-triggered state relabeling or delayed hopping. Standard FSSH leaves `trivial=False`. |
-| Independent NACME comparison | `nacme_check=off`, `ba_gap_max=0.0734986443513` Ha, `nacme_gate=off`, `nacme_gate_invariant_tol=1.0e-10`, `nacme_gate_abs_tol=1.0e-4` au⁻¹, `nacme_gate_rel_tol=1.0`, `nacme_gate_consecutive=3` | Compare the propagated TDC with Baeck--An or analytic NACME; turn on warning/error behavior only during method verification. |
-| NVE energy diagnostics | `nve_gate_abs_tol=5.0e-3` Ha, `nve_gate_step_tol=1.0e-3` Ha, `nve_gate_transition_tol=1.0e-6` Ha, `nve_gate_consecutive=3` | Tighten or relax the default `nve_gate=warn` criteria after examining the physical energy scale and numerical convergence. |
+| Independent NACME comparison | `nacme_check=off`, `ba_gap_max=0.0734986443513` Ha, `nacme_policy=off`, `nacme_policy_invariant_tol=1.0e-10`, `nacme_policy_abs_tol=1.0e-4` au⁻¹, `nacme_policy_rel_tol=1.0`, `nacme_policy_consecutive=3` | Compare the propagated TDC with Baeck--An or analytic NACME; turn on warning/error behavior only during method verification. |
+| NVE energy diagnostics | `nve_policy_abs_tol=5.0e-3` Ha, `nve_policy_step_tol=1.0e-3` Ha, `nve_policy_transition_tol=1.0e-6` Ha, `nve_policy_consecutive=3` | Tighten or relax the default `nve_policy=warn` criteria after examining the physical energy scale and numerical convergence. |
 | SCF continuation | `mo_reuse=True`, `scf_guess_retry=True`, `scf_fail=escalate` | Stabilize the electronic solution between adjacent geometries; choose `scf_fail=restart` when a failed continuation should create a restart boundary. |
 | Reference continuity | `ref_follow=soscf`, `ref_switch_rescale=True`, `somo_tol=0.5` | Diagnose or control changes of the two-SOMO ROHF/ROKS reference along a trajectory. |
 | Energy-discontinuity recovery | `disc_rescale=True`, `disc_tol=0.002` Ha, `disc_substeps=10`, `econs=False` | Repeat or correct a step after a non-hop energy discontinuity. `econs` is a temporary numerical correction, not a routine physical model. |
@@ -230,7 +236,7 @@ Enable independent coupling and NVE diagnostics without making them fatal:
 
 ```text
 namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=Overlap,
-     nacme_check=baeck_an,nacme_gate=warn,nve_gate=warn)
+     nacme_check=baeck_an,nacme_policy=warn,nve_policy=warn)
 ```
 
 For a trajectory whose continued SCF occasionally fails, preserve the previous
@@ -777,14 +783,14 @@ quantity with the coupling used for electronic propagation. See the
 
 Maximum central energy gap included in the TD-BA diagnostic. Pairs above this
 gap, or pairs without a positive TD-BA curvature radicand, are not evaluated by
-the reference-comparison gate.
+the reference-comparison policy.
 
 With `nacme_check=baeck_an` the setting is diagnostic only and does not modify
 the overlap/TLF coupling, electronic propagation, or hopping probabilities. With
 [`tdc=baeck_an`](#tdc) the same selection governs the coupling that is actually
 propagated, so a pair above this gap contributes no electronic coupling at all.
 
-### `nacme_gate`
+### `nacme_policy`
 
 | Field | Value |
 | --- | --- |
@@ -793,19 +799,19 @@ propagated, so a pair above this gap contributes no electronic coupling at all.
 | Values | `off`, `warn`, `error` |
 | Used by | MD NACME validation policy |
 
-Policy applied to the common resident-Fortran NACME gate. The gate always
+Policy applied to the common resident-Fortran NACME checks. The policy always
 reports matrix invariants and reference-comparison metrics when a check is
-enabled. `off` records diagnostics only, `warn` logs failed gates without
+enabled. `off` records diagnostics only, `warn` logs failed checks without
 stopping dynamics, and `error` stops immediately for a finite-value or matrix
-invariant failure and stops after `nacme_gate_consecutive` consecutive reference
+invariant failure and stops after `nacme_policy_consecutive` consecutive reference
 failures.
 
 The exact invariants are a zero diagonal and antisymmetry of both the MD TDC and
 the supplied reference. TD-BA is compared by magnitude. A future phase-aligned
-analytic NAC reference can use the same gate in signed mode after contracting
+analytic NAC reference can use the same policy in signed mode after contracting
 the analytic vector with the nuclear velocity, `d_IJ . v`, at the matching time.
 
-### `nacme_gate_invariant_tol`
+### `nacme_policy_invariant_tol`
 
 | Field | Value |
 | --- | --- |
@@ -815,7 +821,7 @@ the analytic vector with the nuclear velocity, `d_IJ . v`, at the matching time.
 
 Absolute tolerance for exact NACME matrix invariants.
 
-### `nacme_gate_abs_tol`
+### `nacme_policy_abs_tol`
 
 | Field | Value |
 | --- | --- |
@@ -825,7 +831,7 @@ Absolute tolerance for exact NACME matrix invariants.
 
 Absolute component of the pair acceptance threshold.
 
-### `nacme_gate_rel_tol`
+### `nacme_policy_rel_tol`
 
 | Field | Value |
 | --- | --- |
@@ -834,24 +840,24 @@ Absolute component of the pair acceptance threshold.
 | Used by | reference comparison |
 
 Relative component of the pair acceptance threshold. Pair `IJ` passes when
-`error <= nacme_gate_abs_tol + nacme_gate_rel_tol * abs(reference_IJ)`.
+`error <= nacme_policy_abs_tol + nacme_policy_rel_tol * abs(reference_IJ)`.
 The deliberately broad default reflects that TD-BA is an approximation; choose
-thresholds from a validated system before using `nacme_gate=error` for a
+thresholds from a validated system before using `nacme_policy=error` for a
 production campaign.
 
-### `nacme_gate_consecutive`
+### `nacme_policy_consecutive`
 
 | Field | Value |
 | --- | --- |
 | Type | integer |
 | Default | `3` |
-| Used by | `nacme_gate=error` |
+| Used by | `nacme_policy=error` |
 
 Number of consecutive time points with at least one failed reference pair
 required before aborting. A passing point resets the count. Exact invariant or
 non-finite failures are not delayed.
 
-### `nve_gate`
+### `nve_policy`
 
 | Field | Value |
 | --- | --- |
@@ -866,7 +872,7 @@ The driver records total-energy drift from step zero, the change from the
 previous step, the energy discontinuity at a successful hop or trivial state
 change, and drift per femtosecond. `warn` prints the NVE table without stopping;
 `error` records the failing point and then aborts for a failed transition-energy
-check or after `nve_gate_consecutive` consecutive drift/step failures. The
+check or after `nve_policy_consecutive` consecutive drift/step failures. The
 restart checkpoint is not advanced past the rejected point.
 
 This is a quantum-classical FSSH energy validation, not a claim that the
@@ -879,7 +885,7 @@ surface-hopping QM/MM driver uses OpenMM for forces but
 performs its own velocity-Verlet + SHAKE/RATTLE propagation; the ground-state
 [`[qmmm] ensemble`](qmmm.md#ensemble) NVT/NPT integrators do not control NAMD.
 
-### `nve_gate_abs_tol`
+### `nve_policy_abs_tol`
 
 | Field | Value |
 | --- | --- |
@@ -887,7 +893,7 @@ performs its own velocity-Verlet + SHAKE/RATTLE propagation; the ground-state
 | Default | `5.0e-3` |
 | Used by | total drift from the initial energy |
 
-### `nve_gate_step_tol`
+### `nve_policy_step_tol`
 
 | Field | Value |
 | --- | --- |
@@ -897,10 +903,10 @@ performs its own velocity-Verlet + SHAKE/RATTLE propagation; the ground-state
 
 The comparison is made at every physical MD step, not between saved trajectory
 records — `trajectory_interval` does not widen it. Calibrate the tolerance
-against one integration step, or an `error` gate will be far more permissive
+against one integration step, or an `error` policy will be far more permissive
 than intended once the automatic ~10 fs write cadence is resolved.
 
-### `nve_gate_transition_tol`
+### `nve_policy_transition_tol`
 
 | Field | Value |
 | --- | --- |
@@ -912,13 +918,13 @@ This local quantity is evaluated immediately before and after hop velocity
 rescaling (or trivial state following), so it is a stricter check than ordinary
 integrator drift.
 
-### `nve_gate_consecutive`
+### `nve_policy_consecutive`
 
 | Field | Value |
 | --- | --- |
 | Type | integer |
 | Default | `3` |
-| Used by | `nve_gate=error` drift/step policy |
+| Used by | `nve_policy=error` drift/step policy |
 
 ### `trajectory_interval`
 
@@ -946,7 +952,7 @@ values are stored directly rather than expanded as repeated decimal text, so it
 is substantially more compact and faster to scan than a text trajectory holding
 the same matrices. Every record contains coordinates, velocities, energies,
 populations, complex electronic coefficients, hop decision and full-precision
-random value, state overlap, overlap TDC, the active reference TDC/mask, gate
+random value, state overlap, overlap TDC, the active reference TDC/mask, policy
 metrics, and root/phase tracking order, phase, matched overlap, and margin. It
 also stores the NVE drift, step change, transition jump, drift rate, verdict,
 and failure streak. SOC records additionally retain the complex spin-adiabatic
@@ -997,7 +1003,7 @@ not change between checkpoints.
 
 Compressed, non-pickle numerical checkpoint containing coordinates, velocities,
 acceleration, electronic coefficients, the previous electronic-structure tag
-bundle required by MO/root/phase tracking, counter-RNG identity, NACME gate
+bundle required by MO/root/phase tracking, counter-RNG identity, NACME policy
 streak, and TD-BA three-point history. SOC checkpoints additionally contain the
 previous SOC eigensystem and singlet/triplet response vectors needed for the
 next spin-adiabatic overlap. Their exact shapes, dtypes, and finite values are

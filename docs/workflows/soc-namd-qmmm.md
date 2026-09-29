@@ -180,7 +180,7 @@ active     = 1
 init_state = S1
 nstep      = 200
 dt         = 0.5
-thrshe     = 0.1
+thrshe     = 0.367493
 init_temp  = 300.0
 grad_wthr  = 0.001
 
@@ -205,7 +205,8 @@ Notes on the deck:
   active-root MCH gradients and selects `NAMD_SOC_MCH_QMMM`. Use
   `soc_basis=adiabatic` to test the spin-adiabatic weighted-gradient path and
   its optional correction flags.
-- **Gap gate.** [`thrshe=0.1`](../keywords/md.md#thrshe) is the default for
+- **Gap cutoff.** [`thrshe=0.367493`](../keywords/md.md#thrshe), approximately
+  10 eV, is the default for
   both same-spin and SOC dynamics and blocks large-gap transitions outside the
   intended local crossing region.
 - **QM region.** [`qm_atoms`](../keywords/qmmm.md#qm_atoms) must be a whole
@@ -232,8 +233,8 @@ NAMD:
   trajectory without treating `nstep` as an additional step count.
 
 The main log prints a concise energy-conservation table. The default
-`nve_gate=warn` applies to SOC as well as same-spin NVE trajectories; use
-`nve_gate=error` only after tolerances have been calibrated. Under NVE dynamics
+`nve_policy=warn` applies to SOC as well as same-spin NVE trajectories; use
+`nve_policy=error` only after tolerances have been calibrated. Under NVE dynamics
 with the default full-ESPF electrostatics, `E_tot` should show no systematic
 drift. Read the packed record without loading it fully:
 
