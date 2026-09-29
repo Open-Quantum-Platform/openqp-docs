@@ -61,6 +61,7 @@ velocity file:
 mrsf(nstate=5)/bhhlyp/6-31g*
 namd(S1,scheme=TDC_NAC)
 md(dt=0.5,nstep=400,velocity="molecule.vel")
+scf(conv=1e-8) tdhf(conv=1e-8)
 geom="molecule.xyz"
 ```
 
@@ -86,6 +87,8 @@ from oqp.openqp import OpenQP
 job = OpenQP("molecule_namd")
 job.molecule("molecule.xyz")
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
+job.settings.scf(conv=1e-8)
+job.settings.tdhf(conv=1e-8)
 job.workflow.md(dt=0.5, nstep=400, velocity="molecule.vel")
 job.workflow.namd(init_state="S1", scheme="TDC_NAC")
 mol = job.run()
@@ -1025,6 +1028,7 @@ namd(S1,scheme=NAC,
      continuation_trajectory="source.trj",
      restart_file="child.npz")
 md(nstep=3,dt=0.05,trajectory_file="child.trj")
+scf(conv=1e-8) tdhf(conv=1e-8)
 geom="molecule.xyz"
 ```
 
