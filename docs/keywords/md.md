@@ -168,44 +168,91 @@ ensemble must also keep the electronic-structure model, initial
 geometry/velocity pairs, `seed`, `rng_stream`, `dt`, `substep`, `decoherence`,
 state count, and numerical continuity settings identical among treatments.
 
-## Default Values at a Glance
+## Frequently Used Options
 
-The following table lists every NAMD option and its default before a
-`coupling` preset is expanded. Project-derived filenames and the date-derived
-random seed are identified explicitly.
+Most trajectories need only the options in this table. The values are the
+defaults before a `coupling` preset is expanded. Every option, including the
+less frequently changed controls, has a separate reference entry with its
+type, default, allowed values, and physical role below.
 
-| Option | Default | Option | Default |
-| --- | --- | --- | --- |
-| `coupling` | *(not set)* | `nstep` | `100` |
-| `dt` | `0.5` fs | `active` | `1` |
-| `substep` | `50000` | `decoherence` | `edc` |
-| `edc_c` | `0.1` Ha | `thrshe` | `0.367493` Ha (10 eV) |
-| `tdc` | `npi` | `rescale` | `auto` |
-| `trivial` | `False` | `trivial_thresh` | `0.5` |
-| `init_temp` | `300.0` K | `velocity` | `maxwell` |
-| `seed` | `0` (resolved to local `YYYYMMDD`) | `rng_stream` | `1` |
-| `first_hop_step` | `1` | `nacme_check` | `off` |
-| `ba_gap_max` | `0.0734986443513` Ha (2 eV) | `nacme_gate` | `off` |
-| `nacme_gate_invariant_tol` | `1.0e-10` | `nacme_gate_abs_tol` | `1.0e-4` au⁻¹ |
-| `nacme_gate_rel_tol` | `1.0` | `nacme_gate_consecutive` | `3` |
-| `nve_gate` | `warn` | `nve_gate_abs_tol` | `5.0e-3` Ha |
-| `nve_gate_step_tol` | `1.0e-3` Ha | `nve_gate_transition_tol` | `1.0e-6` Ha |
-| `nve_gate_consecutive` | `3` | `mo_reuse` | `True` |
-| `scf_guess_retry` | `True` | `scf_fail` | `escalate` |
-| `ref_follow` | `soscf` | `ref_switch_rescale` | `True` |
-| `somo_tol` | `0.5` | `frustrated` | `reflect` |
-| `disc_rescale` | `True` | `disc_tol` | `0.002` Ha |
-| `disc_substeps` | `10` | `trajectory_interval` | `1` step |
-| `restart_interval` | `10` steps | `trajectory_file` | empty → `<project>.namd.trj` |
-| `restart_file` | empty → `<project>.namd.restart.npz` | `continuation_checkpoint` | empty |
-| `continuation_trajectory` | empty | `restart` | `False` |
-| `ensemble` | `nve` | `thermostat` | `off` |
-| `thermostat_temperature` | `300.0` K | `thermostat_friction` | `1.0` ps⁻¹ |
-| `soc` | `False` | `soc_basis` | `adiabatic` |
-| `soc_du_dt_corr` | `False` | `soc_tdc_grad_corr` | `False` |
-| `grad_wthr` | `0.001` | `init_state` | empty |
-| `econs` | `False` | `dt_adaptive` | `False` |
-| `dt_min` | `0.05` fs | `dx_max` | `0.02` bohr |
+| Option | Default | When to set it |
+| --- | --- | --- |
+| `coupling` | *(not set)* | Select one complete Table-1 treatment instead of setting four low-level controls. |
+| `nstep` | `100` | Set the trajectory length together with `dt`. |
+| `dt` | `0.5` fs | Change only after checking nuclear-time-step convergence. |
+| `active` | `1` | Select the initial state when a physical state label is not supplied. |
+| `velocity` | `maxwell` | Use `zero` or a velocity-file path for a specified initial condition. |
+| `init_temp` | `300.0` K | Set the temperature of internally sampled Maxwell--Boltzmann velocities. |
+| `seed` | `0` → local `YYYYMMDD` | Set explicitly for reproducible trajectory ensembles. |
+| `rng_stream` | `1` | Give each trajectory an independent counter-RNG stream. |
+| `decoherence` | `edc` | Usually retain EDC; use `off` only for a controlled comparison. |
+| `edc_c` | `0.1` Ha | Change only when comparing decoherence models or parameters. |
+| `substep` | `50000` | Electronic propagation substeps; reduce only after a convergence test. |
+| `tdc` | `npi` | Low-level propagation-coupling selection for a custom treatment. |
+| `rescale` | `auto` | Low-level hop momentum-adjustment selection for a custom treatment. |
+| `thrshe` | `0.367493` Ha (10 eV) | Maximum gap for attempting a hop. |
+| `frustrated` | `reflect` | Treatment of an energetically frustrated directional hop. |
+| `nve_gate` | `warn` | Monitor total-energy behavior without terminating the trajectory. |
+| `trajectory_interval` | `1` step | Control packed-trajectory output frequency. |
+| `restart_interval` | `10` steps | Control atomic checkpoint frequency. |
+| `ensemble` | `nve` | Use `nvt` only with the Langevin thermostat controls. |
+| `thermostat` | `off` | Set to `langevin` for NVT propagation. |
+| `soc` | `False` | Enable spin-adiabatic or MCH-basis SOC-NAMD. |
+| `soc_basis` | `adiabatic` | Select `mch` for the current recommended production SOC force path. |
+
+## Advanced Options by Purpose
+
+The remaining controls are grouped by the situation in which they are useful.
+They should not be copied into routine inputs without that specific need.
+
+| Purpose | Options and defaults | When to use them |
+| --- | --- | --- |
+| Trivial-crossing following | `trivial=False`, `trivial_thresh=0.5`, `first_hop_step=1` | Controlled tests of overlap-triggered state relabeling or delayed hopping. Standard FSSH leaves `trivial=False`. |
+| Independent NACME comparison | `nacme_check=off`, `ba_gap_max=0.0734986443513` Ha, `nacme_gate=off`, `nacme_gate_invariant_tol=1.0e-10`, `nacme_gate_abs_tol=1.0e-4` au⁻¹, `nacme_gate_rel_tol=1.0`, `nacme_gate_consecutive=3` | Compare the propagated TDC with Baeck--An or analytic NACME; turn on warning/error behavior only during method verification. |
+| NVE energy diagnostics | `nve_gate_abs_tol=5.0e-3` Ha, `nve_gate_step_tol=1.0e-3` Ha, `nve_gate_transition_tol=1.0e-6` Ha, `nve_gate_consecutive=3` | Tighten or relax the default `nve_gate=warn` criteria after examining the physical energy scale and numerical convergence. |
+| SCF continuation | `mo_reuse=True`, `scf_guess_retry=True`, `scf_fail=escalate` | Stabilize the electronic solution between adjacent geometries; choose `scf_fail=restart` when a failed continuation should create a restart boundary. |
+| Reference continuity | `ref_follow=soscf`, `ref_switch_rescale=True`, `somo_tol=0.5` | Diagnose or control changes of the two-SOMO ROHF/ROKS reference along a trajectory. |
+| Energy-discontinuity recovery | `disc_rescale=True`, `disc_tol=0.002` Ha, `disc_substeps=10`, `econs=False` | Repeat or correct a step after a non-hop energy discontinuity. `econs` is a temporary numerical correction, not a routine physical model. |
+| Explicit output paths | `trajectory_file` and `restart_file` empty (project-derived names) | Separate simultaneous trajectories or place their packed trajectory/checkpoint files explicitly. |
+| Continuation into a new child run | `continuation_checkpoint` empty, `continuation_trajectory` empty, `restart=False` | Continue from an existing checkpoint, optionally with a different time step or new output files. For an ordinary restart, run the generated `.namd.restart.oqp` manifest. |
+| Langevin parameters | `thermostat_temperature=300.0` K, `thermostat_friction=1.0` ps⁻¹ | Required only with `ensemble=nvt,thermostat=langevin`. |
+| SOC force diagnostics | `soc_du_dt_corr=False`, `soc_tdc_grad_corr=False`, `grad_wthr=0.001`, `init_state` empty | Select the initial MCH character or test corrections to the spin-adiabatic weighted-gradient force. The two correction flags are diagnostic. |
+| Adaptive SOC time step | `dt_adaptive=False`, `dt_min=0.05` fs, `dx_max=0.02` bohr | Limit per-step nuclear displacement in SOC-NAMD when fast or stiff motion requires a smaller step. |
+
+### Advanced-option examples
+
+Enable independent coupling and NVE diagnostics without making them fatal:
+
+```text
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=Overlap,
+     nacme_check=baeck_an,nacme_gate=warn,nve_gate=warn)
+```
+
+For a trajectory whose continued SCF occasionally fails, preserve the previous
+orbitals, retry once from a fresh guess, and make a persistent reference change
+a restart boundary:
+
+```text
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=Overlap,
+     mo_reuse=true,scf_guess_retry=true,scf_fail=restart,
+     ref_follow=soscf,disc_rescale=true,disc_tol=0.002,disc_substeps=10)
+```
+
+Run Langevin NVT dynamics only when thermostatting is intentional:
+
+```text
+namd(S1,dt=0.5,nstep=400,velocity=maxwell,
+     ensemble=nvt,thermostat=langevin,
+     thermostat_temperature=300,thermostat_friction=1.0)
+```
+
+For SOC-NAMD, select the initial MCH character without a positional state and
+optionally limit the nuclear displacement with the adaptive time step:
+
+```text
+namd(soc=true,soc_basis=mch,init_state=S1,nstep=400,dt=0.5,
+     dt_adaptive=true,dt_min=0.05,dx_max=0.02)
+```
 
 ## Core Dynamics Keywords
 
