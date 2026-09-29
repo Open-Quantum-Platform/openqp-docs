@@ -16,7 +16,7 @@ specific input contract.
 | CASSCF nuclear gradient | Analytic gradients for state-specific `casscf`, the weighted SA-CASSCF objective, and an individual averaged root through a coupled orbital and CI Z-vector. Individual-state gradients support gradient-driven optimization; the weighted objective currently supports direct gradients only. CASCI and FCI remain energy-only. See [CASSCF Nuclear Gradient](workflows/casscf-gradient.md). |
 | CASPT2 nuclear gradient | Analytic gradients for single-state CASPT2/MRMP2, MCQDPT2, and XMS-CASPT2/XMCQDPT2 (`[pt2] gradient=auto` prefers them and falls back to central differences when a precondition fails). See [CASPT2 Nuclear Gradient](workflows/caspt2-gradient.md). |
 | SC-NEVPT2 nuclear gradient | Analytic gradient and gradient-driven geometry calculations for single-state, strongly contracted Dyall-Hamiltonian NEVPT2 on a state-specific CASSCF reference. See [SC-NEVPT2 Nuclear Gradient](workflows/sc-nevpt2-gradient.md). |
-| TDHF/TDDFT | Energy and gradient workflows for supported references. |
+| TDHF/TDDFT | Energy and gradient calculations for supported references; analytical Hessians for the lowest isolated singlet state of an RHF full-response RPA calculation with TDHF or a verified LDA/GGA/global-hybrid GGA functional. |
 | SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
 | UMRSF-TDDFT | Energy-only UHF-reference workflow. |
 | MRSF-EKT | IP/EA analysis with Dyson-like orbital data. |
@@ -28,6 +28,7 @@ specific input contract.
 | Analytic gradients | Available for the supported HF/DFT, RHF MP2 and spin-scaled MP2, state-specific CASSCF, dedicated SA-CASSCF weighted and individual-root derivatives, the analytic PT2 variants, in-scope SC-NEVPT2, and response methods. |
 | Numerical multireference gradients | Central differences for `method=casscf` with state averaging enabled, multi-set MS-CASPT2, and NEVPT2 outside the analytic SC-NEVPT2 scope, with `grad`, `optimize`, `ts`, `mep`, and `irc`. |
 | HF/DFT Hessians | Native analytic path for supported HF/DFT references. |
+| TDHF/TDDFT Hessians | Analytical Hessian for the lowest isolated singlet state of RHF full-response RPA with TDHF, SVWN/SVWN5/LDA, BLYP, PBE/PBEPBE, or B3LYP5/B3LYPV5; numerical Hessians outside this restricted scope. |
 | Numerical Hessians | Available through the Hessian workflow. |
 | NACME | MRSF-TDDFT state-coupling workflow. |
 | SOC | MRSF-TDDFT one-electron and mean-field two-electron SOC. |
