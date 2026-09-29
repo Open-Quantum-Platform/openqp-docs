@@ -101,29 +101,36 @@ treatments commonly compared for MRSF NAMD. The two finite values of `thrshe`
 are expressed in Hartree: 10 kcal mol⁻¹ is `0.015936`, whereas the
 10 eV numerical ceiling is `0.367493`.
 
-| Treatment | Propagation TDC | Hop adjustment | Low-gap cutoff | Frustrated hop | Required options |
-| --- | --- | --- | --- | --- | --- |
-| Baeck–An | energy-curvature approximation | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=baeck_an`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
-| Overlap TDC | norm-preserving interpolation of state overlaps | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=npi`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
-| NAC-guided TDC reversal | norm-preserving interpolation of state overlaps | along `d_IJ`, evaluated for the selected hop | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=npi`, `rescale=hop_analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
-| Full NAC | velocity-contracted analytic derivative coupling | along `d_IJ` | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=analytic`, `rescale=analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
+| Treatment | `.oqp`/Python preset | Propagation TDC | Hop adjustment | Low-gap cutoff | Frustrated hop | Expanded options |
+| --- | --- | --- | --- | --- | --- | --- |
+| Baeck–An | `coupling=BaeckAn` | energy-curvature approximation | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=baeck_an`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
+| Overlap TDC | `coupling=Overlap` | norm-preserving interpolation of state overlaps | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=npi`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
+| NAC-guided TDC reversal | `coupling=TDC_NAC` | norm-preserving interpolation of state overlaps | along `d_IJ`, evaluated for the selected hop | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=npi`, `rescale=hop_analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
+| Full NAC | `coupling=NAC` | velocity-contracted analytic derivative coupling | along `d_IJ` | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=analytic`, `rescale=analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
 
 After the MRSF method specification, choose exactly one of the following
 concise `.oqp` NAMD requests:
 
 ```text
 # Baeck–An
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",tdc=baeck_an,rescale=isotropic,thrshe=0.015936,frustrated=none)
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=BaeckAn)
 
 # Overlap TDC
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",tdc=npi,rescale=isotropic,thrshe=0.015936,frustrated=none)
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=Overlap)
 
 # NAC-guided TDC reversal
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",tdc=npi,rescale=hop_analytic_nac,thrshe=0.367493,frustrated=reflect)
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=TDC_NAC)
 
 # Full NAC
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",tdc=analytic,rescale=analytic_nac,thrshe=0.367493,frustrated=reflect)
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=NAC)
 ```
+
+`coupling` selects the complete treatment in this table; it is not merely the
+matrix used for electronic propagation. OpenQP expands the preset before the
+calculation starts. Do not combine it with `tdc`, `rescale`, `thrshe`, or
+`frustrated`; omit `coupling` when constructing a custom combination. The
+legacy sectioned `.inp` format continues to use the expanded `[md]` options
+shown in the final column.
 
 The NAC-guided and Full NAC choices require the supported gas-phase,
 same-spin singlet MRSF model on a restricted open-shell triplet reference.
@@ -143,7 +150,7 @@ kinetic energy. For `tdc=baeck_an`, the separate `ba_gap_max` value limits the
 state pairs included in the Baeck–An approximation; its default of
 `0.0734986` Hartree corresponds to 2 eV.
 
-These four lines specify the treatment-dependent choices only. A comparative
+These four presets specify the treatment-dependent choices only. A comparative
 ensemble must also keep the electronic-structure model, initial
 geometry/velocity pairs, `seed`, `rng_stream`, `dt`, `substep`, `decoherence`,
 state count, and numerical continuity settings identical among treatments.

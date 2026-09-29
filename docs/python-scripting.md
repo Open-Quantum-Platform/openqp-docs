@@ -324,7 +324,7 @@ internal-conversion FSSH:
 job = OpenQP("gas_namd", silent=1)
 job.molecule(geometry="water", charge=0)
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=2)
-job.workflow.namd(nstep=100, dt=0.5, active=1)
+job.workflow.namd(nstep=100, dt=0.5, active=1, coupling="Overlap")
 mol = job.run()
 ```
 

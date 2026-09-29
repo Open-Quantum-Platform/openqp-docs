@@ -286,7 +286,8 @@ apply to the native minimum, crossing-point, and transition-state optimizers.
 MEP and IRC own their path step and gradient threshold, while NEB owns its FIRE
 band controls; those drivers do not use `ENGINE`. `NAMD`
 means the current `[md]` controls `nstep`,
-`dt`, `active`, `substep`, `decoherence`, `edc_c`, `thrshe`, `tdc`, `rescale`,
+`dt`, `active`, `substep`, `decoherence`, `edc_c`, the Table-1 treatment preset
+`coupling=BaeckAn|Overlap|TDC_NAC|NAC`, `thrshe`, `tdc`, `rescale`,
 `trivial`, `trivial_thresh`, `init_temp`, `velocity`, `seed`, `rng_stream`,
 `first_hop_step`, `nacme_check`, `ba_gap_max`, `nacme_gate`,
 `nacme_gate_invariant_tol`, `nacme_gate_abs_tol`, `nacme_gate_rel_tol`,
@@ -321,7 +322,7 @@ means the current `[md]` controls `nstep`,
 | `nacme(STATE1,STATE2,dt=...,align=...)` | Coupling matrix element; requires `geom2` or `guess(file2=...)`. |
 | `soc(soc_2e=...,ns=...,nt=...)` | Spin-orbit coupling; accepts no single target state. `ns` and `nt` must be supplied together. |
 | `md([S0]) qmmm(...)` | Ground-state QM/MM molecular dynamics. `qmmm(...)` is mandatory and owns the OpenMM controls. |
-| `namd([STATE],NAMD...)` | MRSF nonadiabatic molecular dynamics using the `[md]` controls listed above; defaults to `S1`. |
+| `namd([STATE],NAMD...)` | MRSF nonadiabatic molecular dynamics using the controls listed above; defaults to `S1`. `coupling` expands one complete Table-1 treatment into the existing `[md]` controls. |
 | <code>ekt([STATE],ip=true&#124;false,ea=true&#124;false)</code> | MRSF extended Koopmans IP/EA options; the parent state defaults to `S0`. |
 | <code>thermo([STATE],type=numerical&#124;analytical,dx=...,nproc=...,read=...,restart=...,temperature=...,clean=...)</code> | Alias that lowers to the supported Hessian path; the state defaults to `S0`. |
 | `prop([STATE],scf_prop=...,nmr_gauge=...,td_prop=...,export=...,title=...)` | MRSF-TDDFT/MRSF-TDHF property driver; defaults to `S0`. |
