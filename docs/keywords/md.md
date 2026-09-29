@@ -132,6 +132,19 @@ calculation starts. Do not combine it with `tdc`, `rescale`, `thrshe`, or
 legacy sectioned `.inp` format continues to use the expanded `[md]` options
 shown in the final column.
 
+### `coupling` (`.oqp` and Python API)
+
+| Field | Value |
+| --- | --- |
+| Type | string preset |
+| Default | *(not set; use the individual `[md]` defaults)* |
+| Values | `BaeckAn`, `Overlap`, `TDC_NAC`, `NAC` |
+| Used by | complete Table-1 surface-hopping treatment selection |
+
+This concise option is expanded into `tdc`, `rescale`, `thrshe`, and
+`frustrated`. It is not a legacy `[md]` schema keyword and therefore has no
+independent runtime default.
+
 The NAC-guided and Full NAC choices require the supported gas-phase,
 same-spin singlet MRSF model on a restricted open-shell triplet reference.
 They do not apply to SOC-NAMD or QM/MM NAMD. Both the SCF and MRSF response
@@ -154,6 +167,45 @@ These four presets specify the treatment-dependent choices only. A comparative
 ensemble must also keep the electronic-structure model, initial
 geometry/velocity pairs, `seed`, `rng_stream`, `dt`, `substep`, `decoherence`,
 state count, and numerical continuity settings identical among treatments.
+
+## Default Values at a Glance
+
+The following table lists every NAMD option and its default before a
+`coupling` preset is expanded. Project-derived filenames and the date-derived
+random seed are identified explicitly.
+
+| Option | Default | Option | Default |
+| --- | --- | --- | --- |
+| `coupling` | *(not set)* | `nstep` | `100` |
+| `dt` | `0.5` fs | `active` | `1` |
+| `substep` | `50000` | `decoherence` | `edc` |
+| `edc_c` | `0.1` Ha | `thrshe` | `0.367493` Ha (10 eV) |
+| `tdc` | `npi` | `rescale` | `auto` |
+| `trivial` | `False` | `trivial_thresh` | `0.5` |
+| `init_temp` | `300.0` K | `velocity` | `maxwell` |
+| `seed` | `0` (resolved to local `YYYYMMDD`) | `rng_stream` | `1` |
+| `first_hop_step` | `1` | `nacme_check` | `off` |
+| `ba_gap_max` | `0.0734986443513` Ha (2 eV) | `nacme_gate` | `off` |
+| `nacme_gate_invariant_tol` | `1.0e-10` | `nacme_gate_abs_tol` | `1.0e-4` au⁻¹ |
+| `nacme_gate_rel_tol` | `1.0` | `nacme_gate_consecutive` | `3` |
+| `nve_gate` | `warn` | `nve_gate_abs_tol` | `5.0e-3` Ha |
+| `nve_gate_step_tol` | `1.0e-3` Ha | `nve_gate_transition_tol` | `1.0e-6` Ha |
+| `nve_gate_consecutive` | `3` | `mo_reuse` | `True` |
+| `scf_guess_retry` | `True` | `scf_fail` | `escalate` |
+| `ref_follow` | `soscf` | `ref_switch_rescale` | `True` |
+| `somo_tol` | `0.5` | `frustrated` | `reflect` |
+| `disc_rescale` | `True` | `disc_tol` | `0.002` Ha |
+| `disc_substeps` | `10` | `trajectory_interval` | `1` step |
+| `restart_interval` | `10` steps | `trajectory_file` | empty → `<project>.namd.trj` |
+| `restart_file` | empty → `<project>.namd.restart.npz` | `continuation_checkpoint` | empty |
+| `continuation_trajectory` | empty | `restart` | `False` |
+| `ensemble` | `nve` | `thermostat` | `off` |
+| `thermostat_temperature` | `300.0` K | `thermostat_friction` | `1.0` ps⁻¹ |
+| `soc` | `False` | `soc_basis` | `adiabatic` |
+| `soc_du_dt_corr` | `False` | `soc_tdc_grad_corr` | `False` |
+| `grad_wthr` | `0.001` | `init_state` | empty |
+| `econs` | `False` | `dt_adaptive` | `False` |
+| `dt_min` | `0.05` fs | `dx_max` | `0.02` bohr |
 
 ## Core Dynamics Keywords
 
@@ -997,7 +1049,7 @@ Conversely, an NVE calculation requires `thermostat=off`.
 | Field | Value |
 | --- | --- |
 | Type | float (K) |
-| Default | value of `init_temp` |
+| Default | `300.0` |
 | Used by | Langevin thermostat |
 
 Target temperature for `ensemble=nvt,thermostat=langevin`. This controls the
