@@ -36,7 +36,7 @@ velocity file:
 
 ```text
 mrsf(nstate=5)/bhhlyp/6-31g*
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",rescale=auto)
+namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",coupling=TDC_NAC)
 geom="molecule.xyz"
 ```
 
@@ -47,11 +47,11 @@ t_{\mathrm{total}} = n_{\mathrm{step}}\,\Delta t.
 \]
 
 The geometry and velocity files form one initial condition and must list atoms
-in the same order. Here `rescale=auto` uses hop-triggered analytic-NAC
-directional rescaling when that route is supported and otherwise uses isotropic
-rescaling. It does not alter the initial velocity file; it controls velocity
-adjustment only when a surface hop occurs. See [`velocity`](#velocity) for the
-file format, units, unit conversion, and preparation of Maxwell--Boltzmann or
+in the same order. `TDC_NAC` is the principal and recommended treatment: state
+overlaps provide the time-derivative coupling for electronic propagation, and
+an analytic derivative-coupling vector determines the momentum-adjustment
+direction only when a hop is selected. See [`velocity`](#velocity) for the file
+format, units, unit conversion, and preparation of Maxwell--Boltzmann or
 externally sampled velocities.
 
 Python:
@@ -63,7 +63,7 @@ job = OpenQP("molecule_namd")
 job.molecule("molecule.xyz")
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=5)
 job.workflow.namd(init_state="S1", dt=0.5, nstep=400,
-                  velocity="molecule.vel", rescale="auto")
+                  velocity="molecule.vel", coupling="TDC_NAC")
 mol = job.run()
 ```
 
@@ -137,13 +137,18 @@ shown in the final column.
 | Field | Value |
 | --- | --- |
 | Type | string preset |
-| Default | *(not set; use the individual `[md]` defaults)* |
+| Default | effective `TDC_NAC` for supported gas-phase same-spin singlet MRSF dynamics |
 | Values | `BaeckAn`, `Overlap`, `TDC_NAC`, `NAC` |
 | Used by | complete Table-1 surface-hopping treatment selection |
 
 This concise option is expanded into `tdc`, `rescale`, `thrshe`, and
-`frustrated`. It is not a legacy `[md]` schema keyword and therefore has no
-independent runtime default.
+`frustrated`. `TDC_NAC` is the central OpenQP treatment and should normally be
+written explicitly. If `coupling` is omitted, the low-level defaults
+`tdc=npi`, `rescale=auto`, `thrshe=0.367493`, and `frustrated=reflect` resolve
+to the same TDC--NAC treatment whenever analytic NAC is supported. For SOC,
+QM/MM, triplet, or other routes without analytic NAC, `rescale=auto` instead
+uses isotropic rescaling so that an omitted preset does not request an
+unsupported derivative-coupling vector.
 
 The NAC-guided and Full NAC choices require the supported gas-phase,
 same-spin singlet MRSF model on a restricted open-shell triplet reference.
@@ -177,7 +182,7 @@ type, default, allowed values, and physical role below.
 
 | Option | Default | When to set it |
 | --- | --- | --- |
-| `coupling` | *(not set)* | Select one complete Table-1 treatment instead of setting four low-level controls. |
+| `coupling` | effective `TDC_NAC` on its supported route | Write `coupling=TDC_NAC` explicitly for the principal recommended treatment; select another preset only for a defined comparison. |
 | `nstep` | `100` | Set the trajectory length together with `dt`. |
 | `dt` | `0.5` fs | Change only after checking nuclear-time-step convergence. |
 | `active` | `1` | Select the initial state when a physical state label is not supplied. |
@@ -414,6 +419,10 @@ for every state pair. `hop_analytic_nac` evaluates only the active--candidate
 pair when a hop is selected. `auto` chooses `hop_analytic_nac` for a supported
 gas-phase, same-spin singlet MRSF calculation with sufficiently converged SCF
 and response states, and otherwise uses `isotropic`.
+
+Consequently, the low-level defaults `tdc=npi,rescale=auto` implement the
+recommended `TDC_NAC` treatment on its supported route: overlap TDC propagates
+the amplitudes, while analytic NAC is evaluated only for the selected hop.
 
 The `tdc` and `rescale` choices are independent. For example,
 `tdc=npi,rescale=auto` propagates the electronic amplitudes from state overlaps
