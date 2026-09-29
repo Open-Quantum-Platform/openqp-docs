@@ -33,7 +33,7 @@ is described (SOC-NAMD). Enabling [`[input] qmmm_flag=true`](input.md#qmmm_flag)
 embeds the MRSF-TDDFT QM region in an OpenMM MM environment via the ESPF
 operator.
 
-## Minimal Reproducible NAMD Example
+## Quick Start
 
 Gas-phase FSSH on MRSF-TDDFT states, starting from a specified geometry and
 velocity file:
@@ -73,33 +73,10 @@ job.workflow.namd(init_state="S1", dt=0.5, nstep=400,
 mol = job.run()
 ```
 
-Legacy `.inp`:
+For sectioned legacy `.inp` input, write the corresponding low-level `[md]`
+keywords directly; see [Legacy `.inp`](../input-file.md).
 
-```ini
-[input]
-runtype    = namd
-method     = tdhf
-functional = bhhlyp
-basis      = 6-31g*
-system     = molecule.xyz
-
-[scf]
-type         = rohf
-multiplicity = 3
-
-[tdhf]
-type   = mrsf
-nstate = 5
-
-[md]
-active    = 2
-nstep     = 400
-dt        = 0.5
-velocity  = molecule.vel
-rescale   = auto
-```
-
-## Choosing a Surface-Hopping Treatment
+## Choose One `scheme`
 
 The propagation coupling and the momentum adjustment at a hop are separate
 choices. The following combinations reproduce the four representative
@@ -107,12 +84,12 @@ treatments commonly compared for MRSF NAMD. The two finite values of `thrshe`
 are expressed in Hartree: 10 kcal mol⁻¹ is `0.015936`, whereas the
 10 eV numerical ceiling is `0.367493`.
 
-| Treatment | `.oqp`/Python scheme | Propagation TDC | Hop adjustment | Low-gap cutoff | Frustrated hop | Expanded options |
-| --- | --- | --- | --- | --- | --- | --- |
-| Baeck–An | `scheme=BaeckAn` | energy-curvature approximation | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=baeck_an`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
-| Overlap TDC | `scheme=Overlap` | norm-preserving interpolation of state overlaps | isotropic | 10 kcal mol⁻¹ | no reversal | `tdc=npi`, `rescale=isotropic`, `thrshe=0.015936`, `frustrated=none` |
-| NAC-guided TDC reversal | `scheme=TDC_NAC` | norm-preserving interpolation of state overlaps | along `d_IJ`, evaluated for the selected hop | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=npi`, `rescale=hop_analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
-| Full NAC | `scheme=NAC` | velocity-contracted analytic derivative coupling | along `d_IJ` | no 10 kcal mol⁻¹ cutoff; 10 eV ceiling | reflect along `d_IJ` | `tdc=analytic`, `rescale=analytic_nac`, `thrshe=0.367493`, `frustrated=reflect` |
+| `scheme` | Electronic propagation | Hop rescaling | Gap limit | Frustrated hop |
+| --- | --- | --- | --- | --- |
+| `BaeckAn` | Baeck--An energy-curvature approximation | isotropic | 10 kcal mol⁻¹ | unchanged |
+| `Overlap` | norm-preserving interpolation of overlaps | isotropic | 10 kcal mol⁻¹ | unchanged |
+| `TDC_NAC` | norm-preserving interpolation of overlaps | selected-pair analytic NAC direction | 10 eV | reflected along the NAC direction |
+| `NAC` | velocity-contracted analytic NAC | analytic NAC direction | 10 eV | reflected along the NAC direction |
 
 After the MRSF method specification, choose exactly one of the following
 concise `.oqp` NAMD requests:
@@ -131,14 +108,10 @@ namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=TDC_NAC)
 namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=NAC)
 ```
 
-`scheme` selects the complete surface-hopping treatment in this table; it is
-not merely the electronic coupling. OpenQP expands the scheme before the
-calculation starts. A concise `.oqp` or Python NAMD request must state one
-scheme. Do not combine a named scheme with `tdc`, `rescale`, `thrshe`, or
-`frustrated`. Use `scheme=custom` and state all four low-level controls when a
-combination outside the table is intentionally required. The legacy sectioned
-`.inp` format continues to use the expanded `[md]` options shown in the final
-column.
+`scheme` selects the complete surface-hopping treatment: electronic
+propagation, hop rescaling, the gap limit, and frustrated-hop treatment. It is
+required in concise `.oqp` and Python input. Do not add `tdc`, `rescale`,
+`thrshe`, or `frustrated` to a named scheme.
 
 ### `scheme` (`.oqp` and Python API)
 
@@ -149,40 +122,26 @@ column.
 | Values | `BaeckAn`, `Overlap`, `TDC_NAC`, `NAC`, `custom` |
 | Used by | complete Table-1 surface-hopping treatment selection |
 
-The four named values are expanded into `tdc`, `rescale`, `thrshe`, and
-`frustrated`. `TDC_NAC` is the principal OpenQP treatment for its supported
-route and should normally be written explicitly. `custom` is the expert escape
-hatch: it requires explicit values for all four low-level controls, preventing
-a calculation from silently inheriting a mixed treatment.
+`TDC_NAC` is the principal OpenQP scheme for supported gas-phase, same-spin
+singlet MRSF dynamics. `NAC` has the same model restriction. Both require SCF
+and MRSF response convergence thresholds of at most `1e-8`. `Overlap` is the
+simple overlap/isotropic scheme. `BaeckAn` is intended for a defined comparison
+with the Baeck--An approximation.
 
-The NAC-guided and Full NAC choices require the supported gas-phase,
-same-spin singlet MRSF model on a restricted open-shell triplet reference.
-They do not apply to SOC-NAMD or QM/MM NAMD. Both the SCF and MRSF response
-thresholds must be at most `1e-8`, for example:
+For `TDC_NAC` or `NAC`, use for example:
 
 ```text
 mrsf(nstate=4)/bhhlyp/6-31g* scf(conv=1e-8) tdhf(conv=1e-8)
 ```
 
-`tdc` determines the scalar time-derivative coupling used to propagate the
-electronic amplitudes. `rescale` determines how nuclear momentum is adjusted
-after an energetically allowed hop. `thrshe` limits the energy gap for a hop
-attempt, and `frustrated` determines whether the momentum component along
-`d_IJ` is reflected when a directional hop lacks sufficient
-kinetic energy. For `tdc=baeck_an`, the separate `ba_gap_max` value limits the
-state pairs included in the Baeck–An approximation; its default of
-`0.0734986` Hartree corresponds to 2 eV.
+`TDC_NAC` and `NAC` do not apply to SOC-NAMD or QM/MM NAMD. Those calculations
+must use a physically defined `custom` scheme. See
+[NAMD Advanced Controls](md-advanced.md) for the four expanded low-level
+keywords and supported examples.
 
-These four presets specify the treatment-dependent choices only. A comparative
-ensemble must also keep the electronic-structure model, initial
-geometry/velocity pairs, `seed`, `rng_stream`, `dt`, `substep`, `decoherence`,
-state count, and numerical continuity settings identical among treatments.
+## Essential Options
 
-## Frequently Used Options
-
-Most trajectories need only the options in this table. Every option, including
-the less frequently changed controls, has a separate reference entry with its
-type, default, allowed values, and physical role below.
+Most calculations need only these options.
 
 | Option | Default | When to set it |
 | --- | --- | --- |
@@ -195,73 +154,20 @@ type, default, allowed values, and physical role below.
 | `seed` | `0` → local `YYYYMMDD` | Set explicitly for reproducible trajectory ensembles. |
 | `rng_stream` | `1` | Give each trajectory an independent counter-RNG stream. |
 | `decoherence` | `edc` | Usually retain EDC; use `off` only for a controlled comparison. |
-| `edc_c` | `0.1` Ha | Change only when comparing decoherence models or parameters. |
-| `substep` | `50000` | Electronic propagation substeps; reduce only after a convergence test. |
 | `nve_policy` | `warn` | Monitor total-energy behavior without terminating the trajectory. |
-| `trajectory_interval` | `1` step | Control packed-trajectory output frequency. |
-| `restart_interval` | `10` steps | Control atomic checkpoint frequency. |
 | `ensemble` | `nve` | Use `nvt` only with the Langevin thermostat controls. |
 | `thermostat` | `off` | Set to `langevin` for NVT propagation. |
 | `soc` | `False` | Enable spin-adiabatic or MCH-basis SOC-NAMD. |
 | `soc_basis` | `adiabatic` | Select `mch` for the current recommended production SOC force path. |
 
-## Advanced Options by Purpose
+!!! info "Advanced controls are documented separately"
+    Custom schemes, NACME comparison, strict NVE criteria, SCF/reference
+    continuity, discontinuity correction, local continuation, and SOC
+    diagnostic controls are collected in
+    [NAMD Advanced Controls](md-advanced.md). Do not copy them into a standard
+    input unless that specific treatment or diagnostic is required.
 
-The remaining controls are grouped by the situation in which they are useful.
-They should not be copied into routine inputs without that specific need.
-
-| Purpose | Options and defaults | When to use them |
-| --- | --- | --- |
-| Custom surface-hopping scheme | `scheme=custom`; explicit `tdc`, `rescale`, `thrshe`, and `frustrated` | Only reproduce a defined treatment outside the four named schemes. These low-level controls are deliberately excluded from routine inputs. |
-| Trivial-crossing following | `trivial=False`, `trivial_thresh=0.5`, `first_hop_step=1` | Controlled tests of overlap-triggered state relabeling or delayed hopping. Standard FSSH leaves `trivial=False`. |
-| Independent NACME comparison | `nacme_check=off`, `ba_gap_max=0.0734986443513` Ha, `nacme_policy=off`, `nacme_policy_invariant_tol=1.0e-10`, `nacme_policy_abs_tol=1.0e-4` au⁻¹, `nacme_policy_rel_tol=1.0`, `nacme_policy_consecutive=3` | Compare the propagated TDC with Baeck--An or analytic NACME; turn on warning/error behavior only during method verification. |
-| NVE energy diagnostics | `nve_policy_abs_tol=5.0e-3` Ha, `nve_policy_step_tol=1.0e-3` Ha, `nve_policy_transition_tol=1.0e-6` Ha, `nve_policy_consecutive=3` | Tighten or relax the default `nve_policy=warn` criteria after examining the physical energy scale and numerical convergence. |
-| SCF continuation | `mo_reuse=True`, `scf_guess_retry=True`, `scf_fail=escalate` | Stabilize the electronic solution between adjacent geometries; choose `scf_fail=restart` when a failed continuation should create a restart boundary. |
-| Reference continuity | `ref_follow=soscf`, `ref_switch_rescale=True`, `somo_tol=0.5` | Diagnose or control changes of the two-SOMO ROHF/ROKS reference along a trajectory. |
-| Energy-discontinuity recovery | `disc_rescale=True`, `disc_tol=0.002` Ha, `disc_substeps=10`, `econs=False` | Repeat or correct a step after a non-hop energy discontinuity. `econs` is a temporary numerical correction, not a routine physical model. |
-| Explicit output paths | `trajectory_file` and `restart_file` empty (project-derived names) | Separate simultaneous trajectories or place their packed trajectory/checkpoint files explicitly. |
-| Continuation into a new child run | `continuation_checkpoint` empty, `continuation_trajectory` empty, `restart=False` | Continue from an existing checkpoint, optionally with a different time step or new output files. For an ordinary restart, run the generated `.namd.restart.oqp` manifest. |
-| Langevin parameters | `thermostat_temperature=300.0` K, `thermostat_friction=1.0` ps⁻¹ | Required only with `ensemble=nvt,thermostat=langevin`. |
-| SOC force diagnostics | `soc_du_dt_corr=False`, `soc_tdc_grad_corr=False`, `grad_wthr=0.001`, `init_state` empty | Select the initial MCH character or test corrections to the spin-adiabatic weighted-gradient force. The two correction flags are diagnostic. |
-| Adaptive SOC time step | `dt_adaptive=False`, `dt_min=0.05` fs, `dx_max=0.02` bohr | Limit per-step nuclear displacement in SOC-NAMD when fast or stiff motion requires a smaller step. |
-
-### Advanced-option examples
-
-Enable independent coupling and NVE diagnostics without making them fatal:
-
-```text
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=Overlap,
-     nacme_check=baeck_an,nacme_policy=warn,nve_policy=warn)
-```
-
-For a trajectory whose continued SCF occasionally fails, preserve the previous
-orbitals, retry once from a fresh guess, and make a persistent reference change
-a restart boundary:
-
-```text
-namd(S1,dt=0.5,nstep=400,velocity="molecule.vel",scheme=Overlap,
-     mo_reuse=true,scf_guess_retry=true,scf_fail=restart,
-     ref_follow=soscf,disc_rescale=true,disc_tol=0.002,disc_substeps=10)
-```
-
-Run Langevin NVT dynamics only when thermostatting is intentional:
-
-```text
-namd(S1,scheme=Overlap,dt=0.5,nstep=400,velocity=maxwell,
-     ensemble=nvt,thermostat=langevin,
-     thermostat_temperature=300,thermostat_friction=1.0)
-```
-
-For SOC-NAMD, select the initial MCH character without a positional state and
-optionally limit the nuclear displacement with the adaptive time step:
-
-```text
-namd(scheme=custom,tdc=npi,rescale=isotropic,thrshe=0.367493,
-     frustrated=reflect,soc=true,soc_basis=mch,init_state=S1,nstep=400,dt=0.5,
-     dt_adaptive=true,dt_min=0.05,dx_max=0.02)
-```
-
-## Core Dynamics Keywords
+## Standard Keyword Reference
 
 ### `nstep`
 
@@ -299,6 +205,8 @@ Initial active state (1-based). For plain FSSH this indexes the MRSF states
 manifold (`1 <= active <= ns + 3*nt`; see [`soc`](#soc)). For SOC runs,
 [`init_state`](#init_state) can override `active` by MCH character.
 
+## Advanced Electronic-Propagation Controls
+
 ### `substep`
 
 | Field | Value |
@@ -335,6 +243,12 @@ disables it. Energy-based decoherence is recommended for surface hopping.
 The EDC constant `C` (in Hartree) in the energy-based decoherence rate. Only
 used when `decoherence=edc`.
 
+## Advanced Custom-Scheme Keyword Reference
+
+The following four keywords are not independent routine choices in concise
+input. A named `scheme` fixes all four. Use them directly only with
+`scheme=custom`, or in sectioned legacy `[md]` input.
+
 ### `thrshe`
 
 !!! note "Advanced custom-scheme control"
@@ -352,7 +266,7 @@ used when `decoherence=edc`.
 Maximum state-energy gap for an attempted hop. The default 10 eV ceiling
 excludes only exceptionally large-gap hop candidates. Set a smaller positive
 value in Hartree when the selected surface-hopping protocol defines a tighter
-restriction; the Baeck–An and Overlap presets use 10 kcal mol⁻¹
+restriction; the `BaeckAn` and `Overlap` schemes use 10 kcal mol⁻¹
 (`0.015936` Hartree).
 
 ### `tdc`
@@ -438,6 +352,22 @@ and evaluates an analytic derivative-coupling vector only for a selected hop.
 `tdc=analytic,rescale=analytic_nac` uses analytic derivative couplings for both
 electronic propagation and directional velocity adjustment.
 
+### `frustrated`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `reflect` |
+| Values | `none`, `reflect` |
+| Used by | frustrated directional hops |
+
+Choose the treatment when the available kinetic energy is insufficient for a
+hop whose velocity adjustment uses an analytic derivative-coupling direction.
+`none` leaves the velocity unchanged. `reflect` reverses its component along
+the derivative-coupling vector.
+
+## Advanced State-Following Controls
+
 ### `trivial`
 
 | Field | Value |
@@ -462,7 +392,7 @@ it off unless the chosen protocol has been validated with it.
 State-overlap threshold that flags a trivial crossing. Only used when
 `trivial=True`.
 
-## Electronic-Structure Continuity and Energy-Discontinuity Treatment
+## Advanced Electronic-Structure Continuity and Energy-Discontinuity Treatment
 
 ### `mo_reuse`
 
@@ -541,20 +471,6 @@ physical surface hop.
 
 Minimum aligned overlap retained by the two-SOMO subspace. A smaller overlap
 is recorded as a reference-change event.
-
-### `frustrated`
-
-| Field | Value |
-| --- | --- |
-| Type | string |
-| Default | `reflect` |
-| Values | `none`, `reflect` |
-| Used by | frustrated directional hops |
-
-Choose the treatment when the available kinetic energy is insufficient for a
-hop whose velocity adjustment uses an analytic derivative-coupling direction.
-`none` leaves the velocity unchanged. `reflect` reverses its component along
-the derivative-coupling vector.
 
 ### `disc_rescale`
 
@@ -729,6 +645,8 @@ It separates both Maxwell initial velocities and hopping draws. The same
 `(seed, rng_stream, step)` triple always gives the same full-precision uniform
 value, which permits exact two-code replay. Do not reuse one stream for two
 nominally independent trajectories.
+
+## Advanced Diagnostic Criteria
 
 ### `first_hop_step`
 
@@ -934,6 +852,8 @@ integrator drift.
 | Default | `3` |
 | Used by | `nve_policy=error` drift/step policy |
 
+## Trajectory Output and Restart
+
 ### `trajectory_interval`
 
 | Field | Value |
@@ -1043,7 +963,7 @@ same-spin/SOC and gas-phase/QM/MM driver combinations. The independent TD-BA
 NACME comparison remains same-spin only; SOC stores its complex overlap/TDC but
 does not reinterpret TD-BA as a spin-adiabatic reference.
 
-## Local Continuation with a Different Time Step
+## Advanced Local Continuation with a Different Time Step
 
 ### `continuation_checkpoint`
 
@@ -1177,6 +1097,11 @@ work because it avoids the approximate weighted-gradient force used by the
 the spin-adiabatic path.
 
 ### `soc_du_dt_corr`
+
+!!! warning "Advanced SOC force diagnostic"
+    `soc_du_dt_corr`, `soc_tdc_grad_corr`, and `grad_wthr` are for examining
+    the approximate spin-adiabatic force. They are not needed for the
+    recommended `soc_basis=mch` calculation.
 
 | Field | Value |
 | --- | --- |

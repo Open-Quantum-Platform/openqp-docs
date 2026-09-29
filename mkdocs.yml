@@ -93,6 +93,7 @@ nav:
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md
       - md: keywords/md.md
+      - NAMD advanced controls: keywords/md-advanced.md
       - qmmm: keywords/qmmm.md
       - properties: keywords/properties.md
       - hess: keywords/hess.md
