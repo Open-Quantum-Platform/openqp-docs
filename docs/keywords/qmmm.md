@@ -7,10 +7,22 @@ embedded in a classical force-field environment handled by
 single-point QM/MM energy and ground-state QM/MM molecular dynamics, while
 NAMD uses the separate embedded surface-hopping driver.
 
-In `.oqp`, `qmmm(...)` is accepted with `energy`, ground-state `md`,
-and embedded `namd`; writing it also enables `qmmm_flag`. QM/MM gradients and
-geometry optimizations are rejected because those generic backends do not yet
-provide the assembled QM/MM gradient.
+Ground-state `md(...) qmmm(...)` always selects the OpenMM `QMMM_MD` engine,
+including nonperiodic `cutoff=NoCutoff` calculations. Periodic methods (`PME`,
+`Ewald`, and `CutoffPeriodic`) require that OpenMM path, and any future
+spherical-boundary QM/MM implementation must use it as well. Only an all-QM
+gas-phase `md(...)` calculation without `qmmm(...)` uses the native OpenQP
+velocity-Verlet driver. In QM/MM NAMD, OpenMM supplies the environmental force
+model and constraints, while OpenQP continues to perform electronic
+propagation, surface-hop decisions, and hop momentum adjustment. See
+[Dynamics Backend Selection](md.md#dynamics-backend-selection).
+
+In `.oqp`, `qmmm(...)` is accepted with `energy`, `opt`, ground-state `md`,
+and embedded `namd`; writing it also enables `qmmm_flag`. A QM/MM `opt(...)`
+minimizes the QM/MM energy with respect to the QM atoms and, optionally, the
+MM residues within `opt(qmmm_radius=...)` Å of the QM region (see
+`examples/QMMM/ala-dipeptide_RHF-QMMM-OPT-linkatom.oqp`). Other drivers, such as a
+standalone `grad`, are rejected with `qmmm(...)`.
 
 ```text
 dft/pbe0/def2-svp qmmm()
@@ -41,6 +53,12 @@ Two ways of defining the QM region are supported, matching the driver paths:
   field, and QM selection from the `[qmmm]` keys `pdb_file`,
   `forcefield_files`, and `qm_atoms` below. NAMD additionally uses
   `runtype=namd` and the `[md]` section.
+
+Give the QM region once. `qm_atoms` (0-based) and the indices after the PDB
+name in `[input] system` (1-based) describe the same atoms, and OpenQP derives
+whichever one is missing. When both are given they must select the same atoms;
+otherwise the input is rejected. `qm_atoms="0-2"` corresponds to
+`system = file.pdb 1 2 3`.
 
 ## Minimal QM/MM Example
 
@@ -81,10 +99,20 @@ type = rhf
 Embedded nonadiabatic molecular dynamics in `.oqp`:
 
 ```text
-mrsf(nstate=5)/bhhlyp/6-31g namd
+mrsf(nstate=5)/bhhlyp/6-31g scf(conv=1e-8) tdhf(conv=1e-8)
+namd(S1,scheme=TDC_NAC) md(dt=0.5,nstep=400,velocity="water_box.vel")
 qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-2",cutoff=PME)
-geom="water_box.pdb 0-2"
+geom="water_box.pdb"
 ```
+
+For `TDC_NAC` and `NAC`, the current QM/MM implementation evaluates the
+analytic vector on the QM centres while holding the instantaneous embedding
+contribution fixed. Embedding-operator and MM-coordinate derivative components
+are omitted, and only QM velocities are rescaled. The QM region must contain no
+link atoms. `TDC_NAC` still propagates the electronic amplitudes with the
+phase-tracked overlap TDC, so the environment's change along the actual
+trajectory remains present in electronic propagation; the QM-region analytic
+vector is requested only for a selected hop direction.
 
 The legacy `.inp` spelling is:
 
@@ -99,10 +127,19 @@ basis      = 6-31g
 [scf]
 type = rohf
 multiplicity = 3
+conv = 1.0e-8
 
 [tdhf]
 type   = mrsf
 nstate = 5
+conv   = 1.0e-8
+
+[md]
+active     = 1
+tdc        = npi
+rescale    = hop_analytic_nac
+thrshe     = 0.367493
+frustrated = reflect
 
 [qmmm]
 pdb_file         = water_box.pdb
@@ -135,7 +172,7 @@ mol = job.run()
 ```python
 # QM/MM molecular dynamics: PDB, force field, and QM atoms in job.qmmm(...)
 job = OpenQP("water_box_qmmm", silent=1)
-job.molecule("water_box.pdb 0 1 2", basis="6-31g")
+job.molecule("water_box.pdb", basis="6-31g")
 job.theory.mrsf(functional="bhhlyp", nstate=5)
 job.qmmm(
     pdb_file="water_box.pdb",
@@ -144,7 +181,11 @@ job.qmmm(
     cutoff="PME",
     embedding="electrostatic",
 )
-job.workflow.namd(nstep=200, dt=0.5)   # add soc=True for SOC-NAMD-QMMM
+job.workflow.namd(
+    scheme="custom", tdc="npi", rescale="isotropic",
+    thrshe=0.367493, frustrated="reflect",
+)  # add soc=True for SOC
+job.workflow.md(nstep=200, dt=0.5)
 mol = job.run()
 ```
 
@@ -200,16 +241,14 @@ explicit `forcefield_files` value. New QM/MM-MD decks should set
 | Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
 
 Zero-based indices of the atoms placed in the QM region, as individual indices
-and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. Give the indices in
-**ascending order**. This key is required by ground-state QM/MM MD and NAMD;
-single-point energy writes the equivalent selection after its PDB path in
-`[input] system`. Whole-molecule QM selections (e.g. a solute in a solvent box)
-are the common case, and the only case supported by the nonadiabatic
-(`runtype=namd`) path. In single-point energy and ground-state QM/MM MD, a
-selection that cuts a covalent bond is capped with a hydrogen [link
+and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. Either `qm_atoms` or the
+1-based selection after the PDB path in `[input] system` is sufficient; the
+other is derived. When both are given they must select the same atoms.
+Whole-molecule QM selections (e.g. a solute in a solvent box) are the common
+case. A selection that cuts a covalent bond is capped with a hydrogen [link
 atom](#link-atoms) and the MM frontier charge is treated per
-[`frontier_scheme`](#frontier_scheme); see the [SOC-NAMD-QMMM scope
-note](../workflows/soc-namd-qmmm.md#scope-and-limitations).
+[`frontier_scheme`](#frontier_scheme); in NAMD this is limited to schemes
+without analytic NAC (see [Link atoms](#link-atoms)).
 
 ### `cutoff`
 
@@ -251,15 +290,14 @@ should use `electrostatic`.
 | Type | string |
 | Default | `none` |
 | Values | `none`, `rcd`, `rc`, `z1` |
-| Used by | ESPF electrostatics at a covalent QM/MM boundary (ground-state QM/MM MD) |
+| Used by | ESPF electrostatics at a covalent QM/MM boundary |
 
 When the QM/MM partition cuts a covalent bond, the MM host atom (`M1`, the MM end
 of the severed bond) sits ~1.5 Å from the QM density. `frontier_scheme` selects
 how that frontier charge is treated in the ESPF embedding. It is a **no-op for
 whole-molecule QM regions** (no cut bond). Covalent QM/MM boundaries are handled
-by the single-point and ground-state QM/MM MD paths; the nonadiabatic
-(`runtype=namd`) path builds its QM molecule from `qm_atoms` only and does not
-support a covalent cut.
+by the single-point, optimization, ground-state QM/MM MD, and NAMD paths; NAMD
+across a covalent boundary requires a scheme without analytic NAC.
 
 | Value | Meaning |
 | --- | --- |
@@ -315,8 +353,9 @@ path (for example, constrain X-H bonds).
 | Default | `300.0` |
 | Used by | ground-state QM/MM MD |
 
-Target/initial temperature for the ground-state QM/MM MD path. The nonadiabatic
-path sets the initial temperature from [`[md] init_temp`](md.md#init_temp).
+Legacy target/initial temperature for ground-state QM/MM MD. New concise input
+uses [`md(temperature=...)`](md.md) for both ground-state and nonadiabatic
+dynamics.
 
 ### `timestep`
 
@@ -326,8 +365,8 @@ path sets the initial temperature from [`[md] init_temp`](md.md#init_temp).
 | Default | `1` |
 | Used by | ground-state QM/MM MD |
 
-MD timestep for the ground-state QM/MM MD path. The nonadiabatic path uses
-[`[md] dt`](md.md#dt).
+Legacy QM/MM MD timestep. New concise input uses
+[`md(dt=...)`](md.md#dt) for all dynamics.
 
 ### `nsteps`
 
@@ -338,10 +377,9 @@ MD timestep for the ground-state QM/MM MD path. The nonadiabatic path uses
 | Used by | legacy static QM/MM bookkeeping |
 
 Retained for compatibility with the older static-driver configuration. The
-current ground-state OpenMM MD engine uses [`n_steps`](#n_steps); the
-nonadiabatic path uses [`[md] nstep`](md.md#nstep). In concise `.oqp`, however,
-`qmmm(nsteps=N)` is accepted as an alias and lowered to the active `n_steps`
-key; this does not change the meaning of `nsteps` in a sectioned `.inp`.
+current ground-state OpenMM MD engine also reads [`n_steps`](#n_steps). New
+concise input uses [`md(nstep=...)`](md.md#nstep) for all dynamics;
+`qmmm(nsteps=N)` remains a compatibility alias.
 
 ### `istate`
 
@@ -356,10 +394,12 @@ retained in the sectioned schema for compatibility but is reserved in `.oqp`;
 do not write `qmmm(istate=...)`. Ground-state canonical `md` uses `S0`, and
 state-aware drivers own their physical state labels.
 
-## Ground-state OpenMM MD Keywords
+## Legacy Ground-state OpenMM MD Keywords
 
-These keys are consumed by the command-line ground-state QM/MM-MD driver. The
-command must run without MPI.
+These `[qmmm]` propagation keys remain available to old sectioned inputs. New
+concise inputs put propagation in `md(...)` and keep `qmmm(...)` limited to the
+QM/MM structure, force field, embedding, boundary, and periodic settings. The
+ground-state QM/MM command must run without MPI.
 
 ### `n_steps`
 
@@ -379,7 +419,14 @@ legacy bookkeeping with its own default of one.
 | --- | --- |
 | Type | string |
 | Default | `nve` |
-| Values | `nve`, `nvt`, `npt` |
+| Supported values | `nve`, `nvt` |
+
+This is a legacy `[qmmm]` propagation key. New `.oqp` and Python inputs use
+`md(ensemble=nve|nvt)` instead. The current unified `md(...)` surface supports
+NVE and Langevin NVT. NPT is a defined ensemble and the schema retains
+`pressure` and `barostat_interval`, but the current QM/MM runtime rejects it:
+the OpenMM barostat trial would otherwise use a linearized external force
+instead of a newly evaluated QM/MM energy for the proposed box.
 
 ### `friction`
 
@@ -533,11 +580,15 @@ than full-field, because they remove the raw close-range point charge.
 
 ### Which path supports it
 
-Covalent-boundary QM/MM is available in the **single-point** and **ground-state
-QM/MM MD** (`runtype=md`) paths. The nonadiabatic (`runtype=namd`,
-[SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md)) path builds its QM molecule from
-`qm_atoms` only and **raises on a covalent cut** — use the ground-state MD path.
-A runnable deck is `examples/QMMM/ala-dipeptide_BHHLYP-QMMM-MD-RCD.inp` (alanine
+Covalent-boundary QM/MM is available in the **single-point**, **optimization**,
+**ground-state QM/MM MD** (`runtype=md`), and **NAMD** (`runtype=namd`) paths.
+NAMD across a covalent boundary is limited to schemes that do not use analytic
+NAC (`BaeckAn`, `Overlap`, or `custom` with `tdc=npi` and isotropic rescaling);
+`TDC_NAC` and `NAC` are rejected when the QM region has link atoms, because the
+link-centre NAC direction is not yet projected onto its QM and MM hosts, and a
+default `rescale=auto` falls back to isotropic rescaling.
+A NAMD deck is `examples/QMMM/ala-dipeptide_BHHLYP-MRSF-NAMD-QMMM-linkatom.oqp`.
+A runnable ground-state deck is `examples/QMMM/ala-dipeptide_BHHLYP-QMMM-MD-RCD.inp` (alanine
 dipeptide, QM = the C-terminal amide cutting the `ALA C–CA` bond,
 `frontier_scheme=rcd`); see [QM/MM examples](../examples/index.md#qmmm-examples).
 
@@ -563,13 +614,10 @@ Across a covalent boundary the MM frontier-host charge is treated per
 the ESPF grid switching width is selected automatically — see
 [ESPF grid switching](#espf-grid-switching) below.
 
-!!! note "Covalent boundaries are not supported in nonadiabatic dynamics"
-    Automatic link-atom capping applies to the single-point and ground-state
-    QM/MM MD paths. The nonadiabatic (`runtype=namd`,
-    [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md)) path builds the QM molecule
-    from `qm_atoms` only, so it supports **whole-molecule** QM regions and raises
-    on a covalent cut; use the ground-state QM/MM MD path for covalent-boundary
-    QM/MM.
+!!! note "Covalent boundaries in nonadiabatic dynamics"
+    Automatic link-atom capping also applies to QM/MM NAMD, but only with
+    schemes that do not use analytic NAC. `TDC_NAC` and `NAC` require a
+    whole-molecule QM region.
 
 ## ESPF grid switching
 

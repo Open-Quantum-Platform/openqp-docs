@@ -180,7 +180,7 @@ The same-stem `.inp` file is retained for legacy use.
 - For SOC, `mrsf(nstate=3)/... soc` requests `S0`--`S2` and `T0`--`T2`.
   Use `mrsf/... soc(ns=3,nt=5)` for unequal counts; `ns` and `nt` must appear
   together and cannot be combined with route `nstate`.
-- NAMD uses the same zero-based labels. `namd(T0,soc=true)` means the first
+- NAMD uses the same zero-based labels. `namd(T0,scheme=Overlap,soc=true)` means the first
   triplet MCH state and lowers to `[md] init_state=T0`; it must not be written
   as `T1` merely because the internal response root is 1.
 - For ordinary TDDFT, see [TDDFT and TDHF](tddft.md).

@@ -31,7 +31,8 @@ Shared Cartesian coordinates used by the concise decks live in
 | `examples/ECP` | Effective-core-potential examples. |
 | `examples/UMRSF-TDDFT` | UMRSF-TDDFT energy examples. |
 | `examples/XAS` | X-ray absorption examples. |
-| `examples/QMMM` | ESPF electrostatic QM/MM (requires OpenMM): NAMD / SOC-NAMD dynamics, ground-state QM/MM MD, covalent-boundary (link atom + `frontier_scheme`), and single-point energies. |
+| `examples/MD` | Gas-phase ground-state Born--Oppenheimer MD with `md(...)`. |
+| `examples/QMMM` | ESPF electrostatic QM/MM (requires OpenMM): NAMD / SOC-NAMD dynamics, ground-state QM/MM MD with checkpoints and phase-space snapshots, QM/MM optimization, covalent-boundary (link atom + `frontier_scheme`), and single-point energies. |
 
 Run a single example:
 
@@ -88,6 +89,14 @@ run them directly.
 | --- | --- | --- |
 | `H2CO-water_BHHLYP-MRSF-NAMD-QMMM.oqp` | NAMD | MRSF-TDDFT Tully FSSH (internal conversion, `md(soc=false)`) with ESPF QM/MM: formaldehyde QM + 5 TIP3P waters, `NoCutoff` cluster. |
 | `H2CO-water_BHHLYP-SOC-NAMD-QMMM.oqp` | SOC-NAMD | Intersystem crossing on the spin-adiabatic manifold with ESPF QM/MM, using the same system. |
+| `H2CO-water_BHHLYP-MRSF-NAMD-QMMM-SCHEME.oqp` | NAMD | The unified form: `namd(...)` names the state and the complete scheme, `md(...)` the nuclear controls, `qmmm(...)` the embedding. |
+| `H2CO-water_BHHLYP-MRSF-NAMD-QMMM-NAC.oqp` | NAMD | QM/MM surface hopping with analytic MRSF NAC (`scheme=NAC`). |
+| `H2CO-water_BHHLYP-MRSF-NAMD-QMMM.restart.oqp` | NAMD restart | Continues `H2CO-water_BHHLYP-MRSF-NAMD-QMMM.oqp` from its checkpoint; run the producer first. |
+| `H2CO-water_RKS-QMMM-MD-SNAPSHOTS.oqp` | Ground-state MD | NVT QM/MM equilibration that writes a checkpoint and numbered phase-space snapshots. |
+| `H2CO-water_BHHLYP-MRSF-NAMD-QMMM-SNAPSHOT.oqp` | NAMD | QM/MM surface hopping started with `md(snapshot=...)` from an equilibrated snapshot. |
+| `ala-dipeptide_BHHLYP-MRSF-NAMD-QMMM-linkatom.oqp` | NAMD | QM/MM surface hopping across a covalent boundary with a scheme that does not use analytic NAC. |
+| `ala-dipeptide_RKS-QMMM-GROUND-STATE-MD.oqp` | Ground-state MD | Ground-state QM/MM MD in the unified `md(...) qmmm(...)` form. |
+| `ala-dipeptide_RHF-QMMM-OPT-linkatom.oqp` | Optimization | QM/MM geometry optimization across a covalent boundary. |
 | `ala-dipeptide_BHHLYP-QMMM-MD-RCD.oqp` | Ground-state MD | QM/MM MD across a **covalent boundary**: alanine dipeptide, QM = the C-terminal amide, hydrogen link-atom cap + `frontier_scheme=rcd`. |
 | `run.oqp` | Ground-state MD | Whole-molecule QM region: one water of a water dimer. |
 | `ala.oqp` | Single-point | QM/MM energy of the alanine amide. |
