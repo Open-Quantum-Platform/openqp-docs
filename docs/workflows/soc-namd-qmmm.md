@@ -87,12 +87,11 @@ never constrained. A periodic water box uses particle-mesh Ewald
 
 ### Scope and limitations
 
-SOC-NAMD-QMMM builds the QM molecule from [`[qmmm] qm_atoms`](../keywords/qmmm.md#qm_atoms)
-only, so **whole-molecule QM regions** are supported. Covalent QM/MM boundaries
-(hydrogen link atoms) in nonadiabatic dynamics are **not yet available** —
-single-point QM/MM and ground-state QM/MM MD do handle covalent boundaries (see
-[Link atoms](../keywords/qmmm.md#link-atoms)). Use a solvated chromophore in a
-periodic (PME) water box, with the whole chromophore in the QM region.
+The validated SOC-NAMD-QMMM setting is a **whole-molecule QM region**: a
+solvated chromophore in a periodic (PME) water box, with the whole chromophore
+in the QM region. Same-spin QM/MM NAMD also accepts a covalent QM/MM boundary
+(hydrogen link atoms) with schemes that do not use analytic NAC; see
+[Link atoms](../keywords/qmmm.md#link-atoms).
 
 ## How the driver is selected
 
@@ -118,15 +117,18 @@ whole chromophore is the QM region (`qm_atoms`); the water is MM.
 ```text
 mrsf(nstate=3)/bhhlyp/6-31g*
 namd(S1,scheme=custom,tdc=npi,rescale=isotropic,thrshe=0.367493,frustrated=reflect,
-     soc=true,soc_basis=mch,nstep=200)
+     soc=true,soc_basis=mch)
+md(nstep=200,dt=0.5)
 qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-14",cutoff=PME,rigidwater=true)
-geom="chromophore_water.pdb 0-14"
+geom="chromophore_water.pdb"
 ```
 
 The PDB path appears only once. OpenQP derives `qmmm.pdb_file` from the PDB
-prefix of `geom`; the atom selector remains available to the QM geometry.
-The Python API likewise derives both `qmmm.pdb_file` and `qmmm.qm_atoms` from
-`job.molecule("file.pdb <selector>")` when they are omitted from `job.qmmm(...)`.
+prefix of `geom`. Give the QM region once: either the 0-based `qm_atoms` above
+or the 1-based selector after the PDB name (`geom="chromophore_water.pdb 1-15"`
+selects the same atoms). The Python API likewise derives both
+`qmmm.pdb_file` and `qmmm.qm_atoms` from `job.molecule("file.pdb <selector>")`
+when they are omitted from `job.qmmm(...)`.
 
 Python — `job.qmmm(...)` enables ESPF QM/MM and
 `job.workflow.namd(...)` selects the surface-hopping run (see
@@ -138,7 +140,7 @@ from oqp.openqp import OpenQP
 job = OpenQP("chromophore_socnamd_qmmm", silent=1)
 
 # QM geometry + atom selection from the PDB (whole-molecule QM region)
-job.molecule("chromophore_water.pdb 0-14", basis="6-31g*")
+job.molecule("chromophore_water.pdb 1-15", basis="6-31g*")
 job.theory.mrsf(functional="bhhlyp", nstate=3)   # ROHF triplet reference + MRSF
 
 # ESPF QM/MM embedding in a periodic TIP3P water box
@@ -159,10 +161,8 @@ job.workflow.namd(
     soc=True,
     soc_basis="mch",
     init_state="S1",
-    nstep=200,
-    dt=0.5,
-    init_temp=300.0,
 )
+job.workflow.md(nstep=200, dt=0.5, temperature=300.0)
 
 mol = job.run()
 ```

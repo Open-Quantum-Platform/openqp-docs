@@ -323,7 +323,7 @@ surface-hopping `scheme=BaeckAn|Overlap|TDC_NAC|NAC|custom`, and—only with
 | `bp(STATE1,STATE2,type=numerical,dx=...,nproc=...,restart=...,clean=...,align=...)` | Numerical branching-plane calculation between two states in the same spin manifold. |
 | `nacme(STATE1,STATE2,dt=...,align=...)` | Coupling matrix element; requires `geom2` or `guess(file2=...)`. |
 | `soc(soc_2e=...,ns=...,nt=...)` | Spin-orbit coupling; accepts no single target state. `ns` and `nt` must be supplied together. |
-| `md([S0],MD...)` | Ground-state gas-phase BOMD. Add `qmmm(...)` for ground-state QM/MM MD. It owns `nstep`, `dt`, `velocity`, `temperature`, `thermostat`, and `friction`. |
+| `md([S0],MD...)` | Ground-state gas-phase BOMD. Add `qmmm(...)` for ground-state QM/MM MD. It owns nuclear propagation: `nstep`, `dt`, `velocity`, `temperature`, `ensemble`, `friction`, `seed`, `rng_stream`, `mo_reuse`, and the output and continuation keywords `trajectory_file`, `trajectory_interval`, `energy_file`, `restart_file`, `restart_interval`, `restart`, `snapshot`, and `snapshot_interval`. See [Molecular Dynamics](keywords/md.md). |
 | `namd([STATE],NAMD...) md(MD...)` | MRSF nonadiabatic molecular dynamics; defaults to `S1`. `namd(...)` owns the electronic surface-hopping treatment and required `scheme`; `md(...)` owns nuclear propagation. Add `qmmm(...)` for QM/MM NAMD. |
 | <code>ekt([STATE],ip=true&#124;false,ea=true&#124;false)</code> | MRSF extended Koopmans IP/EA options; the parent state defaults to `S0`. |
 | <code>thermo([STATE],type=numerical&#124;analytical,dx=...,nproc=...,read=...,restart=...,temperature=...,clean=...)</code> | Alias that lowers to the supported Hessian path; the state defaults to `S0`. |
@@ -425,7 +425,7 @@ Modifiers may accompany the one primary driver:
 | <code>nmr([gauge=cgo&#124;giao],[acid=true&#124;false],[acid_spacing=...],[acid_padding=...])</code> | Request NMR shielding. Bare `nmr` defaults to GIAO. `acid=true` additionally writes [ACID current-density cubes](workflows/acid.md) and requires GIAO; `acid_spacing` and `acid_padding` size their grid in bohr and are accepted only with `acid=true`. |
 | `ir` | Record that IR intensities are requested; valid only with `hess(...)` or `thermo()`. |
 | `raman` | Record that Raman activities are requested; valid only with `hess(...)` or `thermo()`. |
-| `qmmm(qmmm...)` | Supply QM/MM structural, force-field, and embedding options and enable `qmmm_flag` automatically. It may accompany `energy`, `md`, or `namd`. |
+| `qmmm(qmmm...)` | Supply QM/MM structural, force-field, and embedding options and enable `qmmm_flag` automatically. It may accompany `energy`, `opt`, `md`, or `namd`. |
 
 The compatibility spellings `d4=true` and `qmmm=true` remain accepted, but
 `d4` and `qmmm(...)` are preferred in canonical files.
@@ -446,9 +446,12 @@ controls in `md(...)`.
 `energy qmmm(...)` selects the active QM/MM single-point path. `md(...)` alone
 runs gas-phase ground-state BOMD. Adding `qmmm(...)` changes it to ground-state
 QM/MM MD. `namd(...) md(...)` runs gas-phase excited-state dynamics; adding
-`qmmm(...)` changes it to QM/MM NAMD. Attaching
-`qmmm(...)` to `grad`, `opt`, or another driver is rejected because those
-generic backends do not yet provide a verified QM/MM gradient assembly.
+`qmmm(...)` changes it to QM/MM NAMD. `opt(...) qmmm(...)` runs a QM/MM
+geometry optimization. Attaching `qmmm(...)` to `grad` or another driver is
+rejected because those backends do not yet provide a verified QM/MM gradient
+assembly. A dynamics control given both in `md(...)` and in `qmmm(...)` (for
+example `nstep` and `n_steps`, or `dt` and `timestep`), or both in `md(...)`
+and in `namd(...)`, is rejected.
 QM/MM structure, force-field, and embedding controls belong in `qmmm(...)`;
 common nuclear controls belong in `md(...)`; electronic surface-hopping
 controls belong in `namd(...)`. Both dynamics calls lower to the legacy `[md]`

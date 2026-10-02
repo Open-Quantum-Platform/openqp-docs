@@ -11,19 +11,43 @@ Thus `md(...)` alone requests ground-state Born--Oppenheimer molecular
 dynamics, while `namd(...) md(...)` requests nonadiabatic molecular dynamics
 (NAMD). Add `qmmm(...)` to either form when a QM/MM calculation is intended.
 
+These calls give four supported compositions: ground-state MD, ground-state
+QM/MM MD, NAMD, and QM/MM NAMD.
+
 ## Dynamics Backend Selection
 
-OpenMM is used for periodic systems and for nonperiodic QM/MM dynamics. The
-native OpenQP molecular-dynamics integrator is used for gas-phase calculations
-and for the explicitly selected spherical-boundary model.
+Gas-phase dynamics uses the native OpenQP integrator. Every QM/MM calculation,
+periodic or not, propagates the complete system with OpenMM and evaluates the
+QM forces with OpenQP. Periodicity is selected by the QM/MM electrostatics,
+`qmmm(cutoff=PME)`, `Ewald`, or `CutoffPeriodic`, which require box vectors in
+the PDB file; there is no separate periodic switch.
 
 | Calculation | Input form | Dynamics backend |
 | --- | --- | --- |
 | Gas-phase ground-state dynamics | `md(...)` | native OpenQP |
-| Periodic ground-state dynamics | `md(...) qmmm(periodic=true,...)` | OpenMM |
-| Nonperiodic QM/MM ground-state dynamics | `md(...) qmmm(...)` | OpenMM |
+| QM/MM ground-state dynamics | `md(...) qmmm(...)` | OpenMM with OpenQP QM forces |
 | Gas-phase NAMD | `namd(...) md(...)` | native OpenQP |
 | QM/MM NAMD | `namd(...) md(...) qmmm(...)` | OpenMM environment with OpenQP QM forces |
+
+## Ownership of Dynamics Controls
+
+`md(...)` owns every control of nuclear propagation: `nstep`, `dt`,
+`velocity`, `temperature`, `ensemble`, `friction`, `seed`, `rng_stream`,
+`mo_reuse`, and the output and continuation keywords `trajectory_file`,
+`trajectory_interval`, `energy_file`, `restart_file`, `restart_interval`,
+`restart`, `snapshot`, and `snapshot_interval`. `namd(...)` owns the electronic
+treatment: the initial state, `scheme`, `continuity`, and the surface-hopping
+controls. `qmmm(...)` owns the system partition and the MM model.
+
+A control given in two places is rejected rather than resolved silently. For
+example, `md(nstep=400) qmmm(n_steps=400)` and `md(dt=0.5) qmmm(timestep=0.5)`
+are errors; keep nuclear propagation in `md(...)`. Older inputs that place
+`nstep`, `dt`, and the other common controls inside `namd(...)`, or `n_steps`
+and `timestep` inside `qmmm(...)` without `md(...)`, are still read.
+
+`namd(...)` tightens the SCF and response convergence to `1e-8` unless
+`scf(conv=...)` or `tdhf(conv=...,zvconv=...)` is given, because analytic
+coupling vectors require converged states.
 
 ## Minimal Inputs
 
@@ -33,6 +57,13 @@ Ground-state gas-phase dynamics:
 bhhlyp/6-31g* geom="molecule.xyz"
 md(nstep=400,dt=0.5,velocity="molecule.vel",ensemble=nve)
 ```
+
+Gas-phase ground-state MD evaluates the ground-state energy and analytic
+gradient at every geometry and propagates the nuclei with velocity Verlet.
+`ensemble=nvt` adds a Langevin thermostat at `temperature` with `friction` in
+ps⁻¹ (default `1.0`). It currently requires a single MPI rank (`--nompi`) and
+writes no checkpoint; see [Initial Conditions and Restart](md-initial-restart.md)
+for its output files.
 
 Recommended MRSF-TDDFT NAMD:
 
@@ -94,7 +125,7 @@ file or ensemble specification.
 | `dt` | `0.5` fs | Nuclear timestep. Total time is `nstep * dt`. |
 | `velocity` | `maxwell` | `maxwell`, `zero`, or a velocity-file path. |
 | `temperature` | `300.0` K | Maxwell--Boltzmann sampling temperature and NVT target. |
-| `ensemble` | `nve` | Choose `nve` or `nvt`; `npt` is reserved but currently rejected. |
+| `ensemble` | `nve` | Choose `nve` or `nvt`; `npt` is rejected (equilibrate the cell classically and start from a snapshot). |
 | `scheme` | required by `namd()` | One of the four schemes above or `custom`. |
 | `continuity` | `on` | Complete A--D numerical-continuity treatment; use `manual` only for individual controls. |
 
@@ -133,7 +164,7 @@ The remaining options are separated by scientific purpose:
 | [NAMD Coupling Schemes](md-schemes.md) | `scheme`, `tdc`, `rescale`, `thrshe`, `frustrated`, Baeck--An controls, and optional trivial-crossing following |
 | [NAMD Numerical Continuity](md-continuity.md) | Analytic-NAC cases A--D, `continuity=on|manual`, SCF/reference controls, retained-state criterion, substepping, and numerical energy correction |
 | [NAMD Diagnostics](md-diagnostics.md) | NACME comparison and NVE energy criteria, including which `error` policies can terminate a run |
-| [Initial Conditions and Restart](md-initial-restart.md) | velocity files and units, temperature, random streams, trajectory output, checkpoint restart, and local continuation |
+| [Initial Conditions and Restart](md-initial-restart.md) | velocity files and units, temperature, random streams, output files of each driver, NAMD and QM/MM MD checkpoint restart, QM/MM phase-space snapshots, and local continuation |
 | [Ensembles and experimental SOC-NAMD](md-ensemble-soc.md) | NVE/NVT/NPT, OpenMM restrictions, adaptive timestep, SOC development status, basis, initialization, and force diagnostics |
 | [NAMD Advanced Controls](md-advanced.md) | compact index of rarely changed settings and links to the detailed group pages |
 
