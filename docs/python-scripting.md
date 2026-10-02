@@ -229,15 +229,19 @@ job.update({
 
 ## QM/MM and Nonadiabatic Dynamics
 
-`job.qmmm(...)` enables ESPF QM/MM embedding, and `job.workflow.namd(...)` runs
-nonadiabatic (surface-hopping) molecular dynamics. They compose with the usual
+`job.qmmm(...)` enables ESPF QM/MM embedding, `job.workflow.md(...)` runs
+ground-state molecular dynamics and holds the nuclear-propagation controls, and
+`job.workflow.namd(...)` turns the dynamics into nonadiabatic (surface-hopping)
+molecular dynamics. They compose with the usual
 `job.molecule(...)` / `job.theory.*(...)` calls, so QM/MM, SOC-NAMD, and
 SOC-NAMD-QMMM are all built the same way.
 
-`job.qmmm(...)` sets `[input] qmmm_flag=true` and the `[qmmm]` section. The QM
-region and atom selection come from `job.molecule("file.pdb <indices>")`; QM/MM
-molecular dynamics additionally reads the PDB, force field, and QM atoms from
-`job.qmmm(...)`. `forcefield` is an alias for the `[qmmm] forcefield_files`
+`job.qmmm(...)` sets `[input] qmmm_flag=true` and the `[qmmm]` section. Give
+the QM region once: either the 1-based indices in
+`job.molecule("file.pdb <indices>")` or the 0-based `qm_atoms` in
+`job.qmmm(...)`. OpenQP derives the other one, and rejects the input when both
+are given and select different atoms. QM/MM molecular dynamics reads the PDB
+and force field from `job.qmmm(...)`. `forcefield` is an alias for the `[qmmm] forcefield_files`
 list — a Python list is joined into the comma-separated string OpenQP expects,
 and `qm_atoms` accepts a string (`"0-2"`) or a list of indices.
 
@@ -252,14 +256,32 @@ job.qmmm(embedding="electrostatic")
 mol = job.run()
 ```
 
-`job.workflow.namd(...)` selects `runtype=namd` and sets the `[md]` section. Like
-the other MRSF workflows it requires an MRSF-TDDFT theory. Pass `soc=True` (with
-an optional `soc_basis`) for SOC-NAMD, and add `job.qmmm(...)` for QM/MM.
+`job.workflow.md(...)` alone selects ground-state MD (`runtype=md`): gas-phase
+BOMD, or ground-state QM/MM MD with `job.qmmm(...)`. It accepts the same
+nuclear-propagation keywords as the `.oqp` `md(...)` call, including `nstep`,
+`dt`, `velocity`, `temperature`, `ensemble`, `friction`, `seed`, `rng_stream`,
+the output files, `restart`, `snapshot`, and `snapshot_interval`.
+
+```python
+# Ground-state gas-phase BOMD
+job = OpenQP("water_md", silent=1)
+job.molecule(geometry="water", charge=0, basis="6-31g*")
+job.theory("hf", functional="bhhlyp")
+job.workflow.md(nstep=400, dt=0.5, velocity="maxwell", temperature=300.0)
+mol = job.run()
+```
+
+`job.workflow.namd(...)` selects `runtype=namd` and holds the electronic
+treatment; combined with `job.workflow.md(...)`, in either call order, it keeps
+`runtype=namd`. Like the other MRSF workflows it requires an MRSF-TDDFT theory.
+Pass `soc=True` (with an optional `soc_basis`) for SOC-NAMD, and add
+`job.qmmm(...)` for QM/MM. Older scripts that pass `nstep` and `dt` to
+`job.workflow.namd(...)` still run.
 
 ```python
 # SOC-NAMD-QMMM in a periodic water box
 job = OpenQP("chromophore", silent=1)
-job.molecule("system.pdb 0-14", basis="6-31g*")
+job.molecule("system.pdb", basis="6-31g*")
 job.theory.mrsf(functional="bhhlyp", nstate=3)
 job.qmmm(
     pdb_file="system.pdb",
@@ -269,7 +291,12 @@ job.qmmm(
     embedding="electrostatic",
     rigidwater=True,
 )
-job.workflow.namd(soc=True, soc_basis="mch", nstep=200, dt=0.5, init_state="S1")
+job.workflow.namd(
+    scheme="custom", tdc="npi", rescale="isotropic",
+    thrshe=0.367493, frustrated="reflect",
+    soc=True, soc_basis="mch", init_state="S1",
+)
+job.workflow.md(nstep=200, dt=0.5)
 mol = job.run()
 ```
 
@@ -282,13 +309,16 @@ so it is the first TLF2 interval and the first electronic-coefficient
 propagation and hopping decision. Setting `first_hop_step=2` explicitly delays
 only the active-state transition and hopping RNG: step 1 still propagates the
 coefficients and computes hop probabilities.
-Same-spin NAMD defaults to `nacme_check="baeck_an"`, which logs an independent
-energy-curvature estimate beside the overlap/TLF TDC. The comparison is
-magnitude-only because TD-BA has no wavefunction phase information. The default
-`nacme_gate="off"` records the diagnostic without enforcing it; use `warn` or
-`error` only after calibrating the absolute and relative
-tolerances for the target system. The same gate accepts a signed, phase-aligned
-analytic `d_IJ . v` reference when that provider is connected in a later release.
+Independent NACME comparison is disabled by default
+(`nacme_check="off"`). Set `nacme_check="baeck_an"` to log an independent
+energy-curvature estimate beside the overlap/TLF TDC; this comparison is
+magnitude-only because TD-BA has no wavefunction phase information. Set
+`nacme_check="analytic"` to compare against the signed, phase-aligned analytic
+`d_IJ . v` reference when that provider is available for the selected
+electronic-structure route. The default `nacme_policy="off"` records an enabled
+comparison without enforcing it. Select `warn` or `error` only together with an
+explicit `nacme_check` and after calibrating the absolute and relative tolerances
+for the target system.
 
 All same-spin/SOC and gas-phase/QM/MM NAMD drivers write a dense appendable,
 packed-binary `<project>.namd.trj` and an atomic compressed checkpoint.
@@ -297,8 +327,9 @@ Canonical `.oqp` runs additionally write a directly runnable
 reusing their original configuration with `restart=true` and explicit
 checkpoint and trajectory paths. The trajectory is designed for NumPy memory
 mapping rather than human reading. Use `trajectory_interval` to trade temporal
-resolution for file size. Zero, the default, selects an interval of
-approximately 10 fs from `dt`; positive values are step counts. The final point
+resolution for file size. The default `1` writes every step; zero selects an
+interval of approximately 10 fs from `dt`, and positive values are step
+counts. The final point
 and strict NACME or NVE failures are retained even between regular output
 points. The human-readable NACME validation table remains in the main log:
 
@@ -324,11 +355,13 @@ internal-conversion FSSH:
 job = OpenQP("gas_namd", silent=1)
 job.molecule(geometry="water", charge=0)
 job.theory.mrsf(functional="bhhlyp", basis="6-31g*", nstate=2)
-job.workflow.namd(nstep=100, dt=0.5, active=1)
+job.workflow.namd(active=1, scheme="Overlap")
+job.workflow.md(nstep=100, dt=0.5)
 mol = job.run()
 ```
 
-Nonadiabatic QM/MM dynamics currently supports whole-molecule QM regions; see the
+Nonadiabatic QM/MM dynamics across a covalent boundary is limited to schemes
+without analytic NAC; see the
 [SOC-NAMD-QMMM workflow](workflows/soc-namd-qmmm.md), the [`[md]`](keywords/md.md)
 section, and the [`[qmmm]`](keywords/qmmm.md) section for the full contract.
 
