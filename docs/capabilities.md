@@ -34,7 +34,7 @@ specific input contract.
 | MRSF excited-state analysis | NTOs, attachment/detachment densities, state-to-state transition densities, cube export, QCSchema export, FCIDUMP export, and external-code comparisons through `oqp.interop`. |
 | Nonadiabatic MD (NAMD) | Tully surface hopping, SOC-NAMD, and ESPF QM/MM embedding. See [SOC-NAMD-QMMM](workflows/soc-namd-qmmm.md). |
 | QM/MM | ESPF electrostatic embedding for single-point energies, ground-state MD, and nonadiabatic dynamics. See [`[qmmm]`](keywords/qmmm.md). |
-| Scalar relativistic correction | Spin-free DKH correction through `[scf] scal_rel=1` or `2`. |
+| Scalar relativistic correction | Spin-free DKH correction through `[scf] scal_rel=1` or `2`, decoupled in the decontracted basis by default (`[scf] scal_rel_decontract`). |
 | PCM/ddX | Energy-only reference-SCF path for RHF/ROHF. |
 | NMR | Nuclear magnetic shielding via `[properties] scf_prop=nmr`. |
 | ACID current-density maps | ACID and induced-current-density cubes via `scf_prop=nmr,acid`, ground state, GIAO only, Cartesian bases up to f. See [ACID Current-Density Maps](workflows/acid.md). |
