@@ -62,7 +62,10 @@ nstate=5
 
 Selects the response model. Use `mrsf` for production MRSF-TDDFT workflows.
 `sf` selects ordinary spin-flip TDDFT, and `umrsf` selects the unrestricted
-MRSF energy path. `qmrsf_dk` selects the quintet-reference dressed-kernel
+MRSF response model for energies and analytic nuclear gradients
+(`runtype=grad`, `optimize`, `meci`, `mecp`, and `tci`) with supported
+functionals. See [MRSF-TDDFT](../workflows/mrsf-tddft.md) for UMRSF gradient
+restrictions. `qmrsf_dk` selects the quintet-reference dressed-kernel
 method described in [QMRSF-DK](../workflows/qmrsf-dk.md). The legacy
 `mrsf_ekt_ip` and `mrsf_ekt_ea` values are
 energy-only; the current EKT workflow should use `[input] runtype=ekt`,
