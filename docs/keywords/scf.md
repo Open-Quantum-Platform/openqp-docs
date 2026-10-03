@@ -396,6 +396,37 @@ because the documented SOC path uses a DKH2 spin-free Hamiltonian before the
 SOC matrix is formed. Pass `scal_rel=0`, `1`, or `2` to override that helper
 default.
 
+### `scal_rel_decontract`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `1` |
+| Values | `0`, `1` |
+| Used by | scalar-relativistic one-electron Hamiltonian (`scal_rel=1` or `2`) |
+
+Selects the basis in which the Douglas-Kroll-Hess decoupling is carried out:
+
+| Value | Meaning |
+| --- | --- |
+| `1` | The basis is decontracted (one shell per unique primitive exponent per atom, angular momentum and angular type), the decoupling is carried out there, and the relativistic correction to the core Hamiltonian is projected back onto the contracted basis with the contraction matrix. |
+| `0` | The decoupling is carried out directly in the contracted basis (the behaviour before this keyword existed). |
+
+Use the default. The contracted basis truncates the kinetic-balance space of the
+decoupling, and with contracted relativistic basis sets the resulting
+Hamiltonian is not variational: the DKH2 energy of the mercury atom in a
+contracted Sapporo-DKH3-DZP basis is about 2300 Hartree below the energy
+obtained with the same basis fully uncontracted, and about 2300 Hartree below
+the Dirac-Coulomb Hartree-Fock limit. With `scal_rel_decontract=1` the
+contracted-basis energy lies within the usual contraction error above the
+uncontracted-basis value (0.56 Hartree for that case; 0.1 Hartree for krypton
+in x2c-TZVPall). For an already uncontracted basis both values give the same
+result.
+
+The decontraction applies only to the construction of the relativistic core
+Hamiltonian; the SCF itself still uses the contracted basis. `0` is kept to
+reproduce earlier results and for comparison.
+
 ### `stability`
 
 | Field | Value |
