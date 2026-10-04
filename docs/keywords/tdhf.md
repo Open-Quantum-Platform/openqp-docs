@@ -62,13 +62,20 @@ nstate=5
 
 Selects the response model. Use `mrsf` for production MRSF-TDDFT workflows.
 `sf` selects ordinary spin-flip TDDFT, and `umrsf` selects the unrestricted
-MRSF energy path. `qmrsf_dk` selects the quintet-reference dressed-kernel
+MRSF response model for energies and analytic nuclear gradients
+(`runtype=grad`, `optimize`, `meci`, `mecp`, and `tci`) with supported
+functionals. See [MRSF-TDDFT](../workflows/mrsf-tddft.md) for UMRSF gradient
+restrictions. `qmrsf_dk` selects the quintet-reference dressed-kernel
 method described in [QMRSF-DK](../workflows/qmrsf-dk.md). The legacy
 `mrsf_ekt_ip` and `mrsf_ekt_ea` values are
 energy-only; the current EKT workflow should use `[input] runtype=ekt`,
 `[tdhf] type=mrsf`, and the `[ekt]` section.
 
-MRSF and SF workflows require an ROHF reference in the current code path.
+MRSF workflows require an ROHF reference in the current code path. SF-TDDFT
+accepts an ROHF or a UHF reference; the UHF path covers energies and gradient
+workflows, while numerical Hessians still require ROHF (see
+[SF-TDDFT](../workflows/sf-tddft.md)). NAC, NAMD and SOC require `type=mrsf`
+regardless of the reference.
 UMRSF-TDDFT requires a UHF reference. QMRSF-DK requires a quintet
 (`[scf] multiplicity=5`) ROHF/ROKS reference and `[input] runtype=energy`.
 
@@ -169,7 +176,10 @@ Maximum number of Z-vector iterations for gradient/property workflows.
 | Default | `1.0e-6` |
 | Used by | Z-vector convergence |
 
-Convergence threshold for Z-vector equations.
+Convergence threshold for Z-vector equations. The TDDFT, SF-TDDFT, MRSF-TDDFT and
+UMRSF-TDDFT solvers stop when the Euclidean norm of the Z-vector residual is below
+`sqrt(zvconv)`, so the default `1.0e-6` bounds the residual by `1.0e-3`. Lower it
+(for example `1.0e-10`) when gradients are compared with finite differences.
 
 ### `z_solver`
 
