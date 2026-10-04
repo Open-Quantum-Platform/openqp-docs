@@ -17,7 +17,8 @@ specific input contract.
 | CASPT2 nuclear gradient | Analytic gradients for single-state CASPT2/MRMP2, MCQDPT2, and XMS-CASPT2/XMCQDPT2 (`[pt2] gradient=auto` prefers them and falls back to central differences when a precondition fails). See [CASPT2 Nuclear Gradient](workflows/caspt2-gradient.md). |
 | SC-NEVPT2 nuclear gradient | Analytic gradient and gradient-driven geometry calculations for single-state, strongly contracted Dyall-Hamiltonian NEVPT2 on a state-specific CASSCF reference. See [SC-NEVPT2 Nuclear Gradient](workflows/sc-nevpt2-gradient.md). |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
-| SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
+| SF-TDDFT | Spin-flip energies and analytic gradients from an ROHF or UHF high-spin reference, with the gradient-driven `optimize`, `meci` and `tci` workflows; numerical Hessians with the ROHF reference. NACME, SOC, NAMD and MECP require MRSF-TDDFT. See [SF-TDDFT](workflows/sf-tddft.md). |
+| MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. See [MRSF-TDDFT](workflows/mrsf-tddft.md). |
 | UMRSF-TDDFT | UHF-reference energies and analytic nuclear gradients (`runtype=grad`, `optimize`, `meci`, `mecp`, `tci`) for HF, LDA/GGA and global-hybrid functionals. |
 | MRSF-EKT | IP/EA analysis with Dyson-like orbital data. |
 
