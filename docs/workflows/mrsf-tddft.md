@@ -199,4 +199,4 @@ The same-stem `.inp` file is retained for legacy use.
   QM/MM (`qmmm_flag=True`) for them because the relaxed density and ESPF
   charges those paths consume are not produced. See
   `examples/UMRSF-TDDFT/H2CO_BHHLYP_UMRSFTDDFT_GRAD.inp` and, with an ECP,
-  `examples/UMRSF-TDDFT/HBr_BHHLYP_UMRSFTDDFT_GRAD_ECP.inp`.
+  `examples/ECP/HBr_BHHLYP-UMRSFTDDFT_GRAD.inp`.
