@@ -527,7 +527,8 @@ omitted NAMD state defaults to `S1`. Do not write the internal `active` or
 SF-family state character cannot be assigned safely before diagonalization, so
 SF-TDDFT and SF-TDHF state-specific drivers require `root=N`
 instead of an `S` or `T` label.
-Conventional TD calculations accept `S` and `T` labels but reject `Q` labels;
+Conventional TD calculations (closed-shell RPA/TDA) accept only `S` labels and
+reject `T` and `Q` labels; use an MRSF or SF route for triplet states.
 
 The following bookkeeping keys are reserved and cannot contradict the route or
 physical state syntax:
