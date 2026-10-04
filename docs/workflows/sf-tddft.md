@@ -126,8 +126,16 @@ The same-stem `.inp` file is retained for legacy use.
   gradient-driven `optimize`, `meci`, `mecp` and `tci` workflows. Hessians,
   nonadiabatic couplings, NAMD and SOC still require ROHF. The UHF gradient also
   rejects range-separated (CAM/LRC) functionals.
-- Check that the UHF triplet is the lowest one, for example against the ROHF
-  energy, which UHF cannot exceed. For the water example, the Huckel, modified
+- Select the UHF reference with `[scf] type=uhf` in sectioned `.inp` input, or
+  with `job.theory.sf_tddft(..., reference="uhf")` in Python. Concise `.oqp`
+  routes such as `sf/...` always use the ROHF reference, because `scf.type` is
+  route-selected there and the route takes no reference option.
+- Make sure the UHF reference is the lowest triplet. A UHF energy above the
+  ROHF energy proves the solution is not the lowest one. A UHF energy below
+  ROHF does not prove the opposite, because a metastable UHF solution can also
+  lie below ROHF. Confirm by comparing several guesses, for example
+  `[guess] type=sap` and `type=minao`, or with a wavefunction stability
+  analysis. For the water example, the Huckel, modified
   Huckel and `auto` guesses converge to higher triplets in 6-31G* and cc-pVDZ.
   The core-Hamiltonian guess does so in cc-pVDZ. `[guess] type=sap` reaches the
   lowest UHF solution in both bases; see
