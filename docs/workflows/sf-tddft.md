@@ -123,9 +123,12 @@ The same-stem `.inp` file is retained for legacy use.
   `type=uhf`). With UHF, the spin-flip holes are the alpha-occupied orbitals
   and the particles are the beta-virtual orbitals of the unrestricted reference.
   The UHF path provides energies and analytic gradients, including the
-  gradient-driven `optimize`, `meci`, `mecp` and `tci` workflows. Hessians,
-  nonadiabatic couplings, NAMD and SOC still require ROHF. The UHF gradient also
-  rejects range-separated (CAM/LRC) functionals.
+  gradient-driven `optimize`, `meci`, `mecp` and `tci` workflows. Numerical
+  Hessians (`runtype=hess`, `type=numerical`) still require the ROHF reference.
+  The UHF gradient also rejects range-separated (CAM/LRC) functionals.
+  Nonadiabatic couplings, NAMD and SOC are not SF-TDDFT workflows with either
+  reference; they require the MRSF response model (`[tdhf] type=mrsf`), see
+  [MRSF-TDDFT](mrsf-tddft.md).
 - Select the UHF reference with `[scf] type=uhf` in sectioned `.inp` input, or
   with `job.theory.sf_tddft(..., reference="uhf")` in Python. Concise `.oqp`
   routes such as `sf/...` always use the ROHF reference, because `scf.type` is

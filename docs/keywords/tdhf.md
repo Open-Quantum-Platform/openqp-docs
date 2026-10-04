@@ -70,8 +70,9 @@ energy-only; the current EKT workflow should use `[input] runtype=ekt`,
 
 MRSF workflows require an ROHF reference in the current code path. SF-TDDFT
 accepts an ROHF or a UHF reference; the UHF path covers energies and gradient
-workflows, while Hessians, NAC, NAMD and SOC still require ROHF (see
-[SF-TDDFT](../workflows/sf-tddft.md)).
+workflows, while numerical Hessians still require ROHF (see
+[SF-TDDFT](../workflows/sf-tddft.md)). NAC, NAMD and SOC require `type=mrsf`
+regardless of the reference.
 UMRSF-TDDFT requires a UHF reference. QMRSF-DK requires a quintet
 (`[scf] multiplicity=5`) ROHF/ROKS reference and `[input] runtype=energy`.
 
