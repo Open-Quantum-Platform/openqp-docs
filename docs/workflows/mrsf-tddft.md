@@ -194,7 +194,11 @@ The same-stem `.inp` file is retained for legacy use.
   double-hybrid functionals and custom spin-pair-coupling scales are
   energy-only, and Hessians, NACME and SOC are not available for UMRSF.
   Gradient-driven UMRSF runs accept singlet and triplet response states
-  (`[tdhf] multiplicity=1` or `3`) and effective core potentials, and the
+  (`[tdhf] multiplicity=1` or `3`; roots are numbered from 1 within that
+  manifold, so `grad=1` with `multiplicity=1` is S0). In Python, the
+  `multiplicity` argument of `job.theory.umrsf(...)` sets the UHF reference;
+  select a triplet response with a following `job.tdhf(multiplicity=3)`. UMRSF
+  gradients also accept effective core potentials, and the
   input checker rejects `[properties] td_prop=True`, `[tdhf] ixcore` and
   QM/MM (`qmmm_flag=True`) for them because the relaxed density and ESPF
   charges those paths consume are not produced. See
