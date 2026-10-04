@@ -123,7 +123,10 @@ The same-stem `.inp` file is retained for legacy use.
   `type=uhf`). With UHF, the spin-flip holes are the alpha-occupied orbitals
   and the particles are the beta-virtual orbitals of the unrestricted reference.
   The UHF path provides energies and analytic gradients, including the
-  gradient-driven `optimize`, `meci`, `mecp` and `tci` workflows. Numerical
+  gradient-driven `optimize`, `meci` and `tci` workflows. MECP is rejected for
+  SF-TDDFT with either reference: the SF kernels do not depend on
+  `[tdhf] multiplicity`, so the two crossing surfaces would be identical; use
+  MRSF or UMRSF for MECP. Numerical
   Hessians (`runtype=hess`, `type=numerical`) still require the ROHF reference.
   The UHF gradient also rejects range-separated (CAM/LRC) functionals.
   Nonadiabatic couplings, NAMD and SOC are not SF-TDDFT workflows with either
