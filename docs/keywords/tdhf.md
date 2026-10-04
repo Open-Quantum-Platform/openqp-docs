@@ -343,3 +343,34 @@ near-degenerate states; net-slower than FP64 on CPU. Opt-in only.
 Reuse the previous geometry step's z-vector as the CG/GMRES initial guess
 (exact; the solve still converges to the same tolerance). Most effective across
 many nearby geometries (optimization, MD).
+
+### XC response cache memory
+
+MRSF Z-vector calculations with LDA/GGA functionals cache fixed-reference XC
+values and derivatives, then use the remaining space for pruned atomic-orbital
+(AO) values and spatial derivatives on the integration grid. Every trial
+density is still contracted anew. AO values here are basis-function values,
+not two-electron integrals.
+
+Set the memory limit with the environment variable
+`OQP_XC_RESPONSE_CACHE_MB` (MiB, default `256`); `0` disables storage:
+
+```sh
+OQP_XC_RESPONSE_CACHE_MB=256 OQP_XC_TIMING=1 openqp h2o.inp
+```
+
+This is a retained-cache limit per process/MPI rank, shared by its OpenMP
+threads. It does not limit total process memory or temporary integration
+buffers. Blocks that do not fit are recomputed; they are never treated as
+zero. The cache does not change numerical thresholds, grid or precision.
+The `perf` preset does not select this memory limit.
+
+Changes to geometry, basis data, grid points/weights, reference density or
+orbitals, functional, and screening settings invalidate the stored data. The
+cache is released after the solve. Meta-GGA calculations retain the uncached
+path. This cache currently applies to the MRSF Z-vector response, not the
+Davidson XC build or the nuclear derivative integration itself.
+
+`OQP_XC_TIMING=1` adds `[XCCACHE]` lines with retained bytes, AO block hits and
+XC block hits. Compare `0`, a small partial-cache limit, and `256` on the
+same calculation to measure the useful limit for a given system.
