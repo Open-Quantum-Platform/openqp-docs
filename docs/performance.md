@@ -1,8 +1,13 @@
 # Performance
 
-OpenQP's performance knobs are ordinary input keys (no environment variables)
+OpenQP's performance presets use ordinary input keys
 bundled behind a single opt-in `perf` preset that acts as one accuracy↔speed
 dial.
+
+The separate [XC response and gradient AO cache](keywords/tdhf.md#xc-response-cache-memory)
+has a memory limit controlled by `OQP_XC_RESPONSE_CACHE_MB` (default 256 MiB
+per active solver/grid cache and MPI rank; `0` disables it). It reuses fixed-reference data without changing
+the grid, screening thresholds or precision.
 
 `.oqp`:
 

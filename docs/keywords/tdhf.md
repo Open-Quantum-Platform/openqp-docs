@@ -343,3 +343,46 @@ near-degenerate states; net-slower than FP64 on CPU. Opt-in only.
 Reuse the previous geometry step's z-vector as the CG/GMRES initial guess
 (exact; the solve still converges to the same tolerance). Most effective across
 many nearby geometries (optimization, MD).
+
+### XC response cache memory
+
+TDDFT TDA/RPA Davidson, RHF/SF/MRSF Z-vector and RHF/UHF/ROHF CPHF
+calculations reuse fixed-reference LDA/GGA XC values and derivatives. The
+remaining space stores pruned atomic-orbital (AO) values and spatial derivatives
+on the integration grid. Every trial density is contracted anew. AO values here
+are basis-function values, not two-electron integrals.
+
+The MRSF nuclear gradient shares AO values and their spatial derivatives between
+its fixed-grid, moving-grid and ground-state XC sweeps. Changing the density
+invalidates reference XC data while preserving reusable AO data. Gradient
+consumers still compute their reference XC derivatives and density contractions.
+Absolute grid coordinates are restored for moving-grid derivatives. Meta-GGA
+response paths reuse AO blocks and recompute the reference XC data.
+
+The current MRSF Davidson sigma has no repeated semilocal XC integration; this
+cache does not add an XC term to its response equations. The preceding Davidson
+buffer reuse and contiguous reductions apply independently.
+
+Set the memory limit with the environment variable
+`OQP_XC_RESPONSE_CACHE_MB` (MiB, default `256`); `0` disables storage:
+
+```sh
+OQP_XC_RESPONSE_CACHE_MB=256 OQP_XC_TIMING=1 openqp h2o.inp
+```
+
+The retained-cache limit applies to each active solver/grid cache on each MPI
+rank, shared by its OpenMP threads. It does not limit total process memory,
+temporary integration buffers, or the sum of independently owned caches.
+Blocks that do not fit are recomputed; they are never treated as zero. The
+cache does not change numerical thresholds, grid or precision. The `perf`
+preset does not select this memory limit.
+
+Geometry, basis data, grid points/weights and AO screening settings invalidate
+AO data. Reference density or orbitals, occupations, functional revision and XC
+derivative order additionally invalidate reference XC data. Solver-owned caches
+are released when their owner returns, including early returns.
+
+`OQP_XC_TIMING=1` adds `[XCCACHE]` lines with retained bytes, AO block hits and
+XC block hits. Compare `0`, a small partial-cache limit, and `256` on the same
+calculation to measure the useful limit for a given system. The engine's
+`examples/response_cache/` directory provides MRSF, TDA and RPA gradient inputs.
