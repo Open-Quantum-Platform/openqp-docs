@@ -119,8 +119,30 @@ The same-stem `.inp` file is retained for legacy use.
 
 ## Notes
 
-- SF-TDDFT currently uses an ROHF high-spin reference in the documented
-  production path.
+- SF-TDDFT accepts an ROHF or a UHF high-spin reference (`[scf] type=rohf` or
+  `type=uhf`). With UHF, the spin-flip holes are the alpha-occupied orbitals
+  and the particles are the beta-virtual orbitals of the unrestricted reference.
+  The UHF path provides energies and analytic gradients, including the
+  gradient-driven `optimize`, `meci`, `mecp` and `tci` workflows. Numerical
+  Hessians (`runtype=hess`, `type=numerical`) still require the ROHF reference.
+  The UHF gradient also rejects range-separated (CAM/LRC) functionals.
+  Nonadiabatic couplings, NAMD and SOC are not SF-TDDFT workflows with either
+  reference; they require the MRSF response model (`[tdhf] type=mrsf`), see
+  [MRSF-TDDFT](mrsf-tddft.md).
+- Select the UHF reference with `[scf] type=uhf` in sectioned `.inp` input, or
+  with `job.theory.sf_tddft(..., reference="uhf")` in Python. Concise `.oqp`
+  routes such as `sf/...` always use the ROHF reference, because `scf.type` is
+  route-selected there and the route takes no reference option.
+- Make sure the UHF reference is the lowest triplet. A UHF energy above the
+  ROHF energy proves the solution is not the lowest one. A UHF energy below
+  ROHF does not prove the opposite, because a metastable UHF solution can also
+  lie below ROHF. Confirm by comparing several guesses, for example
+  `[guess] type=sap` and `type=minao`, or with a wavefunction stability
+  analysis. For the water example, the Huckel, modified
+  Huckel and `auto` guesses converge to higher triplets in 6-31G* and cc-pVDZ.
+  The core-Hamiltonian guess does so in cc-pVDZ. `[guess] type=sap` reaches the
+  lowest UHF solution in both bases; see
+  [`examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_UHF_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_UHF_GRADIENT.inp).
 - In sectioned `.inp` input, `[tdhf] nstate` must include the highest spin-flip
   state requested by a gradient or follow-up workflow; `.oqp` input widens the
   root count from `root=N` automatically.
