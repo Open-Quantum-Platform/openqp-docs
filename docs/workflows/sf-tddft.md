@@ -119,8 +119,17 @@ The same-stem `.inp` file is retained for legacy use.
 
 ## Notes
 
-- SF-TDDFT currently uses an ROHF high-spin reference in the documented
-  production path.
+- SF-TDDFT accepts an ROHF or a UHF high-spin reference (`[scf] type=rohf` or
+  `type=uhf`). With UHF, the spin-flip holes are the alpha-occupied orbitals
+  and the particles are the beta-virtual orbitals of the unrestricted reference.
+  The UHF path provides energies and analytic gradients, including the
+  gradient-driven `optimize`, `meci`, `mecp` and `tci` workflows. Hessians,
+  nonadiabatic couplings, NAMD and SOC still require ROHF. The UHF gradient also
+  rejects range-separated (CAM/LRC) functionals.
+- Check that the UHF triplet is the lowest one. For example, the Huckel guess
+  converges to a higher triplet for the water example, while `[guess]
+  type=hcore` reaches the lowest UHF solution; see
+  [`examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_UHF_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_UHF_GRADIENT.inp).
 - In sectioned `.inp` input, `[tdhf] nstate` must include the highest spin-flip
   state requested by a gradient or follow-up workflow; `.oqp` input widens the
   root count from `root=N` automatically.
