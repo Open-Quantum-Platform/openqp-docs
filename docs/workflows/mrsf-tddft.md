@@ -186,5 +186,21 @@ The same-stem `.inp` file is retained for legacy use.
 - For ordinary TDDFT, see [TDDFT and TDHF](tddft.md).
 - For spin-flip TDDFT without mixed-reference correction, use
   [SF-TDDFT](sf-tddft.md).
-- UMRSF-TDDFT uses `[tdhf] type=umrsf` with a UHF reference and is currently an
-  energy-only workflow.
+- UMRSF-TDDFT uses `[tdhf] type=umrsf` with a UHF triplet reference. Besides
+  energies it provides analytic nuclear gradients (`runtype=grad`) and the
+  gradient-driven `optimize`, `meci`, `mecp` and `tci` workflows for HF, LDA/GGA
+  and global-hybrid functionals; `job.theory.umrsf(...)` is the compact-API
+  counterpart of `job.theory.mrsf(...)`. Range-separated, meta-GGA and
+  double-hybrid functionals and custom spin-pair-coupling scales are
+  energy-only, and Hessians, NACME and SOC are not available for UMRSF.
+  Gradient-driven UMRSF runs accept singlet and triplet response states
+  (`[tdhf] multiplicity=1` or `3`; roots are numbered from 1 within that
+  manifold, so `grad=1` with `multiplicity=1` is S0). In Python, the
+  `multiplicity` argument of `job.theory.umrsf(...)` sets the UHF reference;
+  select a triplet response with a following `job.tdhf(multiplicity=3)`. UMRSF
+  gradients also accept effective core potentials, and the
+  input checker rejects `[properties] td_prop=True`, `[tdhf] ixcore` and
+  QM/MM (`qmmm_flag=True`) for them because the relaxed density and ESPF
+  charges those paths consume are not produced. See
+  `examples/UMRSF-TDDFT/H2CO_BHHLYP_UMRSFTDDFT_GRAD.inp` and, with an ECP,
+  `examples/ECP/HBr_BHHLYP-UMRSFTDDFT_GRAD.inp`.

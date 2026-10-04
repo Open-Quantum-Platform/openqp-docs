@@ -18,7 +18,7 @@ specific input contract.
 | SC-NEVPT2 nuclear gradient | Analytic gradient and gradient-driven geometry calculations for single-state, strongly contracted Dyall-Hamiltonian NEVPT2 on a state-specific CASSCF reference. See [SC-NEVPT2 Nuclear Gradient](workflows/sc-nevpt2-gradient.md). |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
 | SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
-| UMRSF-TDDFT | Energy-only UHF-reference workflow. |
+| UMRSF-TDDFT | UHF-reference energies and analytic nuclear gradients (`runtype=grad`, `optimize`, `meci`, `mecp`, `tci`) for HF, LDA/GGA and global-hybrid functionals. |
 | MRSF-EKT | IP/EA analysis with Dyson-like orbital data. |
 
 ## Properties
@@ -85,5 +85,6 @@ constraint types that the concise grammar does not yet support.
   The closed-shell Cholesky path can still *build* its vectors directly from
   recomputed AO integrals, skipping the packed AO store — see
   [`cholesky_direct`](keywords/cc.md#cholesky_direct).
-- UMRSF-TDDFT gradients and Hessians are not part of the documented production
-  surface yet.
+- UMRSF-TDDFT Hessians, NACME and SOC are not part of the documented production
+  surface yet; UMRSF gradients with range-separated, meta-GGA or double-hybrid
+  functionals, or with custom spin-pair-coupling scales, remain energy-only.
