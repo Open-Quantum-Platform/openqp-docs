@@ -35,7 +35,7 @@ multiplicity=3
 
 Selects the SCF reference. Use `rhf` for closed-shell singlets, `rohf` for the
 high-spin reference commonly used by SF/MRSF workflows, and `uhf` for
-unrestricted references including UMRSF-TDDFT. Standalone MP2 supports RHF,
+unrestricted references including UMRSF-TDDFT and UHF-referenced SF-TDDFT. Standalone MP2 supports RHF,
 UHF, and ROHF references.
 
 The input checker rejects `type=rhf` with `multiplicity>1`.

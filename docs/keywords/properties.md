@@ -108,7 +108,10 @@ the documented production surface.
 Selects gradient states. HF/DFT gradients use state `0`. Ordinary TDHF/TDDFT
 state `1` is the first excited state. SF-TDDFT and MRSF-TDDFT state `1` is the
 lowest spin-flip/MRSF target state, which can be the multiconfigurational ground
-state. In Python, prefer `job.workflow.gradient(state=...)`; it maps to this
+state. UMRSF-TDDFT numbers its roots the same way, within the response manifold
+selected by `[tdhf] multiplicity`: with `multiplicity=1`, state `1` is S0 and
+state `2` is S1; with `multiplicity=3`, state `1` is the lowest triplet response
+root. In Python, prefer `job.workflow.gradient(state=...)`; it maps to this
 input-file keyword.
 
 Example:

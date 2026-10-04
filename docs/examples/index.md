@@ -29,7 +29,7 @@ Shared Cartesian coordinates used by the concise decks live in
 | `examples/TRAH` | TRAH SCF examples. |
 | `examples/ISPHER` | Spherical-harmonic AO convention examples. |
 | `examples/ECP` | Effective-core-potential examples. |
-| `examples/UMRSF-TDDFT` | UMRSF-TDDFT energy examples. |
+| `examples/UMRSF-TDDFT` | UMRSF-TDDFT energy and analytic-gradient examples (Cartesian and spherical-harmonic bases). |
 | `examples/XAS` | X-ray absorption examples. |
 | `examples/MD` | Gas-phase ground-state Born--Oppenheimer MD with `md(...)`. |
 | `examples/QMMM` | ESPF electrostatic QM/MM (requires OpenMM): NAMD / SOC-NAMD dynamics, ground-state QM/MM MD with checkpoints and phase-space snapshots, QM/MM optimization, covalent-boundary (link atom + `frontier_scheme`), and single-point energies. |
