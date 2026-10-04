@@ -176,7 +176,10 @@ Maximum number of Z-vector iterations for gradient/property workflows.
 | Default | `1.0e-6` |
 | Used by | Z-vector convergence |
 
-Convergence threshold for Z-vector equations.
+Convergence threshold for Z-vector equations. The TDDFT, SF-TDDFT, MRSF-TDDFT and
+UMRSF-TDDFT solvers stop when the Euclidean norm of the Z-vector residual is below
+`sqrt(zvconv)`, so the default `1.0e-6` bounds the residual by `1.0e-3`. Lower it
+(for example `1.0e-10`) when gradients are compared with finite differences.
 
 ### `z_solver`
 
