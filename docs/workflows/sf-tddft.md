@@ -126,9 +126,11 @@ The same-stem `.inp` file is retained for legacy use.
   gradient-driven `optimize`, `meci`, `mecp` and `tci` workflows. Hessians,
   nonadiabatic couplings, NAMD and SOC still require ROHF. The UHF gradient also
   rejects range-separated (CAM/LRC) functionals.
-- Check that the UHF triplet is the lowest one. For example, the Huckel guess
-  converges to a higher triplet for the water example, while `[guess]
-  type=hcore` reaches the lowest UHF solution; see
+- Check that the UHF triplet is the lowest one, for example against the ROHF
+  energy, which UHF cannot exceed. For the water example, the Huckel, modified
+  Huckel and `auto` guesses converge to higher triplets in 6-31G* and cc-pVDZ.
+  The core-Hamiltonian guess does so in cc-pVDZ. `[guess] type=sap` reaches the
+  lowest UHF solution in both bases; see
   [`examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_UHF_GRADIENT.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SF-TDDFT/H2O_BHHLYP-SFTDDFT_UHF_GRADIENT.inp).
 - In sectioned `.inp` input, `[tdhf] nstate` must include the highest spin-flip
   state requested by a gradient or follow-up workflow; `.oqp` input widens the
