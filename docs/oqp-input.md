@@ -504,7 +504,7 @@ State labels always describe the physical target:
 | HF/DFT `S0` | Ground-state SCF surface | State index 0 |
 | Conventional TDDFT/TDHF `S0` | Ground-state DFT/HF surface for a state-specific derivative driver | State index 0 |
 | Conventional TDDFT/TDHF `Sn`, `n >= 1` | Singlet excited state `n` | Response root `n` |
-| Conventional TDDFT/TDHF `Tn`, `n >= 0` | Triplet response state `n` | Response root `n + 1`, target multiplicity 3 |
+| Conventional TDDFT/TDHF `Tn` | Not available: closed-shell RPA/TDA computes singlet states only | Rejected by the parser; use `mrsf(...)` or `sf(...)` for triplet states |
 | SF family `root=N` | Response root whose spin character is assigned after diagonalization | Response root `N` |
 | All-electron MRSF `Sn`, `Tn`, or `Qn`, `n >= 0` | State `n` within the selected singlet, triplet, or quintet manifold | Response root `n + 1`, target multiplicity 1, 3, or 5 |
 

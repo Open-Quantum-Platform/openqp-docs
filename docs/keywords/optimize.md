@@ -98,6 +98,9 @@ new multistate inputs use [`states`](#states) with `meci_search=baeka`.
 
 Multiplicity labels for MECP-style crossing searches. MECP requires different
 values.
+The MECP driver switches the response multiplicity to each value in turn, so
+the response method must resolve both spin manifolds. Use `[tdhf] type=mrsf` or
+`umrsf`; conventional RPA/TDA (singlet only) and SF-TDDFT are rejected for MECP.
 
 ### `energy_shift`
 
