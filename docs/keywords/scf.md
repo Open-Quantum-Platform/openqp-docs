@@ -459,8 +459,8 @@ Controls SCF verbosity.
 
 ## TRAH Keywords
 
-TRAH is the trust-region augmented Hessian SCF converger. The package build uses
-the native TRAH implementation by default when TRAH is requested.
+TRAH is the trust-region augmented Hessian SCF converger. It is implemented
+natively; the external OpenTrustRegion (OpenTRAH) backend was removed.
 
 ### `trh_impl`
 
@@ -468,10 +468,16 @@ the native TRAH implementation by default when TRAH is requested.
 | --- | --- |
 | Type | string |
 | Default | `auto` |
+| Accepted | `auto`, `native` |
 | Used by | TRAH implementation selection |
 
-Selects the TRAH implementation. `auto` uses the available implementation and
-falls back to native behavior when external OpenTRAH is absent.
+Selects the TRAH implementation. Both accepted values resolve to the native
+trust-region augmented-Hessian solver, which is the only implementation.
+
+`otr`, which selected the external OpenTrustRegion backend, is **no longer
+accepted**: the backend was removed and an input requesting it now fails with a
+`ValueError` naming the accepted values, rather than silently running the native
+solver instead.
 
 ### `trh_stab`
 
