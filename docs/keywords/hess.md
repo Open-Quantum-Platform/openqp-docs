@@ -10,14 +10,24 @@ workflows.
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `numerical` |
-| Values | `numerical`, `analytical` |
+| Default | `auto` |
+| Values | `auto`, `numerical`, `analytical` |
 | Used by | Hessian dispatch |
 
-Selects numerical finite-difference or native analytical Hessian dispatch.
-Analytical Hessians are validated for supported HF/DFT ground-state cases. The
-input checker requests `type=numerical` when the method, state, or basis is
-outside the analytical path.
+Selects the Hessian method:
+
+- **`auto`** (the default): the native analytical Hessian for ground-state
+  HF/DFT runs (RHF/RKS, UHF/UKS, ROHF/ROKS).
+  - It falls back to the numerical finite-difference Hessian for excited
+    states and when the run uses something the analytical kernel does not
+    differentiate.
+  - Those cases are PCM solvent, QM/MM embedding, scalar relativity, meta-GGA
+    or double-hybrid functionals, fractional occupations (`pfon`), basis
+    functions with L >= 4, and `symmetry_unique`.
+  - The choice and its reason are written to the log.
+- **`numerical`**: forces the finite-difference Hessian.
+- **`analytical`**: requests the analytical Hessian. The input checker
+  rejects it where the analytical path is not available.
 
 ### `state`
 
