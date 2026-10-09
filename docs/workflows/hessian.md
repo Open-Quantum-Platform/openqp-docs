@@ -2,7 +2,9 @@
 
 Hessian workflows use `[input] runtype=hess` and are controlled by `[hess]`.
 OpenQP supports native analytical Hessians for supported HF/DFT ground-state
-cases and numerical Hessians for broader workflows.
+cases and numerical Hessians for broader workflows. The default `[hess]
+type=auto` selects the analytical Hessian wherever it applies and the
+numerical one otherwise; see [`[hess]`](../keywords/hess.md#type).
 
 Frequency, IR, Raman, and thermochemistry analysis are built from Hessian data
 when the selected workflow produces the required derivatives.
@@ -63,7 +65,8 @@ The same-stem `.inp` file is retained for legacy use.
 
 ## Numerical HF/DFT Hessian
 
-Omit `type=analytical` to use the numerical finite-difference path.
+Set `type=numerical` to force the finite-difference path. Without `type`,
+`auto` uses the analytical Hessian for ground-state HF/DFT.
 
 `.oqp`:
 
