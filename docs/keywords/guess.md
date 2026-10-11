@@ -100,3 +100,19 @@ swapmo=2,7,8,21
 
 This swaps `2` with `7` and `8` with `21`. Use it only when you know the target
 orbital ordering.
+
+The swap acts on the alpha orbitals. What happens to the guess density
+depends on the guess type:
+
+- Computed guesses (`huckel`, `hcore`, ...): the density of the computed guess is
+  kept. The swap only names the occupation that
+  [`rstctmo`](scf.md#rstctmo) or [`mom`](scf.md#mom) then follow from the first
+  iteration. Without one of them, the first Fock diagonalisation refills the
+  lowest orbitals and the swap has no effect.
+- Supplied guesses (`json`, `auto` with an existing file, `previous`): the
+  guess density is rebuilt from the swapped orbitals, because a supplied guess
+  can be accepted as converged on the first iteration and its orbitals and
+  density must describe the same state. RHF: the doubly occupied density from
+  the swapped orbitals. ROHF: both spin densities from the swapped alpha
+  orbitals, and the beta orbitals are replaced by them. UHF: each spin density
+  from its own orbitals.
