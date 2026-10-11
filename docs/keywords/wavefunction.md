@@ -98,6 +98,7 @@ For CASPT2 on the converged reference, add `[pt2]` and set
 ```ini
 [pt2]
 reference=casscf
+target_roots=0
 h0=fock
 contraction=uncontracted
 ipea_shift=0.0
@@ -319,7 +320,8 @@ geometries and retains the `grad_*` controls above.
 | `variant` | `auto` | Single-state, multistate, or extended-multistate variant inferred from the method by default. |
 | `h0` | `fock` | `fock` for CASPT2/QDPT or `dyall` for NEVPT2. |
 | `contraction` | `uncontracted` | `uncontracted` or `strong` (SC-NEVPT2). |
-| `target_roots`, `nroot` | empty, `0` | PT2 target model space; zero inherits `[ci] nroot`. |
+| `target_roots` | empty | Zero-based PT2 target root slots; `target_roots=0` explicitly corrects only the first CI root. Single-state methods accept one target root. |
+| `nroot` | `0` | Number of retained reference roots; zero inherits `[ci] nroot`. This count does not itself select the single-state PT2 target. |
 | `ipea_shift`, `level_shift`, `imaginary_shift`, `edshft` | `0.0` | Denominator regularization controls. |
 | `frozen` | `auto` | PT2 frozen core: freeze the standard deep-core orbitals automatically, use `0` to correlate all inactive orbitals, or give an explicit count. |
 | `engine` | `auto` | `auto`, `dense`, `direct` (NumPy), or `fortran` for QDPT. CASPT2 defaults to dense; explicit direct CASPT2 support is **unreleased** and requires the implementation linked below. QDPT retains its automatic direct selection. |
@@ -372,6 +374,7 @@ runtype=energy
 [pt2]
 reference=casscf
 variant=caspt2
+target_roots=0
 h0=fock
 contraction=uncontracted
 ipea_shift=0.0
@@ -382,8 +385,10 @@ Only with the required unreleased engine build, add this section to a CASPT2
 input with its geometry, basis, `[cas]` and `[ci]` settings. `reference=casci` is
 also supported. The spelling
 `contraction=none` is equivalent to `uncontracted`. The request must select one
-PT2 target root; `variant=auto` also selects the single-state CASPT2 variant
-for `method=caspt2`.
+PT2 target root. Here `target_roots=0` selects the first CI root even if the
+preceding `[ci] nroot=2` retains two reference roots. Root slots are zero-based;
+use `target_roots=1` instead to correct the second retained CI root.
+`variant=auto` also selects the single-state CASPT2 variant for `method=caspt2`.
 
 The direct CASPT2 energy requires `h0=fock`, `ipea_shift=0.0`, and at most 63
 spatial orbitals after PT2 frozen-core reduction. Multistate and extended
