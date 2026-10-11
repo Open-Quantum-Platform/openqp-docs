@@ -334,8 +334,8 @@ three exchange-only channels use shared storage. Concurrent exchange updates
 are synchronized; one-worker execution uses ordinary updates. All channels are
 included in the MPI reduction.
 
-The shared option reduces the number of exchange images allocated, but
-synchronization can increase response time. Compare both storage settings on
+With multiple OpenMP workers, the shared option reduces the number of exchange
+images allocated, but synchronization can increase response time. Compare both storage settings on
 the intended molecule and thread count before selecting it. This option does
 not select the storage used by the gradient Z-vector contractions or change
 precision, integral screening, or response convergence thresholds. `fp32`
