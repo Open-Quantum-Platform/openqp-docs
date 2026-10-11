@@ -28,6 +28,7 @@ The method selects which sections are read:
 | `casci` | `[cas]`, `[ci]` | `[state_average]` |
 | `casscf`, `sa-casscf` | `[cas]`, `[ci]`, `[casscf]` | `[state_average]` |
 | `caspt2`, `ms-caspt2`, `xms-caspt2` | `[cas]`, `[ci]`, `[pt2]` | `[casscf]`, `[state_average]` |
+| `nevpt2`, `sc-nevpt2` | `[cas]`, `[ci]`, `[pt2]` | `[casscf]`, `[state_average]` |
 | `mrmp2`, `mcqdpt2`, `xmcqdpt2` | `[cas]`, `[ci]`, `[pt2]` | `[casscf]`, `[state_average]` |
 
 ## Minimal inputs
@@ -98,6 +99,7 @@ For CASPT2 on the converged reference, add `[pt2]` and set
 ```ini
 [pt2]
 reference=casscf
+target_roots=0
 h0=fock
 contraction=uncontracted
 ipea_shift=0.0
@@ -319,12 +321,13 @@ geometries and retains the `grad_*` controls above.
 | `variant` | `auto` | Single-state, multistate, or extended-multistate variant inferred from the method by default. |
 | `h0` | `fock` | `fock` for CASPT2/QDPT or `dyall` for NEVPT2. |
 | `contraction` | `uncontracted` | `uncontracted` or `strong` (SC-NEVPT2). |
-| `target_roots`, `nroot` | empty, `0` | PT2 target model space; zero inherits `[ci] nroot`. |
+| `target_roots` | empty | Zero-based PT2 target root slots; `target_roots=0` explicitly corrects only the first CI root. Single-state methods accept one target root. |
+| `nroot` | `0` | Number of retained reference roots; zero inherits `[ci] nroot`. This count does not itself select the single-state PT2 target. |
 | `ipea_shift`, `level_shift`, `imaginary_shift`, `edshft` | `0.0` | Denominator regularization controls. |
 | `frozen` | `auto` | PT2 frozen core: freeze the standard deep-core orbitals automatically, use `0` to correlate all inactive orbitals, or give an explicit count. |
-| `engine` | `auto` | Automatic, direct/Fortran, or dense QDPT engine. |
+| `engine` | `auto` | `auto`, `dense`, `direct` (NumPy), or `fortran` for QDPT. CASPT2 defaults to dense; explicit direct CASPT2 support is **unreleased** and requires the implementation linked below. QDPT retains its automatic direct selection. |
 | `nproc` | `0` | Worker count; zero selects the automatic value. |
-| `max_terms` | `30000000` | Direct-engine streamed-term limit. |
+| `max_terms` | `30000000` | Direct-engine limit on generated single/double excitation terms, before duplicate external determinants are merged. |
 | `max_memory` | `2048` | PT2 memory ceiling in MiB, combined with the tighter `[cas]` ceiling. |
 | `semi_canonical` | `true` | Semicanonicalize the reference orbitals. |
 | `gradient` | `auto` | Nuclear-gradient route: `auto` (analytic where it applies — including the SC-NEVPT2 analytic scope — and central differences otherwise, both for an unsupported variant and for a geometry where a precondition of the derivation fails), `analytic` (refuse rather than fall back), or `numerical`. See [CASPT2 Nuclear Gradient](../workflows/caspt2-gradient.md) and [SC-NEVPT2 Nuclear Gradient](../workflows/sc-nevpt2-gradient.md). |
@@ -333,13 +336,91 @@ geometries and retains the `grad_*` controls above.
 | `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the root-ordering warning. |
 | `grad_ranks_per_group` | `0` | MPI ranks assigned to one displaced energy; zero selects the automatic distribution. |
 
-Select NEVPT2 through `[input] method=caspt2` with `h0=dyall`; add
-`contraction=strong` for strongly contracted NEVPT2. The Python
-`job.nevpt2(...)` convenience helper lowers to this same sectioned form rather
-than introducing a separate `method=nevpt2` input value. The
+For a molecular input, use `[input] method=nevpt2` with `[pt2] h0=dyall`
+and `contraction=uncontracted`, or `method=sc-nevpt2` with `h0=dyall` and
+`contraction=strong`. Specify these PT2 controls explicitly: the method name
+alone does not override the current input defaults. The Python
+`job.nevpt2(...)` convenience helper writes the matching method and PT2
+controls; `contraction="strong"` selects `sc-nevpt2`. The older
+`method=caspt2` with `[pt2] h0=dyall` remains supported; add
+`contraction=strong` to that spelling for strongly contracted NEVPT2. The
 QDPT family (`mrmp2`, `mcqdpt2`, and `xmcqdpt2`) uses the diagonal-Fock direct
 engine and accepts `edshft`; `edshft` is mutually exclusive with real or
 imaginary level shifts.
+
+### Unreleased: explicit direct single-state CASPT2 energies
+
+!!! warning "UNRELEASED — requires the companion engine implementation"
+
+    This section describes the proposed implementation in
+    [engine PR #479](https://github.com/Open-Quantum-Platform/openqp/pull/479),
+    which is not merged and has numerical and performance verification pending.
+    It does not describe support in any released OpenQP version or the current
+    engine `main`. To try it, build engine commit
+    [`8ea4f6c7c81e1f4b1b92e2fc01520dc324fa3694`](https://github.com/Open-Quantum-Platform/openqp/commit/8ea4f6c7c81e1f4b1b92e2fc01520dc324fa3694)
+    or a later commit containing that implementation. Current engines without
+    that change reject explicit CASPT2 `engine=direct`/`fortran` requests.
+
+In this unreleased implementation, for an uncontracted single-state CASPT2
+**energy**, `engine=direct` uses NumPy single/double-excitation summation, while
+`engine=fortran` requests the
+compiled streaming calculation. Both evaluate the same diagonal-Fock
+zeroth-order Hamiltonian as the dense single-state calculation without forming
+the full determinant Hamiltonian. `engine=auto` keeps the dense CASPT2
+calculation; selecting a direct engine is an explicit choice.
+
+```ini
+# UNRELEASED: requires engine PR #479 implementation at 8ea4f6c7c81e1f4b1b92e2fc01520dc324fa3694
+# or a later commit containing that change; not supported by released versions.
+[input]
+method=caspt2
+runtype=energy
+
+[pt2]
+reference=casscf
+variant=caspt2
+target_roots=0
+h0=fock
+contraction=uncontracted
+ipea_shift=0.0
+engine=direct
+```
+
+Only with the required unreleased engine build, add this section to a CASPT2
+input with its geometry, basis, `[cas]` and `[ci]` settings. `reference=casci` is
+also supported. The spelling
+`contraction=none` is equivalent to `uncontracted`. The request must select one
+PT2 target root. Here `target_roots=0` selects the first CI root even if the
+preceding `[ci] nroot=2` retains two reference roots. Root slots are zero-based;
+use `target_roots=1` instead to correct the second retained CI root.
+`variant=auto` also selects the single-state CASPT2 variant for `method=caspt2`.
+
+The direct CASPT2 energy requires `h0=fock`, `ipea_shift=0.0`, and at most 63
+spatial orbitals after PT2 frozen-core reduction. Multistate and extended
+multistate CASPT2, contracted calculations, Dyall H0, nonzero IPEA shifts, and
+nuclear-gradient or geometry calculations are outside this direct scope and
+are rejected when an explicit direct engine is requested. Use `engine=auto`
+or `dense` for the existing CASPT2 gradient routes. QDPT engine selection and
+its gradient support are unchanged.
+
+`max_terms` bounds the excitation terms generated from all reference
+determinants before merging duplicates. The tighter of `[pt2] max_memory`
+and `[cas] max_memory` bounds the estimated integral and streaming-array
+storage, including worker copies and merge buffers. The direct calculation
+still stores integrals and external-space arrays: omitting the full determinant
+Hamiltonian does not mean zero memory use or a fixed percentage reduction in
+process memory. These limits are allocation estimates, not a process RSS
+limit. An explicit direct request that exceeds a limit fails; it does not
+silently switch to dense. `engine=fortran` also fails if the installed library
+has no streaming entry point.
+
+The reported external-determinant count and minimum denominator describe only
+the merged external determinants generated by single and double excitations
+from the reference determinants. Dense calculations report the complete
+external determinant space, including determinants that have no Hamiltonian
+coupling to the reference. Their counts and minimum denominators can therefore
+differ even when the PT2 energies agree. Compare energies and the corresponding
+coupled-space quantities when comparing engines.
 
 ## Nuclear gradients and geometry calculations
 
