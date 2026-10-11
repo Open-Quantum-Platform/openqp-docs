@@ -101,7 +101,7 @@ values.
 The MECP driver switches the response multiplicity to each value in turn, so
 the response method must resolve both spin manifolds. Use `[tdhf] type=mrsf`, or
 `type=umrsf` where its analytic gradient is available (HF, LDA/GGA and global
-hybrids; `imult` and `jmult` from {1, 3}); conventional RPA/TDA (triplets are energy-only)
+hybrids; `imult` and `jmult` from {1, 3}); conventional RPA/TDA (one spin manifold per run)
 and SF-TDDFT are rejected for MECP.
 
 ### `energy_shift`
