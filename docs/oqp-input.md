@@ -308,7 +308,7 @@ surface-hopping `scheme=BaeckAn|Overlap|TDC_NAC|NAC|custom`, and—only with
 
 | Driver signature | Lowered option family |
 | --- | --- |
-| <code>energy([S0&#124;T0&#124;Q0])</code> | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet. |
+| <code>energy([S0&#124;T0&#124;Q0])</code> | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet; on conventional TDDFT/TDHF, `T0` selects the closed-shell triplet manifold. |
 | `grad([STATE],td_prop=...,export=...,title=...)` | Gradient target plus concise `[properties]` controls. Default target is `S0`, except that SF routes require `root=N`. |
 | `opt([STATE],OPT...,ENGINE...,freeze="distance(i,j)")` | Native minimum optimization. Default target is `S0`, except that SF routes require `root=N`. `freeze` holds one or more semicolon-separated atom-pair distances at their initial values. |
 | <code>meci(STATE1,STATE2,[algorithm=auglag&#124;penalty&#124;ubp&#124;hybrid],[gap_sigma=...],OPT...,ENGINE...)</code><br><code>meci(STATE1,STATE2[,STATE3...],algorithm=baeka,BAEKA_OPT...,BAEKA...,ENGINE...)</code> | Native intersection search for states of the same multiplicity. A two-state call defaults to `auglag`, the augmented Lagrangian, whose gap term is scaled by `gap_sigma` (default `10.0`); a call with three or more states selects `baeka`, the only N-state algorithm. Write `algorithm=baeka` explicitly only to select BaekA for two states; with three or more states it is implied and the canonical rendering omits it. State order is normalized. Use public `gap` rather than the internal `energy_gap` spelling in a BaekA call, and do not supply both. See [BaekA Multistate MECI](workflows/baeka-multistate-meci.md). |
@@ -504,7 +504,7 @@ State labels always describe the physical target:
 | HF/DFT `S0` | Ground-state SCF surface | State index 0 |
 | Conventional TDDFT/TDHF `S0` | Ground-state DFT/HF surface for a state-specific derivative driver | State index 0 |
 | Conventional TDDFT/TDHF `Sn`, `n >= 1` | Singlet excited state `n` | Response root `n` |
-| Conventional TDDFT/TDHF `Tn` with `energy()`, `grad()`, `opt()` | Closed-shell triplet state `n` (RHF/RKS reference) | `[tdhf] multiplicity=3`, response root `n + 1`; Hessians, NACs and dynamics with `Tn` are rejected; use `mrsf(...)` or `sf(...)` |
+| Conventional TDDFT/TDHF `energy(T0)`, `grad(Tn)`, `opt(Tn)` | Closed-shell triplet manifold (`energy`) or triplet state `n` (`grad`, `opt`), RHF/RKS reference | `[tdhf] multiplicity=3`, response root `n + 1`; Hessians, NACs and dynamics with `Tn` are rejected; use `mrsf(...)` for those |
 | SF family `root=N` | Response root whose spin character is assigned after diagonalization | Response root `N` |
 | All-electron MRSF `Sn`, `Tn`, or `Qn`, `n >= 0` | State `n` within the selected singlet, triplet, or quintet manifold | Response root `n + 1`, target multiplicity 1, 3, or 5 |
 
@@ -528,9 +528,9 @@ SF-family state character cannot be assigned safely before diagonalization, so
 SF-TDDFT and SF-TDHF state-specific drivers require `root=N`
 instead of an `S` or `T` label.
 Conventional TD calculations (closed-shell RPA/TDA) accept `S` labels and, for
-the closed-shell triplet manifold, `Tn` with `energy()`, `grad()` and `opt()`;
+the closed-shell triplet manifold, `energy(T0)`, `grad(Tn)` and `opt(Tn)`;
 other `T` targets (Hessians, NACs, dynamics) and all `Q` labels are rejected.
-Use an MRSF or SF route for those triplet workflows.
+Use an MRSF route for those triplet workflows.
 
 The following bookkeeping keys are reserved and cannot contradict the route or
 physical state syntax:

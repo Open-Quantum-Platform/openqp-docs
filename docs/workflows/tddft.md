@@ -106,7 +106,9 @@ geom="h2o.xyz"
 
 Runnable example:
 [`examples/TDDFT/H2O_B3LYP5-TDDFT_TRIPLET_GRADIENT.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDDFT/H2O_B3LYP5-TDDFT_TRIPLET_GRADIENT.oqp).
-Requires OpenQP with
+Triplet gradients and optimizations require OpenQP with
+[openqp#502](https://github.com/Open-Quantum-Platform/openqp/pull/502);
+triplet energies alone need
 [openqp#475](https://github.com/Open-Quantum-Platform/openqp/pull/475).
 
 ## Gradient

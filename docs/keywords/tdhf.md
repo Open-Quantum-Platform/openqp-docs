@@ -130,8 +130,7 @@ excitation energies (triplet: no Coulomb term, `f_aa - f_ab` kernel, zero
 oscillator strengths). Triplet energies, gradients and geometry
 optimizations are available; the input checker rejects `multiplicity=3` with
 Hessians, NACs, crossings, an open-shell reference, and any other value. For
-those triplet workflows use
-`type=mrsf` (ROHF) or `type=umrsf` (UHF) with a triplet reference and set
+those triplet workflows use `type=mrsf` with an ROHF triplet reference and set
 `[tdhf] multiplicity=3` as well: the reference multiplicity does not select
 the response multiplicity, which defaults to `1`.
 For SOC, do not set this as a single target multiplicity; the SOC workflow
