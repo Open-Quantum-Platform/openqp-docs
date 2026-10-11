@@ -329,6 +329,10 @@ SCF integral cutoff. See [Performance](../performance.md).
 | Default | `False` |
 | Used by | MRSF-TDDFT and UMRSF-TDDFT excitation-energy response |
 
+Requires an engine build containing [OpenQP PR #484](https://github.com/Open-Quantum-Platform/openqp/pull/484).
+This keyword is not available in the 1.3.0 release; omit it from inputs and
+Python settings when using that release.
+
 Use one shared exchange accumulator instead of a separate exchange accumulator
 for each OpenMP worker. The default retains the established private storage.
 With `shared_f3=True`, the density-dependent channels remain private, while the
