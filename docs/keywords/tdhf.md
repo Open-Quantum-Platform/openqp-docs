@@ -319,6 +319,40 @@ absorption workflows.
 looser values (e.g. `1e-6`) trade a few µeV for speed. Never tighter than the
 SCF integral cutoff. See [Performance](../performance.md).
 
+### `shared_f3`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | MRSF-TDDFT and UMRSF-TDDFT excitation-energy response |
+
+Use one shared exchange accumulator instead of a separate exchange accumulator
+for each OpenMP worker. The default retains the established private storage.
+With `shared_f3=True`, the density-dependent channels remain private, while the
+three exchange-only channels use shared storage. Concurrent exchange updates
+are synchronized; one-worker execution uses ordinary updates. All channels are
+included in the MPI reduction.
+
+The shared option reduces the number of exchange images allocated, but
+synchronization can increase response time. Compare both storage settings on
+the intended molecule and thread count before selecting it. This option does
+not select the storage used by the gradient Z-vector contractions or change
+precision, integral screening, or response convergence thresholds. `fp32`
+remains a separate setting.
+
+```ini
+[tdhf]
+type=mrsf
+shared_f3=True
+```
+
+```python
+job.settings.tdhf(shared_f3=True)
+# Restore private storage:
+job.tdhf.shared_f3 = False
+```
+
 ### `fp32`
 
 | Field | Value |
