@@ -124,7 +124,7 @@ mp2_job.workflow.gradient(state=0)
 | --- | --- | --- |
 | `theory.hf(basis=None, reference="rhf", multiplicity=None, **scf_keywords)` | `OpenQP` | Selects Hartree-Fock reference-SCF theory. |
 | `theory.dft(functional, basis=None, reference="rhf", multiplicity=None, **scf_keywords)` | `OpenQP` | Selects Kohn-Sham DFT. The functional is part of the theory call. |
-| `theory.mp2(reference="rhf", runtype=None, multiplicity=None, basis=None, variant=None, same_spin_scale=None, opposite_spin_scale=None, **scf_keywords)` | `OpenQP` | Selects MP2 with an HF reference. RHF supports analytic gradients and gradient-driven geometry runtypes; UHF/ROHF are energy-only. Use `variant` for named spin scaling, or `variant="custom"` with explicit same- and opposite-spin scales. |
+| `theory.mp2(reference="rhf", runtype=None, multiplicity=None, basis=None, variant=None, same_spin_scale=None, opposite_spin_scale=None, transform=None, **scf_keywords)` | `OpenQP` | Selects MP2 with an HF reference. RHF supports analytic gradients and gradient-driven geometry runtypes; UHF/ROHF are energy-only. Use `variant` for named spin scaling, or `variant="custom"` with explicit same- and opposite-spin scales. `transform="auto"`, `"direct"`, or `"n5"` sets the correlation-energy transformation; `job.settings.mp2(transform=...)` sets the same option. |
 | `theory.ccsd(reference="rhf", runtype=None, multiplicity=None, basis=None, nfzc=None, conv=None, maxit=None, ndiis=None, cholesky=None, cholesky_tol=None, cholesky_direct=None, triples=False, **scf_keywords)` | `OpenQP` | Selects energy-only CCSD with an HF reference. `nfzc`, `conv`, `maxit`, `ndiis`, `cholesky`, `cholesky_tol`, and `cholesky_direct` route to `[cc]`; every other keyword routes to `[scf]`. Passing a non-empty `functional`, or any `runtype` other than `energy`, raises. |
 | `theory.ccsd_t(**kwargs)` | `OpenQP` | `theory.ccsd(...)` with `triples=True`, adding the perturbative triples correction. Takes the same arguments. |
 | `fci(nroot=1, frozen_core=None, runtype=None, basis=None, reference="rhf", **keywords)` | `OpenQP` | Selects determinant-space FCI. |
@@ -160,7 +160,7 @@ selectors. Native `oqp` handles frozen-distance minima; install
 Plain energy calculations do not need a workflow call. Use `job.workflow.<name>(...)`
 only when selecting a non-energy workflow or setting workflow-specific controls.
 `job.control(...)`, the string form `job.theory("mrsf-tddft", ...)`, and the
-older compact `job.hf(...)`, `job.dft(...)`, `job.mrsf(...)`, and `job.soc(...)`
+older compact `job.hf(...)`, `job.dft(...)`, `job.mp2(...)`, `job.mrsf(...)`, and `job.soc(...)`
 helpers remain available for existing scripts.
 
 MP2 clears any DFT functional and accepts named or custom spin-scaling

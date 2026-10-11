@@ -138,14 +138,13 @@ its own storage requirements.
 Concise input and Python:
 
 ```text
-mp2(reference=uhf,transform=n5)/6-31g
+mp2(reference=uhf)/6-31g mp2(transform=n5)
 geom="h2o.xyz"
 ```
 
 ```python
-job.mp2(reference="uhf", basis="6-31g", transform="n5")
-# The schema settings form is also supported:
-job.settings.mp2(transform="auto")
+job.theory.mp2(reference="uhf", basis="6-31g")
+job.settings.mp2(transform="n5")
 ```
 
 The exact section form is `mp2/6-31g mp2(transform=n5)`. In legacy input, use

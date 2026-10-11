@@ -96,12 +96,13 @@ packed AO-to-MO transformations above 120 basis functions or when the pair-build
 count exceeds its guard. To request the packed form on a small molecule:
 
 ```text
-mp2(reference=uhf,transform=n5)/6-31g scf(conv=1e-10)
+mp2(reference=uhf)/6-31g mp2(transform=n5) scf(conv=1e-10)
 geom="../geometries/H2O-0381125c86f2.xyz"
 ```
 
 ```python
-job.mp2(reference="uhf", basis="6-31g", transform="n5", conv=1e-10)
+job.theory.mp2(reference="uhf", basis="6-31g", conv=1e-10)
+job.settings.mp2(transform="n5")
 ```
 
 In legacy input, add `[mp2] transform=n5`. Explicit `n5` can fall back from full
@@ -112,7 +113,7 @@ See [`transform`](../keywords/mp2.md#transform) for the complete selection and
 memory behavior. The setting does not select the analytic-gradient assembly.
 
 The small UHF H2O/6-31G input is
-[`examples/MP2/h2o_ump2_n5_6-31g.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/codex/pr470-mp2-n5-20261011-e133/examples/MP2/h2o_ump2_n5_6-31g.inp).
+[`examples/MP2/h2o_ump2_n5_6-31g.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/ffba5cfd2df091f0b110f9c0d04ce62009c25355/examples/MP2/h2o_ump2_n5_6-31g.inp).
 Its geometry, reference, SCF settings and committed energy reference are shared
 with the conventional example above; the new selector's installed-package
 execution remains pending in [engine PR #489](https://github.com/Open-Quantum-Platform/openqp/pull/489).

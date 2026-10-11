@@ -161,7 +161,7 @@ roots.
 | Explicit HF reference | `rhf/BASIS`, `uhf/BASIS`, or `rohf/BASIS` |
 | Kohn--Sham DFT with automatic restricted/unrestricted reference | `dft/FUNCTIONAL/BASIS` |
 | Explicit KS reference | `rks/FUNCTIONAL/BASIS`, `uks/FUNCTIONAL/BASIS`, or `roks/FUNCTIONAL/BASIS` |
-| MP2 | <code>mp2(reference=rhf&#124;rohf&#124;uhf,variant=...,same_spin_scale=...,opposite_spin_scale=...)/BASIS</code> |
+| MP2 | <code>mp2(reference=rhf&#124;rohf&#124;uhf,variant=...,transform=auto&#124;direct&#124;n5,same_spin_scale=...,opposite_spin_scale=...)/BASIS</code> |
 | CCSD | <code>ccsd(reference=rhf&#124;rohf&#124;uhf)/BASIS</code> |
 | CCSD(T) | <code>ccsd_t(reference=rhf&#124;rohf&#124;uhf)/BASIS</code>; `ccsd-t` and `ccsdt` are accepted input aliases |
 | TDHF | `tdhf(nstate=N)/BASIS` |
@@ -202,9 +202,10 @@ mrsf(nstate=5)/bhhlyp/6-31g* energy(S0) tdhf(nvdav=30)
 geom="h2o.xyz"
 ```
 
-MP2 route parentheses likewise accept only `reference`, `variant`,
-`same_spin_scale`, and `opposite_spin_scale`; other MP2 settings use
-`mp2(...)` as an exact section call. `reference=uhf`, for example, preserves a
+MP2 route parentheses accept `reference`, `variant`, `transform`,
+`same_spin_scale`, and `opposite_spin_scale`. The transformation selector can
+also use the exact section form `mp2(reference=uhf)/6-31g mp2(transform=n5)`;
+other MP2 settings use `mp2(...)` as an exact section call. `reference=uhf`, for example, preserves a
 deliberate UMP2 reference even when `mult=1`. Use physical state labels in the
 driver for state-specific work.
 `mrsf(...) energy` defaults to the singlet target manifold. `energy(T0)`
