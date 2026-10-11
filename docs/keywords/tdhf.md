@@ -124,13 +124,15 @@ Target response state for workflows that read a single TDHF/MRSF state.
 Requested response-state multiplicity. For MRSF-TDDFT, this is the target spin
 multiplicity after spin flip, not necessarily the same as the high-spin ROHF
 reference multiplicity.
-For conventional RPA/TDA (`type=rpa` or `tda`) on a closed-shell RHF reference,
-only `multiplicity=1` is accepted: the response always contains the Coulomb
-term and the singlet exchange-correlation kernel, so a triplet request would
-reproduce the singlet roots. The input checker rejects `multiplicity=3`. For
-triplet states use `type=mrsf` (ROHF) or `type=umrsf` (UHF) with a triplet
-reference and set `[tdhf] multiplicity=3` as well: the reference multiplicity
-does not select the response multiplicity, which defaults to `1`.
+For conventional RPA/TDA (`type=rpa` or `tda`) on a closed-shell RHF/RKS
+reference, `multiplicity=1` gives singlet and `multiplicity=3` triplet
+excitation energies (triplet: no Coulomb term, `f_aa - f_ab` kernel, zero
+oscillator strengths). Triplets are energy-only: the input checker rejects
+`multiplicity=3` with gradients, Z-vectors, Hessians or an open-shell
+reference, and any other value. For triplet gradients use `type=mrsf` (ROHF)
+or `type=umrsf` (UHF) with a triplet reference and set `[tdhf] multiplicity=3`
+as well: the reference multiplicity does not select the response
+multiplicity, which defaults to `1`.
 For SOC, do not set this as a single target multiplicity; the SOC workflow
 computes singlet and triplet response roots internally.
 
@@ -350,7 +352,7 @@ shared_f3=True
 ```python
 job.settings.tdhf(shared_f3=True)
 # Restore private storage:
-job.tdhf.shared_f3 = False
+job.settings.tdhf.shared_f3 = False
 ```
 
 ### `fp32`
