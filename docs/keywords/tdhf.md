@@ -127,12 +127,12 @@ reference multiplicity.
 For conventional RPA/TDA (`type=rpa` or `tda`) on a closed-shell RHF/RKS
 reference, `multiplicity=1` gives singlet and `multiplicity=3` triplet
 excitation energies (triplet: no Coulomb term, `f_aa - f_ab` kernel, zero
-oscillator strengths). Triplets are energy-only: the input checker rejects
-`multiplicity=3` with gradients, Z-vectors, Hessians or an open-shell
-reference, and any other value. For triplet gradients use `type=mrsf` (ROHF)
-or `type=umrsf` (UHF) with a triplet reference and set `[tdhf] multiplicity=3`
-as well: the reference multiplicity does not select the response
-multiplicity, which defaults to `1`.
+oscillator strengths). Triplet energies, gradients and geometry
+optimizations are available; the input checker rejects `multiplicity=3` with
+Hessians, NACs, crossings, an open-shell reference, and any other value. For
+those triplet workflows use `type=mrsf` with an ROHF triplet reference and set
+`[tdhf] multiplicity=3` as well: the reference multiplicity does not select
+the response multiplicity, which defaults to `1`.
 For SOC, do not set this as a single target multiplicity; the SOC workflow
 computes singlet and triplet response roots internally.
 
