@@ -177,7 +177,24 @@ Enables incremental Fock builds where supported.
 | Default | `False` |
 | Used by | maximum-overlap method |
 
-Enables MOM occupation tracking for challenging electronic states.
+Enables MOM occupation tracking for challenging electronic states. In every
+iteration, after the new Fock matrix is diagonalised, MOM occupies the orbitals
+with the largest overlap with the previous orbitals instead of the lowest ones.
+The first reference is the guess orbitals, so a non-aufbau guess (for example
+one prepared with [`swapmo`](guess.md#swapmo)) is kept from the first
+iteration, as long as MOM is already active there (see `mom_switch`):
+
+```ini
+[scf]
+mom=true
+mom_switch=100
+```
+
+MOM cannot be combined with TRAH. TRAH minimises the energy and never
+rediagonalises the Fock matrix, so it would leave the targeted state.
+`converger_type=trah` or `init_converger=trah` together with `mom=true` is an
+input error. The escalation ladder, the `stability` pass and `converger_type=ml`
+never use TRAH for a MOM calculation.
 
 ### `mom_switch`
 
@@ -187,7 +204,9 @@ Enables MOM occupation tracking for challenging electronic states.
 | Default | `0.003` |
 | Used by | MOM activation heuristic |
 
-Threshold controlling when MOM behavior is activated.
+MOM becomes active once the DIIS error drops below this value. Before that,
+each iteration fills the lowest orbitals. To keep a non-aufbau guess, set it above
+the first DIIS error, for example `mom_switch=100`.
 
 ### `pfon`
 
@@ -241,6 +260,9 @@ Controls the smearing width/count used by the pFON method.
 Selects the main SCF convergence strategy. `auto` and `ml` are Python-side
 manager modes that choose a concrete native converger before dispatch.
 
+`trah` is rejected together with `mom=true` or `rstctmo=true`. When `ml`
+would choose TRAH for such a calculation, DIIS is used instead.
+
 ### `init_converger`
 
 | Field | Value |
@@ -250,7 +272,9 @@ manager modes that choose a concrete native converger before dispatch.
 | Values | empty, `none`, `diis`, `soscf`, `trah`, `auto`, `ml` |
 | Used by | initial SCF phase |
 
-Overrides the converger used during an optional initial SCF stage.
+Overrides the converger used during an optional initial SCF stage. As with
+`converger_type`, `trah` is rejected together with `mom=true` or
+`rstctmo=true`.
 
 ### `alternative_scf`
 
@@ -272,7 +296,9 @@ Fallback converger after repeated SCF difficulty.
 | Values | `diis`, `soscf`, `trah` stages |
 | Used by | custom fallback ladder |
 
-Overrides the default escalation ladder. Example:
+Overrides the default escalation ladder. With `mom=true` or `rstctmo=true`
+the TRAH stage is dropped from any ladder, because TRAH cannot keep the
+selected occupation. Example:
 
 ```ini
 [scf]
@@ -365,7 +391,13 @@ See [Orbital and Vibrational Output](../workflows/orbital-vibrational-output.md)
 | Used by | MO ordering |
 
 Restricts molecular-orbital ordering in workflows that need stable state or
-orbital labels.
+orbital labels. The occupation chosen in the guess (for example with
+[`swapmo`](guess.md#swapmo)) is kept through the iterations. This is the
+delta-CHP core-hole route.
+
+Like `mom`, `rstctmo` cannot be combined with TRAH (`converger_type=trah` or
+`init_converger=trah` is an input error), and TRAH is never used for
+escalation or stability.
 
 ### `scal_rel`
 
@@ -435,7 +467,8 @@ reproduce earlier results and for comparison.
 | Default | `False` |
 | Used by | SCF stability analysis |
 
-Requests stability analysis where wired.
+Requests stability analysis where wired. The analysis uses TRAH and is
+skipped for `mom=true` and `rstctmo=true` calculations.
 
 ### `soscf_lvl_shift`
 
