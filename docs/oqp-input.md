@@ -504,7 +504,7 @@ State labels always describe the physical target:
 | HF/DFT `S0` | Ground-state SCF surface | State index 0 |
 | Conventional TDDFT/TDHF `S0` | Ground-state DFT/HF surface for a state-specific derivative driver | State index 0 |
 | Conventional TDDFT/TDHF `Sn`, `n >= 1` | Singlet excited state `n` | Response root `n` |
-| Conventional TDDFT/TDHF `Tn` | Not available: closed-shell RPA/TDA computes singlet states only | Rejected by the parser; use `mrsf(...)` or `sf(...)` for triplet states |
+| Conventional TDDFT/TDHF `T0` with `energy()` | Closed-shell triplet manifold (RHF/RKS reference, energies only) | `[tdhf] multiplicity=3`, response roots from 1; any other conventional `Tn` target (gradients, optimizations, dynamics) is rejected; use `mrsf(...)` or `sf(...)` |
 | SF family `root=N` | Response root whose spin character is assigned after diagonalization | Response root `N` |
 | All-electron MRSF `Sn`, `Tn`, or `Qn`, `n >= 0` | State `n` within the selected singlet, triplet, or quintet manifold | Response root `n + 1`, target multiplicity 1, 3, or 5 |
 
@@ -527,8 +527,10 @@ omitted NAMD state defaults to `S1`. Do not write the internal `active` or
 SF-family state character cannot be assigned safely before diagonalization, so
 SF-TDDFT and SF-TDHF state-specific drivers require `root=N`
 instead of an `S` or `T` label.
-Conventional TD calculations (closed-shell RPA/TDA) accept only `S` labels and
-reject `T` and `Q` labels; use an MRSF or SF route for triplet states.
+Conventional TD calculations (closed-shell RPA/TDA) accept `S` labels and, for
+the closed-shell triplet manifold, `T0` with `energy()`; every other `T` target
+and all `Q` labels are rejected. Use an MRSF or SF route for those triplet
+workflows.
 
 The following bookkeeping keys are reserved and cannot contradict the route or
 physical state syntax:
