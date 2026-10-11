@@ -336,9 +336,12 @@ geometries and retains the `grad_*` controls above.
 | `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the root-ordering warning. |
 | `grad_ranks_per_group` | `0` | MPI ranks assigned to one displaced energy; zero selects the automatic distribution. |
 
-Select NEVPT2 through `[input] method=nevpt2`, or `method=sc-nevpt2` for
-strongly contracted NEVPT2. The Python `job.nevpt2(...)` convenience helper
-selects these methods; `contraction="strong"` selects `sc-nevpt2`. The older
+For a molecular input, use `[input] method=nevpt2` with `[pt2] h0=dyall`
+and `contraction=uncontracted`, or `method=sc-nevpt2` with `h0=dyall` and
+`contraction=strong`. Specify these PT2 controls explicitly: the method name
+alone does not override the current input defaults. The Python
+`job.nevpt2(...)` convenience helper writes the matching method and PT2
+controls; `contraction="strong"` selects `sc-nevpt2`. The older
 `method=caspt2` with `[pt2] h0=dyall` remains supported; add
 `contraction=strong` to that spelling for strongly contracted NEVPT2. The
 QDPT family (`mrmp2`, `mcqdpt2`, and `xmcqdpt2`) uses the diagonal-Fock direct
