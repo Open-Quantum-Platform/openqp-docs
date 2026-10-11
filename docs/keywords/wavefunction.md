@@ -28,6 +28,7 @@ The method selects which sections are read:
 | `casci` | `[cas]`, `[ci]` | `[state_average]` |
 | `casscf`, `sa-casscf` | `[cas]`, `[ci]`, `[casscf]` | `[state_average]` |
 | `caspt2`, `ms-caspt2`, `xms-caspt2` | `[cas]`, `[ci]`, `[pt2]` | `[casscf]`, `[state_average]` |
+| `nevpt2`, `sc-nevpt2` | `[cas]`, `[ci]`, `[pt2]` | `[casscf]`, `[state_average]` |
 | `mrmp2`, `mcqdpt2`, `xmcqdpt2` | `[cas]`, `[ci]`, `[pt2]` | `[casscf]`, `[state_average]` |
 
 ## Minimal inputs
