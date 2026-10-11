@@ -528,9 +528,9 @@ SF-family state character cannot be assigned safely before diagonalization, so
 SF-TDDFT and SF-TDHF state-specific drivers require `root=N`
 instead of an `S` or `T` label.
 Conventional TD calculations (closed-shell RPA/TDA) accept `S` labels and, for
-the closed-shell triplet manifold, `T0` with `energy()`; every other `T` target
-and all `Q` labels are rejected. Use an MRSF or SF route for those triplet
-workflows.
+the closed-shell triplet manifold, `Tn` with `energy()`, `grad()` and `opt()`;
+other `T` targets (Hessians, NACs, dynamics) and all `Q` labels are rejected.
+Use an MRSF or SF route for those triplet workflows.
 
 The following bookkeeping keys are reserved and cannot contradict the route or
 physical state syntax:
