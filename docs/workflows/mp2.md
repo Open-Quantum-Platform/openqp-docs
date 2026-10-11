@@ -12,7 +12,7 @@ The available workflows depend on the HF reference:
   OpenQP does not apply the restricted formula to an open-shell reference.
 - Leave `[input] functional` empty. MP2 on Kohn-Sham references is rejected.
 - Use `[scf] type=rhf`, `uhf`, or `rohf` for the reference.
-- Use `[mp2]` only when selecting a spin-scaled variant or custom scale factors.
+- Use `[mp2]` when selecting spin scaling or an energy transformation.
 
 ## Energy
 
@@ -89,6 +89,35 @@ For the H2O / 6-31G example, the validated installed-package run reports:
 | `E(MP2, correlation)` | `-0.1278307451` |
 | `E(MP2, total)` | `-76.1121207760` |
 
+## Energy Transformation
+
+The default `transform=auto` chooses direct Coulomb builds for small bases and
+packed AO-to-MO transformations above 120 basis functions or when the pair-build
+count exceeds its guard. To request the packed form on a small molecule:
+
+```text
+mp2(reference=uhf)/6-31g mp2(transform=n5) scf(conv=1e-10)
+geom="../geometries/H2O-0381125c86f2.xyz"
+```
+
+```python
+job.theory.mp2(reference="uhf", basis="6-31g", conv=1e-10)
+job.settings.mp2(transform="n5")
+```
+
+In legacy input, add `[mp2] transform=n5`. Explicit `n5` can fall back from full
+to occupied-virtual storage, but stops if neither packed form succeeds. Explicit
+`direct` retains `OQP_MP2_MAX_JBUILDS` and stops when its count is exceeded.
+Automatic selection retains the guarded direct fallback after packed failure.
+See [`transform`](../keywords/mp2.md#transform) for the complete selection and
+memory behavior. The setting does not select the analytic-gradient assembly.
+
+The small UHF H2O/6-31G input is
+[`examples/MP2/h2o_ump2_n5_6-31g.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/ffba5cfd2df091f0b110f9c0d04ce62009c25355/examples/MP2/h2o_ump2_n5_6-31g.inp).
+Its geometry, reference, SCF settings and committed energy reference are shared
+with the conventional example above; the new selector's installed-package
+execution remains pending in [engine PR #489](https://github.com/Open-Quantum-Platform/openqp/pull/489).
+
 ## Analytic RHF Gradient
 
 The RHF derivative is evaluated from a stationary MP2 Lagrangian. It includes
@@ -163,10 +192,11 @@ OpenQP assembles the MP2 energy in spin-blocked form on semicanonicalized
 orbitals. ROHF references are semicanonicalized before the correlation step so
 the denominator expression is well defined.
 
-The energy implementation uses direct per-occupied-MO-pair Coulomb builds
-through the existing two-electron driver. A guard limits the number of pair builds; if a job aborts
-with `OQP_MP2_MAX_JBUILDS`, reduce the basis/problem size or raise that guard
-only after checking the expected runtime and memory cost.
+The energy calculation uses direct Coulomb builds or packed AO-to-MO
+transformations according to `transform`. A guard limits direct pair builds;
+packed transformations check available memory and allocation status. If a job
+stops at the direct-build guard, use `auto` or `n5`, reduce the basis/problem
+size, or raise the guard only after checking runtime and memory requirements.
 
 The first analytic-gradient implementation forms dense AO and MO four-index
 quantities and therefore has fourth-power memory growth. It stops above 60
