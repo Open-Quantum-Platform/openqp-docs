@@ -69,9 +69,7 @@ has no Coulomb term and uses the `f_aa - f_ab` exchange-correlation kernel;
 oscillator strengths are zero. Energies, analytic gradients and geometry
 optimizations are available (`runtype=energy`, `grad`, `optimize`).
 Triplet Hessians, NACs, crossings and open-shell references are rejected by
-the input checker, and so are triplet gradients with meta-GGA functionals;
-meta-GGA triplet energies are available. Use MRSF-TDDFT for the other
-triplet workflows.
+the input checker. Use MRSF-TDDFT for those triplet workflows.
 
 `.oqp` (`T0` is the lowest triplet; `nstate` triplet roots are solved):
 

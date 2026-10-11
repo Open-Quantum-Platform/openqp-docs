@@ -129,8 +129,8 @@ reference, `multiplicity=1` gives singlet and `multiplicity=3` triplet
 excitation energies (triplet: no Coulomb term, `f_aa - f_ab` kernel, zero
 oscillator strengths). Triplet energies, gradients and geometry
 optimizations are available; the input checker rejects `multiplicity=3` with
-Hessians, NACs, crossings, an open-shell reference, or a gradient with a
-meta-GGA functional, and any other value. For those triplet workflows use
+Hessians, NACs, crossings, an open-shell reference, and any other value. For
+those triplet workflows use
 `type=mrsf` (ROHF) or `type=umrsf` (UHF) with a triplet reference and set
 `[tdhf] multiplicity=3` as well: the reference multiplicity does not select
 the response multiplicity, which defaults to `1`.
