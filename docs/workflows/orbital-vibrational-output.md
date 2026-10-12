@@ -7,6 +7,15 @@ These files can be opened together in
 calculation can display both MO surfaces and animated normal modes. Files are
 processed locally by the browser.
 
+!!! note "Orbitals during a dynamics run"
+
+    The SCF also writes a molecular-orbital table to the **log** after every
+    call, which for [`runtype = md`](../keywords/input.md#runtype) or `namd`
+    means once per step of the trajectory.  Those run types therefore default
+    [`[scf] verbose`](../keywords/scf.md#verbose) to `0`, which suppresses that
+    table; set `verbose = 2` to get it back.  The machine-readable orbitals
+    described on this page are unaffected.
+
 ## Portable JSON
 
 Set [`[guess] save_mol=True`](../keywords/guess.md#save_mol) to retain the full
