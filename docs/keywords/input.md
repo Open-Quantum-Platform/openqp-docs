@@ -352,3 +352,38 @@ Opt-in performance preset that bundles the performance input keys into one
 accuracy↔speed dial: `0` strict reference, `1` recommended production (exact),
 `2` faster (tiny degradation), `3` aggressive (small degradation allowed).
 Explicit performance input keys override the preset. `perf=-1` disables the preset.
+
+### `verbose`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `1` |
+| Values | `0`, `1`, `2`, `3` |
+| Used by | the text log of the whole run (Python driver and native solvers) |
+
+Sets how much detail the log carries:
+
+| Level | Log contains |
+| --- | --- |
+| `0` | quiet: section headings, the calculation request, converged results, final energies, gradients and properties, and warnings |
+| `1` | normal: adds the SCF, TRAH, Davidson, Z-vector, GMRES and CC iteration tables, one convergence summary per CPHF solve, orbital energies, SCF energy components and DFT grid statistics |
+| `2` | detailed: adds MO coefficients, the primitive-by-primitive basis listing and solver diagnostics such as per-right-hand-side CPHF residuals and DFT XC integration timings |
+| `3` | debug: adds developer output (PCM, spin-orbit, scalar-relativistic and MRSF debug dumps) |
+
+The older spelling [`[scf] verbose`](scf.md#verbose) is still read. When both are
+given, the one that differs from the default `1` wins, `[input]` first.
+`[dftb] print_level` left at its default follows the same level, and
+`runtype = md` or `namd` runs at level `0` unless a level above `1` is requested.
+At every level, the LibXC header, the DFT grid description and each functional's
+references are written once per log file.
+
+Example:
+
+```ini
+[input]
+verbose=2
+```
+
+In `.oqp` input the level is a top-level option (`rks/pbe/6-31g verbose=0`); from
+the Python API it is `job.control(verbose=0)`.
