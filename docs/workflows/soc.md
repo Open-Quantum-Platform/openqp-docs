@@ -69,6 +69,58 @@ Runnable `.oqp` inputs:
 
 Each has a same-stem legacy `.inp` companion.
 
+## SOC as a Step of a Properties or Data Run
+
+`runtype=soc` computes energies and couplings only. A driver that needs both
+spin ladders with their gradients and couplings at every step (for example a
+surface-hopping driver feeding on exported files) can instead add
+[`[properties] soc=true`](../keywords/properties.md#soc) to `runtype=prop` or
+`runtype=data`. One SCF then feeds both ladders, each ladder publishes its own
+energies and the gradients named by
+[`grad_s` / `grad_t`](../keywords/properties.md#grad_s-grad_t), and the run
+finishes with the singlet-triplet couplings:
+
+```ini
+[input]
+runtype=prop
+method=tdhf
+functional=bhhlyp
+basis=6-31G*
+ispher=false
+
+[scf]
+type=rohf
+multiplicity=3
+
+[tdhf]
+type=mrsf
+nstate=2
+
+[properties]
+soc=true
+nac=nacme
+export=true
+grad_s=2
+grad_t=2
+```
+
+```text
+mrsf/bhhlyp/6-31g* ispher=false prop(S1)
+properties(soc=true,nac=nacme,export=true,grad_t=2)
+geom="h2o.xyz"
+```
+
+With `export=true` this writes `energies_s`, `energies_t`, `grad_s_2`,
+`grad_t_2`, `nacme_s`/`dcme_s` and `nacme_t`/`dcme_t` (from the second step on,
+each against that ladder's own previous step) and the coupling table `socme`;
+see [`export`](../keywords/properties.md#export) for the file layout. The SOC
+quantities themselves are the same as in `runtype=soc`.
+
+Runnable example:
+[`examples/SOC/H2O_BHHLYP_MRSF_PROP_SOC.inp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/SOC/H2O_BHHLYP_MRSF_PROP_SOC.inp)
+(and `.oqp`). Tight-binding SOC (`method=dftb`/`xtb`) is available through
+`runtype=soc` only.
+
 ## SOC Terms
 
 `[input] soc_2e` controls the SOC Hamiltonian. The current MRSF-SOC driver forms
