@@ -18,8 +18,7 @@ import numpy as np
 import torch
 
 from .data import FockDataset
-from .model import DeltaFockModel, extract_blocks
-from .basis import BasisLayout
+from .model import DeltaFockModel
 
 
 def block_loss(model: DeltaFockModel, item) -> torch.Tensor:
@@ -90,7 +89,6 @@ def main(argv=None):
     ap.add_argument("--hidden", type=int, default=128)
     ap.add_argument("--cutoff", type=float, default=10.0)
     ap.add_argument("--env-cutoff", type=float, default=8.0)
-    ap.add_argument("--p-order", default="yzx", choices=["yzx", "xyz"])
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--backbone", default=None,
                     help="fairchem checkpoint name, e.g. esen-sm-direct-all-omol; "
@@ -102,20 +100,25 @@ def main(argv=None):
     args = ap.parse_args(argv)
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
-    ds = FockDataset.from_dir(args.data, args.cutoff, p_order=args.p_order)
-    val = FockDataset.from_dir(args.val, args.cutoff, p_order=args.p_order) if args.val else None
+    from .extract import FockRecord
+    from pathlib import Path
+    first = FockRecord.load(sorted(Path(args.data).glob("*.npz"))[0])
+    shells, n_channels = first.shells, first.F_ref.shape[0]
+    nmax = max(sum((l + 1) * (l + 2) // 2 for l, _ in s) for s in shells.values())
+    ds = FockDataset.from_dir(args.data, args.cutoff, nmax)
+    val = FockDataset.from_dir(args.val, args.cutoff, nmax) if args.val else None
     max_z = int(max(int(r.atomic_numbers.max()) for r in ds.records))
     if args.backbone:
         from .esen_backbone import ESENBackbone
         from .esen_model import ESENDeltaFockModel
         bb = ESENBackbone(args.backbone, charge=args.charge, spin=args.spin,
                           trainable_blocks=args.trainable_blocks)
-        model = ESENDeltaFockModel(bb, max_z=max(max_z, 10), hidden=args.hidden,
-                                   cutoff=args.cutoff, env_cutoff=args.env_cutoff,
-                                   p_order=args.p_order)
+        model = ESENDeltaFockModel(bb, shells=shells, n_channels=n_channels,
+                                   max_z=max(max_z, 10), hidden=args.hidden,
+                                   cutoff=args.cutoff, env_cutoff=args.env_cutoff)
     else:
-        model = DeltaFockModel(max_z=max(max_z, 10), hidden=args.hidden, cutoff=args.cutoff,
-                               env_cutoff=args.env_cutoff, p_order=args.p_order)
+        model = DeltaFockModel(shells=shells, n_channels=n_channels, max_z=max(max_z, 10),
+                               hidden=args.hidden, cutoff=args.cutoff, env_cutoff=args.env_cutoff)
     train(model, ds, val, epochs=args.epochs, lr=args.lr)
     model.save(args.out, extra={"n_train": len(ds)})
     print(f"saved {args.out}")

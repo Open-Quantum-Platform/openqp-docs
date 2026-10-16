@@ -1,15 +1,19 @@
-"""Turn converged orbitals into AO Fock matrices, and project between bases.
+"""Converged OpenQP data -> training records; reference-file writer for openqp-dftb.
 
-The Fock matrix is reconstructed from canonical orbitals, which is exact at
-convergence and needs nothing beyond what both OpenQP and openqp-dftb
-already export::
+Record contents (all in the Gaussian AO basis OpenQP uses, Cartesian layout):
 
-    F = S C diag(eps) C^T S            (C orthonormal under S: C^T S C = 1)
+* ``F_ref``  : (3, nao, nao)  [F_eff, F_alpha, F_beta]
+    - F_eff   = S C diag(eps) C^T S, the ROKS effective Fock whose generalized
+                eigenvectors are the canonical orbitals (OQP::VEC_MO_A/E_MO_A)
+    - F_alpha, F_beta = OQP::FOCK_A / OQP::FOCK_B, what the MRSF-TDDFTB
+                response consumes as hamiltonian_alpha/beta
+* ``F_base`` : (nao, nao) Hcore (OQP::Hcore).  ΔF = F_ref - Hcore is the
+               two-electron part, which is what the model learns.
+* ``S``      : overlap (OQP::SM)
 
-For a ROKS/ROHF reference, OpenQP stores the effective (Guest-Saunders /
-Roothaan) Fock eigenpairs in ``OQP::VEC_MO_A`` / ``OQP::E_MO_A``; that
-effective operator is exactly what a downstream MRSF response needs, so it
-is the learning target.
+The openqp-dftb "simple-MRSF" loader (OPENQP_DFTB_SIMPLE_MRSF_REF) takes
+exactly S, C, eps, occupations, AO->atom/l maps and F_alpha/F_beta, so a
+predicted record turns into an MRSF-TDDFTB reference with no projection.
 """
 
 from __future__ import annotations
@@ -17,189 +21,170 @@ from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
 
+from .basis import BasisLayout, shells_from_openqp
+
+CHANNELS = ("F_eff", "F_alpha", "F_beta")
+
 
 # --------------------------------------------------------------------- generic
 def fock_from_orbitals(C: np.ndarray, eps: np.ndarray, S: np.ndarray) -> np.ndarray:
     """AO Fock matrix from S-orthonormal MO coefficients (columns) and energies."""
-    C = np.asarray(C, dtype=float)
-    S = np.asarray(S, dtype=float)
-    SC = S @ C
-    F = SC @ (np.asarray(eps, dtype=float)[:, None] * SC.T)
+    SC = np.asarray(S, float) @ np.asarray(C, float)
+    F = SC @ (np.asarray(eps, float)[:, None] * SC.T)
     return 0.5 * (F + F.T)
 
 
 def overlap_from_complete_orbitals(C: np.ndarray) -> np.ndarray:
-    """S = (C C^T)^-1 when C is a complete S-orthonormal set (square)."""
-    C = np.asarray(C, dtype=float)
+    """S = (C C^T)^-1 for a complete S-orthonormal MO set (square C)."""
+    C = np.asarray(C, float)
     if C.shape[0] != C.shape[1]:
         raise ValueError("overlap recovery needs a complete (square) MO set")
     S = np.linalg.inv(C @ C.T)
     return 0.5 * (S + S.T)
 
 
-def unpack_triangular(packed: np.ndarray, n: int) -> np.ndarray:
+def unpack_triangular(packed, n: int) -> np.ndarray:
     """Lower-triangular row-major packed storage -> full symmetric matrix."""
-    packed = np.asarray(packed, dtype=float).ravel()
     M = np.zeros((n, n))
     idx = np.tril_indices(n)
-    M[idx] = packed[: idx[0].size]
+    M[idx] = np.asarray(packed, float).ravel()[: idx[0].size]
     return M + np.tril(M, -1).T
 
 
-# -------------------------------------------------------------------- records
+# --------------------------------------------------------------------- records
 @dataclass
 class FockRecord:
-    """One training geometry.  Matrices are square numpy arrays."""
-
     atomic_numbers: np.ndarray       # (natom,)
     coords_bohr: np.ndarray          # (natom, 3)
-    F_ref: np.ndarray                # target Fock matrix in the model basis
-    S: np.ndarray                    # overlap in the model basis
-    F_base: np.ndarray | None = None # e.g. DFTB Hamiltonian (delta learning)
-    n_occ_alpha: int = 0
-    n_occ_beta: int = 0
+    F_ref: np.ndarray                # (C, nao, nao)
+    S: np.ndarray                    # (nao, nao)
+    F_base: np.ndarray | None        # (nao, nao) or None
+    n_occ_alpha: int
+    n_occ_beta: int
+    shells: dict                     # {Z: [(l, kind), ...]}
     tag: str = ""
+    eps: np.ndarray | None = None    # reference orbital energies (diagnostics)
 
     def delta(self) -> np.ndarray:
-        return self.F_ref if self.F_base is None else self.F_ref - self.F_base
+        if self.F_base is None:
+            return self.F_ref
+        return self.F_ref - self.F_base[None]
+
+    def layout(self) -> BasisLayout:
+        return BasisLayout(self.atomic_numbers, shells=self.shells)
 
     def save(self, path):
+        import json
         np.savez_compressed(
             path, atomic_numbers=self.atomic_numbers, coords_bohr=self.coords_bohr,
             F_ref=self.F_ref, S=self.S,
             F_base=np.zeros(0) if self.F_base is None else self.F_base,
-            n_occ_alpha=self.n_occ_alpha, n_occ_beta=self.n_occ_beta, tag=self.tag)
+            n_occ_alpha=self.n_occ_alpha, n_occ_beta=self.n_occ_beta,
+            shells=json.dumps({int(z): list(v) for z, v in self.shells.items()}), tag=self.tag,
+            eps=np.zeros(0) if self.eps is None else self.eps)
 
     @classmethod
     def load(cls, path) -> "FockRecord":
+        import json
         d = np.load(path, allow_pickle=False)
         F_base = d["F_base"]
-        return cls(
-            atomic_numbers=d["atomic_numbers"], coords_bohr=d["coords_bohr"],
-            F_ref=d["F_ref"], S=d["S"], F_base=None if F_base.size == 0 else F_base,
-            n_occ_alpha=int(d["n_occ_alpha"]), n_occ_beta=int(d["n_occ_beta"]),
-            tag=str(d["tag"]))
+        eps = d["eps"]
+        shells = {int(z): [tuple(x) for x in v] for z, v in json.loads(str(d["shells"])).items()}
+        return cls(d["atomic_numbers"], d["coords_bohr"], d["F_ref"], d["S"],
+                   None if F_base.size == 0 else F_base, int(d["n_occ_alpha"]),
+                   int(d["n_occ_beta"]), shells, str(d["tag"]), None if eps.size == 0 else eps)
 
 
-# -------------------------------------------------------------------- OpenQP
-def fock_from_openqp(mol) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """(F, S, C, eps) in the Gaussian AO basis from a converged OpenQP molecule.
+# ---------------------------------------------------------------------- OpenQP
+def mo_columns(mol, S: np.ndarray | None = None) -> np.ndarray:
+    """OQP::VEC_MO_A as (nao, nmo) with one MO per column.
 
-    Reads ``OQP::VEC_MO_A``, ``OQP::E_MO_A`` and ``OQP::SM``.  Works after
-    ``SinglePoint(mol).energy()`` or any run that leaves converged MOs.
+    OpenQP stores the array MO-major (shape (nmo, nao)); the layout is
+    verified against the overlap rather than assumed.
     """
-    data = mol.data
-    eps = np.asarray(data["OQP::E_MO_A"], dtype=float).ravel()
-    n = eps.size
-    C = np.asarray(data["OQP::VEC_MO_A"], dtype=float)
-    # OpenQP keeps MO coefficients Fortran-style: reshape to (nao, nmo) with
-    # one MO per column.  Validate against the overlap instead of trusting
-    # the reshape order.
-    S = _square_overlap(mol, n)
-    C = _coerce_mo_columns(C, S, n)
-    F = fock_from_orbitals(C, eps, S)
-    return F, S, C, eps
+    C = np.asarray(mol.data["OQP::VEC_MO_A"], float)
+    n = C.shape[0]
+    S = square_overlap(mol, n) if S is None else S
+    for M in (C.T, C):
+        if np.abs(M.T @ S @ M - np.eye(n)).max() < 1e-5:
+            return M.copy()
+    raise ValueError("OQP::VEC_MO_A is not S-orthonormal in either layout")
 
 
-def _square_overlap(mol, n: int) -> np.ndarray:
-    getter = getattr(mol, "get_overlap", None)
-    if callable(getter):
-        S = getter()
-        if S is not None:
-            S = np.asarray(S, dtype=float)
-            if S.shape == (n, n):
-                return S
+def square_overlap(mol, n: int) -> np.ndarray:
     return unpack_triangular(mol.data["OQP::SM"], n)
 
 
-def _coerce_mo_columns(C: np.ndarray, S: np.ndarray, n: int) -> np.ndarray:
-    """Return C with MOs as columns, picking the memory order that is S-orthonormal."""
-    flat = np.asarray(C, dtype=float).ravel()
-    best, best_err = None, np.inf
-    for order in ("F", "C"):
-        for transpose in (False, True):
-            M = flat[: n * n].reshape((n, n), order=order)
-            if transpose:
-                M = M.T
-            err = np.abs(M.T @ S @ M - np.eye(n)).max()
-            if err < best_err:
-                best, best_err = M, err
-    if best_err > 1e-4:
-        raise ValueError(f"could not identify an S-orthonormal MO layout (err={best_err:.2e})")
-    return best
+def record_from_openqp(mol, tag: str = "", shells: dict | None = None) -> FockRecord:
+    """Build a record from a converged ROHF/ROKS OpenQP molecule."""
+    d = mol.data
+    eps = np.asarray(d["OQP::E_MO_A"], float).ravel()
+    n = eps.size
+    S = square_overlap(mol, n)
+    C = mo_columns(mol, S)
+    F_eff = fock_from_orbitals(C, eps, S)
+    Fa = unpack_triangular(d["OQP::FOCK_A"], n)
+    Fb = unpack_triangular(d["OQP::FOCK_B"], n)
+    H = unpack_triangular(d["OQP::Hcore"], n)
+    Z = np.asarray(mol.get_atoms(), int).ravel()
+    pos = np.asarray(mol.get_system(), float).reshape(-1, 3)
+    na = int(np.asarray(d["nelec_A"]).ravel()[0])
+    nb = int(np.asarray(d["nelec_B"]).ravel()[0])
+    shells = shells or shells_from_openqp(mol)
+    rec = FockRecord(Z, pos, np.stack([F_eff, Fa, Fb]), S, H, na, nb, shells, tag, eps)
+    if rec.layout().nao != n:
+        raise ValueError("shell table does not reproduce OpenQP's AO count")
+    return rec
 
 
-def record_from_openqp(mol, tag: str = "") -> FockRecord:
-    """Gaussian-basis record (no projection, no base).  Use ``project_record``
-    to move it into the DFTB basis and attach a DFTB base Hamiltonian."""
-    F, S, _, _ = fock_from_openqp(mol)
-    coords = np.asarray(mol.get_system(), dtype=float).reshape(-1, 3)
-    Z = np.asarray(mol.get_atoms(), dtype=int).ravel()
-    nocc_a = int(mol.data.get("nelec_A", 0) or 0)
-    nocc_b = int(mol.data.get("nelec_B", 0) or 0)
-    return FockRecord(Z, coords, F, S, None, nocc_a, nocc_b, tag)
-
-
-# ------------------------------------------------------------------- openqp-dftb
+# ------------------------------------------------------------------ openqp-dftb
 def hamiltonian_from_dftb_result(result) -> tuple[np.ndarray, np.ndarray]:
-    """(H_tb, S_tb) from an openqp-dftb ``_StateResult`` / adapter export.
-
-    ``result.mo_coefficients`` is (nbf, nbf) with one MO per column and
-    ``result.mo_energies`` holds the converged reference eigenvalues
-    (high-spin ROKS reference for sf/mrsf types).  The overlap follows from
-    completeness, S = (C C^T)^-1, exactly as the adapter's symmetry labeler
-    does.
-    """
-    C = np.asarray(result.mo_coefficients, dtype=float)
-    eps = np.asarray(result.mo_energies, dtype=float).ravel()
+    """(H_tb, S_tb) from an openqp-dftb adapter result (complete MO set)."""
+    C = np.asarray(result.mo_coefficients, float)
+    eps = np.asarray(result.mo_energies, float).ravel()
     S = overlap_from_complete_orbitals(C)
-    H = fock_from_orbitals(C, eps, S)
-    return H, S
+    return fock_from_orbitals(C, eps, S), S
 
 
-# ---------------------------------------------------------------- projection
-def project_fock(F_big: np.ndarray, S_big: np.ndarray, S_cross: np.ndarray
-                 ) -> tuple[np.ndarray, np.ndarray]:
-    """Project a Fock matrix from a large basis onto a small basis.
+def write_simple_mrsf_reference(path, S, C, eps, Fa, Fb, layout: BasisLayout,
+                                n_alpha: int, n_beta: int):
+    """Write the binary that openqp-dftb reads from OPENQP_DFTB_SIMPLE_MRSF_REF.
 
-    ``S_cross[mu, a] = <chi_mu^big | phi_a^small>``.  Each small function is
-    least-squares expanded in the big basis, T = S_big^-1 S_cross, giving
-
-        F_small = T^T F_big T,     S_small = T^T S_big T
-
-    With the DFTB minimal basis as the small basis this is the delta-learning
-    target basis.  ``S_cross`` must come from the integral code that knows
-    both basis sets (OpenQP can evaluate Gaussian-Gaussian overlaps; for the
-    numerical SK orbitals fit each to a few Gaussians first).
+    Format (little-endian stream, Fortran column-major matrices), identical to
+    openqp-dftb/tools/simple_mrsf/extract_ref.py: int64 nbf,nmo,natoms,nsites;
+    S; C_alpha; C_beta; eps_alpha; eps_beta; occ_alpha; occ_beta;
+    int64 ao_atom; ao_l; ao_spin_site; spin_site_atom; F_alpha; F_beta.
+    alpha == beta == the ROKS canonical set (as DFTB MRSF fills them).
     """
-    T = np.linalg.solve(S_big, S_cross)
-    F_small = T.T @ F_big @ T
-    S_small = T.T @ S_big @ T
-    return 0.5 * (F_small + F_small.T), 0.5 * (S_small + S_small.T)
+    nbf = S.shape[0]
+    nmo = C.shape[1]
+    natoms = layout.natom
+    occ_a = np.zeros(nmo); occ_a[:n_alpha] = 1.0
+    occ_b = np.zeros(nmo); occ_b[:n_beta] = 1.0
+    ao_atom = layout.ao_atom()
+    with open(path, "wb") as fh:
+        np.array([nbf, nmo, natoms, natoms], dtype="<i8").tofile(fh)
+        for M in (S, C, C):
+            np.asarray(M, "<f8").ravel(order="F").tofile(fh)
+        for v in (eps, eps, occ_a, occ_b):
+            np.asarray(v, "<f8").tofile(fh)
+        ao_atom.astype("<i8").tofile(fh)
+        layout.ao_l().astype("<i8").tofile(fh)
+        ao_atom.astype("<i8").tofile(fh)
+        np.arange(1, natoms + 1, dtype="<i8").tofile(fh)
+        for M in (Fa, Fb):
+            np.asarray(M, "<f8").ravel(order="F").tofile(fh)
 
 
-def project_record(rec: FockRecord, S_cross: np.ndarray, F_base: np.ndarray | None = None,
-                   S_base: np.ndarray | None = None) -> FockRecord:
-    """Project a Gaussian-basis record into the DFTB basis and attach a base.
-
-    If ``S_base`` (the DFTB overlap) is given, the projected overlap is
-    replaced by it so the whole record lives in the true DFTB metric; the
-    projected Fock matrix is then re-expressed in that metric through a
-    symmetric transformation that maps the projected overlap onto S_base.
-    """
-    F_small, S_small = project_fock(rec.F_ref, rec.S, S_cross)
-    if S_base is not None:
-        # X maps S_small-orthonormal vectors to S_base-orthonormal vectors.
-        X = _lowdin_half(S_base) @ np.linalg.inv(_lowdin_half(S_small))
-        # F transforms covariantly: F' = X^-T F X^-1.
-        Xi = np.linalg.inv(X)
-        F_small = Xi.T @ F_small @ Xi
-        F_small = 0.5 * (F_small + F_small.T)
-        S_small = S_base
-    return FockRecord(rec.atomic_numbers, rec.coords_bohr, F_small, S_small, F_base,
-                      rec.n_occ_alpha, rec.n_occ_beta, rec.tag)
-
-
-def _lowdin_half(S: np.ndarray) -> np.ndarray:
-    w, V = np.linalg.eigh(S)
-    return (V * np.sqrt(np.clip(w, 1e-12, None))) @ V.T
+def read_simple_mrsf_reference(path) -> dict:
+    """Inverse of :func:`write_simple_mrsf_reference` (for tests)."""
+    with open(path, "rb") as fh:
+        nbf, nmo, natoms, nsites = np.fromfile(fh, "<i8", 4)
+        mat = lambda r, c: np.fromfile(fh, "<f8", r * c).reshape((r, c), order="F")
+        S, Ca, Cb = mat(nbf, nbf), mat(nbf, nmo), mat(nbf, nmo)
+        ea, eb, oa, ob = (np.fromfile(fh, "<f8", nmo) for _ in range(4))
+        ao_atom, ao_l, ao_site = (np.fromfile(fh, "<i8", nbf) for _ in range(3))
+        site_atom = np.fromfile(fh, "<i8", nsites)
+        Fa, Fb = mat(nbf, nbf), mat(nbf, nbf)
+    return dict(S=S, Ca=Ca, Cb=Cb, eps_a=ea, eps_b=eb, occ_a=oa, occ_b=ob, ao_atom=ao_atom,
+                ao_l=ao_l, ao_site=ao_site, site_atom=site_atom, Fa=Fa, Fb=Fb)

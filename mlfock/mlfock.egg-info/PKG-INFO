@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: mlfock
+Version: 0.1.0
+Summary: Learn Fock/KS matrices (or a delta over DFTB) from geometry for MRSF-TDDFT(B) orbitals
+Requires-Python: >=3.10
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: torch
+Provides-Extra: test
+Requires-Dist: pytest; extra == "test"

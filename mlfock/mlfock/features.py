@@ -46,15 +46,35 @@ def _perpendicular_fallback(z: torch.Tensor) -> torch.Tensor:
     return _safe_normalize(x)
 
 
-def _orthonormal_frame(z: torch.Tensor, a: torch.Tensor, tol: float = 1e-3) -> torch.Tensor:
-    """Rows (x, y, z) from a z direction and an auxiliary vector a."""
+def _orthonormal_frame(z: torch.Tensor, a: torch.Tensor, M: torch.Tensor | None = None,
+                       tol: float = 1e-3, return_degenerate: bool = False):
+    """Rows (x, y, z) from a z direction and an auxiliary vector a.
+
+    If a has no component perpendicular to z (e.g. a symmetric environment),
+    the x axis falls back to the principal axis of the perpendicular second
+    moment M (covariant), and only then to a fixed global axis.
+    """
     z = _safe_normalize(z)
     a_perp = a - (a * z).sum(-1, keepdim=True) * z
     norm = torch.sqrt((a_perp * a_perp).sum(-1, keepdim=True))
-    x = torch.where(norm > tol, a_perp / torch.clamp(norm, min=1e-12),
-                    _perpendicular_fallback(z))
+    x = a_perp / torch.clamp(norm, min=1e-12)
+    fallback = _perpendicular_fallback(z)
+    if M is not None:
+        Pz = torch.eye(3, device=z.device, dtype=z.dtype) - z.unsqueeze(-1) * z.unsqueeze(-2)
+        Mp = Pz @ M @ Pz
+        w, V = torch.linalg.eigh(Mp)
+        v = V[..., :, -1]                                   # principal perpendicular axis
+        # fix the sign covariantly with the third moment along v (falls back to +v)
+        v = v * torch.where((v * a).sum(-1, keepdim=True) < 0, -1.0, 1.0)
+        v = _safe_normalize(v - (v * z).sum(-1, keepdim=True) * z)
+        fallback = torch.where((w[..., -1] - w[..., -2]).unsqueeze(-1) > tol, v, fallback)
+    degenerate = (norm.squeeze(-1) <= tol)
+    if M is not None:
+        degenerate = degenerate & ((w[..., -1] - w[..., -2]) <= tol)
+    x = torch.where(norm > tol, x, fallback)
     y = torch.cross(z, x, dim=-1)
-    return torch.stack([x, y, z], dim=-2)          # (..., 3, 3)
+    frame = torch.stack([x, y, z], dim=-2)          # (..., 3, 3)
+    return (frame, degenerate) if return_degenerate else frame
 
 
 def build_pairs(pos: torch.Tensor, cutoff: float) -> tuple[torch.Tensor, torch.Tensor]:
@@ -66,9 +86,15 @@ def build_pairs(pos: torch.Tensor, cutoff: float) -> tuple[torch.Tensor, torch.T
     return ii[keep], jj[keep]
 
 
-def pair_frames(pos: torch.Tensor, ii: torch.Tensor, jj: torch.Tensor, rc: float
-                ) -> torch.Tensor:
-    """(P, 3, 3) rotation matrices, rows = frame axes in global coordinates."""
+def pair_frames(pos: torch.Tensor, ii: torch.Tensor, jj: torch.Tensor, rc: float,
+                return_degenerate: bool = False):
+    """(P, 3, 3) rotation matrices, rows = frame axes in global coordinates.
+
+    With ``return_degenerate`` also returns a bool mask of pairs whose
+    environment is axially symmetric about z (x axis arbitrary).  The true
+    block is then invariant to the x choice, so predictions of a trained
+    model are unaffected; only frame-covariance tests need the mask.
+    """
     n = pos.shape[0]
     rij = pos[jj] - pos[ii]                                    # (P, 3)
     # neighbour sums around both atoms, excluding the pair itself
@@ -84,6 +110,7 @@ def pair_frames(pos: torch.Tensor, ii: torch.Tensor, jj: torch.Tensor, rc: float
     uj = _safe_normalize(rel_j)
     a1 = (wi.unsqueeze(-1) * ui).sum(1) + (wj.unsqueeze(-1) * uj).sum(1)
     a2 = ((wi * di).unsqueeze(-1) * ui).sum(1) + ((wj * dj).unsqueeze(-1) * uj).sum(1)
+    M = torch.einsum("pn,pna,pnb->pab", wi, ui, ui) + torch.einsum("pn,pna,pnb->pab", wj, uj, uj)
 
     onsite = ii == jj
     z = torch.where(onsite.unsqueeze(-1), a1, rij)
@@ -95,7 +122,7 @@ def pair_frames(pos: torch.Tensor, ii: torch.Tensor, jj: torch.Tensor, rc: float
     ez = torch.tensor([0.0, 0.0, 1.0], device=pos.device, dtype=pos.dtype).expand_as(z)
     z = torch.where(z_norm > 1e-3, z, ez)
     a = torch.where(onsite.unsqueeze(-1), a2, a1)
-    return _orthonormal_frame(z, a)
+    return _orthonormal_frame(z, a, M, return_degenerate=return_degenerate)
 
 
 class PairFeaturizer:

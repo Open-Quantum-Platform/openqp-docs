@@ -1,118 +1,78 @@
-# mlfock — learned Fock matrices for MRSF-TDDFT(B) orbitals
+# mlfock — learned Fock matrices for MRSF-TDDFTB reference orbitals
 
-Goal: give MRSF-TDDFTB orbitals of real ROKS-DFT quality at DFTB cost.
-The model never outputs orbitals directly (they are not unique and jump at
-near-degeneracies).  It outputs the **Fock matrix**, which is smooth in
-geometry and built from atom-pair blocks; one generalized diagonalization
-then yields orthonormal MOs and orbital energies.
+Goal: give the MRSF-TDDFTB response reference orbitals of real ROKS-DFT
+quality without running the ROKS SCF.  The model never outputs orbitals
+(they are not unique and jump at near-degeneracies); it outputs **Fock
+matrices**, which are smooth in geometry and built from atom-pair blocks.
+One generalized diagonalization then gives orthonormal canonical orbitals.
 
-The recommended target is the **delta over DFTB** in the DFTB minimal basis:
+## How it plugs into openqp-dftb (no projection needed)
 
-    F_model = H_DFTB + ΔF_ML,    ΔF_ML ≈ F_ROKS(projected) − H_DFTB
+openqp-dftb already has the injection path, "simple-MRSF"
+(`tools/simple_mrsf`, env `OPENQP_DFTB_SIMPLE_MRSF_REF`): it overrides the DFTB
+ground state with an **all-electron** reference (S, C, ε, occupations,
+AO→atom/l maps and the AO Fock matrices F_α, F_β in the Gaussian basis) and
+keeps the DFTB γ kernel for the response.  So the ML target is exactly that
+reference, in OpenQP's own AO basis:
 
-Everything downstream (MRSF-TDDFTB response, gradients) keeps working on
-the same basis and the same code path.
+    F_eff   = S C ε Cᵀ S   (ROKS effective Fock; eigenvectors = canonical MOs)
+    F_alpha, F_beta        (OQP::FOCK_A / FOCK_B; the response's A-matrix diagonal)
+
+learned as a delta over the one-electron Hamiltonian, ΔF = F − Hcore, which
+OpenQP builds in milliseconds together with S.  `Orbitals.write_reference`
+writes the binary the loader reads.
+
+## Verified against real OpenQP (tests/test_openqp.py, examples/water_demo.py)
+
+* AO conventions measured from OpenQP overlaps of rotated molecules:
+  p = (x, y, z); Cartesian d = (xx, yy, zz, xy, xz, yz) with √3 on cross terms;
+  `OQP::VEC_MO_A` is MO-major.  Rotation matrices reproduce S and Hcore of a
+  rotated water to 1e-10.
+* ROKS-triplet BHHLYP/6-31G* water, 40 training / 10 held-out displaced
+  geometries, 200 epochs (2 min CPU):
+
+  | | ML ΔFock | Hcore guess |
+  |---|---|---|
+  | orbital-energy RMSE (eV) | 0.40 | 203 |
+  | closed / SOMO / virtual fidelity | 0.9999 / 0.998 / 0.9996 | 0.87 / 0.52 / 0.90 |
 
 ## Layout
 
 | file | what |
 |---|---|
-| `mlfock/basis.py`    | minimal s/p AO layout, block slicing, AO rotation matrices (`p_order="yzx"` = openqp-dftb convention) |
-| `mlfock/extract.py`  | Fock from converged MOs (`F = S C ε Cᵀ S`), OpenQP / openqp-dftb readers, big→small basis projection, `FockRecord` I/O |
-| `mlfock/features.py` | pair local frames + rotation-invariant environment features (torch) |
-| `mlfock/model.py`    | `DeltaFockModel`: predicts each pair block in its local frame, rotates back, symmetrizes over both pair orientations |
-| `mlfock/data.py`, `mlfock/train.py` | dataset and trainer (`python -m mlfock.train --data records/`) |
-| `mlfock/predict.py`  | assemble F, `eigh(F, S)`, ensemble uncertainty, optional true SCF residual |
-| `mlfock/esen_backbone.py` | wrapper around a pretrained Meta FAIR eSEN/UMA backbone (fairchem-core): l=0 scalars + l=1 vectors per atom, frozen or partially trainable, feature cache |
-| `mlfock/esen_model.py` | `ESENDeltaFockModel`: same frames/blocks, environment features from the backbone |
-| `mlfock/onthefly.py` | residual-gated active learning with background refits and a replay buffer |
-| `mlfock/oqp_bridge.py` | OpenQP oracle (ROKS SCF), DFTB base Hamiltonian, orbital injection into OpenQP |
-| `tests/`             | equivariance, permutation, round-trip, learning and on-the-fly tests (no OpenQP needed) |
+| `mlfock/basis.py`    | general Cartesian s/p/d layouts, `shells_from_openqp`, AO rotation matrices (reps of SO(3), not orthogonal for Cartesian d) |
+| `mlfock/extract.py`  | records from a converged OpenQP molecule; simple-MRSF reference writer/reader |
+| `mlfock/features.py` | pair local frames (covariant fallbacks), invariant features |
+| `mlfock/model.py`    | `DeltaFockModel`: multi-channel pair blocks in local frames, exact permutation symmetry |
+| `mlfock/esen_backbone.py`, `esen_model.py` | optional Meta FAIR eSEN/UMA backbone as feature extractor |
+| `mlfock/predict.py`  | assemble, `eigh(F_eff, S)`, ensemble uncertainty, subspace fidelities |
+| `mlfock/onthefly.py` | uncertainty-gated oracle calls with background refits |
+| `mlfock/oqp_bridge.py` | `OpenQPOracle` (ROKS in OpenQP), `run_mrsf_tddftb_with_reference` (needs openqp-dftb) |
+| `tests/` | synthetic equivariance/permutation/learning tests + real-OpenQP tests |
 
-## Quick start (synthetic check)
+## Use
 
-    pip install -e .[test]
-    pytest tests -q
-
-## Real data
-
-1. Generate records: for each geometry run the DFTB reference (base) and the
-   ROKS-DFT reference (target) in OpenQP; see `examples/generate_and_train.py`.
-2. Train: `python -m mlfock.train --data records/ --val val/ --out model.pt`.
-3. Predict:
+    pip install -e .[test] && pytest tests -q
+    python examples/water_demo.py 40 10 200                 # the table above
+    python examples/generate_and_train.py traj.xyz records/ --train
+    python -m mlfock.train --data records/ --backbone esen-sm-direct-all-omol --spin 3   # optional
 
 ```python
 from mlfock import DeltaFockModel, FockPredictor
-pred = FockPredictor([DeltaFockModel.load("model_seed0.pt"),
-                      DeltaFockModel.load("model_seed1.pt")])
-orb = pred.predict(Z, pos_bohr, S_tb, F_base=H_tb, n_occ_alpha=na, n_occ_beta=nb)
-orb.C, orb.eps, orb.uncertainty
+orb = FockPredictor([DeltaFockModel.load("model.pt")]).predict(Z, pos_bohr, S, Hcore, na, nb)
+orb.write_reference("ref.bin", layout, na, nb)      # -> OPENQP_DFTB_SIMPLE_MRSF_REF
 ```
 
-4. On the fly, inside an MD loop:
+## Open points
 
-```python
-from mlfock import OnTheFlyLearner
-from mlfock.oqp_bridge import OpenQPOracle
-learner = OnTheFlyLearner(models, OpenQPOracle(DFT_CONFIG), tol_uncertainty=2e-3)
-orb, used_oracle = learner.step(Z, pos, S_tb, H_tb, na, nb)
-```
-
-## Using Meta's pretrained eSEN backbone
-
-    pip install fairchem-core ase
-    huggingface-cli login          # eSEN / UMA checkpoints are gated
-    python -m mlfock.train --data records/ --backbone esen-sm-direct-all-omol --spin 3 --charge 0
-
-With the backbone frozen (default) its features are computed once per
-geometry and cached, so training costs the same as the small model.
-`--trainable-blocks N` unfreezes the last N backbone blocks for fine-tuning.
-`ESENBackbone` detects the checkpoint's l=1 component order empirically
-(`detect_l1_order`) by rotating a test molecule, so no convention has to be
-assumed.  OMol25 has no Fock matrices: the backbone brings chemistry, the
-labels still come from your ROKS runs, just far fewer of them.
-
-```python
-from mlfock.esen_backbone import ESENBackbone
-from mlfock.esen_model import ESENDeltaFockModel
-bb = ESENBackbone("esen-sm-direct-all-omol", charge=0, spin=3)
-model = ESENDeltaFockModel(bb, max_z=10)
-```
-
-## Two things that still need you
-
-**Projection (S_cross).**  Moving the DFT Fock matrix into the DFTB basis
-needs the overlap between the Gaussian AOs and the Slater-Koster orbitals.
-Fit each SK valence orbital to a few Gaussians once per element, evaluate the
-Gaussian-Gaussian overlap in OpenQP, and pass it as `S_cross` to
-`project_record`.  Until then you can skip projection and train in the
-Gaussian basis (`record_from_openqp`, `p_order="xyz"`, `F_base=None`); the
-`run_mrsf_with_orbitals` bridge then feeds the ML orbitals to OpenQP's own
-MRSF-TDDFT response, which is a complete path today.
-
-**Native orbital injection.**  The openqp-dftb C ABI only takes a warm-start
-MO file as an SCC *guess* and re-converges.  To run the MRSF-TDDFTB response
-on fixed ML orbitals a small "use these reference orbitals, skip SCC" entry
-point is needed on the native side.  `write_dftb_orbitals` writes them in a
-plain binary layout (`int64 nbf, noca, nocb; float64 eps[nbf]; float64
-C[nbf*nbf] column-major`) for that entry.
-
-## Uncertainty, honestly
-
-Diagonalizing the predicted F gives orbitals that are trivially
-self-consistent with F itself, so the commutator residual is not free: it
-needs one real Fock build from the ML density (one DFT SCF iteration).
-`FockPredictor(fock_builder=...)` does that when asked.  The cheap default is
-ensemble disagreement (train 2–4 seeds).  The on-the-fly learner gates on
-either, plus a periodic forced oracle call.
-
-## Model notes
-
-* Equivariance by local frames: z along r_ij, x from a cutoff-weighted sum of
-  neighbour directions; AO blocks rotate with `D = blockdiag(1, P R Pᵀ)`.
-* Each off-diagonal pair is evaluated in both orientations and averaged
-  transposed, which makes the result exactly permutation invariant.
-* s and p shells only (H, C, N, O, F minimal basis).  d shells raise.
-* Upgrade path: swap `DeltaFockModel` for an e3nn/QHNet-style tensor-product
-  model; `assemble`, `extract_blocks`, the data format and everything
-  downstream stay the same.
+* **Uncertainty.** Orbitals from the predicted F are trivially self-consistent
+  with F; a true residual needs one real Fock build (one SCF iteration).
+  Default gate is ensemble disagreement; `FockPredictor(fock_builder=...)`
+  adds the real check.
+* **Gradients.** simple-MRSF rejects gradient requests (the native gradient
+  differentiates DFTB integrals, not injected orbitals).  For NAMD with ML
+  orbitals a gradient consistent with the injected reference is needed on
+  the openqp-dftb side.
+* **MRSF-TDDFTB numbers** with ML orbitals could not be produced here: the
+  openqp-dftb native library is not built in this container.  `run_mrsf_tddftb_with_reference`
+  is the call to make on a machine that has it.

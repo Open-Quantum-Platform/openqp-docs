@@ -56,12 +56,12 @@ class OnTheFlyLearner:
         self.buffer.extend(records)
         self.buffer = self.buffer[-self.buffer_size:]
 
-    def step(self, Z, pos_bohr, S, F_base=None, n_occ_alpha=None, n_occ_beta=None
-             ) -> tuple[Orbitals, bool]:
-        """Return (orbitals, used_oracle)."""
+    def step(self, Z, pos_bohr, S, Hcore, n_alpha: int, n_beta: int) -> tuple[Orbitals, bool]:
+        """Return (orbitals, used_oracle).  S and Hcore are the cheap one-electron
+        matrices for this geometry (OpenQP set_basis + ints_1e)."""
         self.stats["steps"] += 1
         with self._lock:
-            orb = self.predictor.predict(Z, pos_bohr, S, F_base, n_occ_alpha, n_occ_beta)
+            orb = self.predictor.predict(Z, pos_bohr, S, Hcore, n_alpha, n_beta)
         trigger = orb.uncertainty > self.tol_u
         if self.tol_r is not None and orb.residual is not None:
             trigger |= orb.residual > self.tol_r
@@ -79,8 +79,8 @@ class OnTheFlyLearner:
         if self._new_since_fit >= self.refit_every_new:
             self._launch_refit()
         import scipy.linalg
-        eps, C = scipy.linalg.eigh(rec.F_ref, rec.S)
-        return Orbitals(rec.F_ref, rec.S, C, eps, 0.0, 0.0), True
+        eps, C = scipy.linalg.eigh(rec.F_ref[0], rec.S)
+        return Orbitals(rec.F_ref[0], rec.F_ref[1], rec.F_ref[2], rec.S, C, eps, 0.0, 0.0), True
 
     def wait(self):
         if self._fit_thread is not None:
@@ -97,7 +97,7 @@ class OnTheFlyLearner:
 
     def _refit(self, records):
         t0 = time.time()
-        ds = FockDataset(records, self.cutoff, **self.models[0].layout_kwargs)
+        ds = FockDataset(records, self.cutoff, self.models[0].nmax)
         new_models = []
         for m in self.models:
             mc = copy.deepcopy(m)

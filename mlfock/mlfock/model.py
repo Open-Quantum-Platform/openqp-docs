@@ -1,4 +1,9 @@
-"""Block-wise Fock (delta) model with local-frame equivariance."""
+"""Block-wise Fock (delta) model with local-frame equivariance.
+
+Output has ``n_channels`` matrices per geometry (default 3: the ROKS
+effective Fock whose eigenvectors are the canonical orbitals, and the
+alpha and beta Fock matrices the MRSF response needs).
+"""
 
 from __future__ import annotations
 
@@ -6,10 +11,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .basis import BasisLayout
+from .basis import BasisLayout, DFTB_SHELLS, shell_size, _P_PERM, _D_MONO, _D_NORM
 from .features import PairFeaturizer, build_pairs
-
-NMAX = 4  # s + p block size; padded for H atoms
 
 
 def _mlp(dims, act=nn.SiLU):
@@ -20,44 +23,40 @@ def _mlp(dims, act=nn.SiLU):
 
 
 class DeltaFockModel(nn.Module):
-    """Predict ΔF_ij blocks (NMAX x NMAX) for every pair i <= j.
+    """Predict ΔF_ij blocks (n_channels x NMAX x NMAX) for every pair i <= j."""
 
-    Parameters
-    ----------
-    max_z : largest atomic number in the element embedding table.
-    layout_kwargs : forwarded to :class:`BasisLayout` (``p_order``, ``shells``).
-    """
-
-    def __init__(self, max_z: int = 20, emb_dim: int = 32, hidden: int = 128,
-                 n_env_layers: int = 2, cutoff: float = 10.0, env_cutoff: float = 8.0,
-                 n_rbf: int = 24, p_order: str = "yzx", shells: dict | None = None):
+    def __init__(self, shells: dict | None = None, n_channels: int = 3, max_z: int = 20,
+                 emb_dim: int = 32, hidden: int = 128, n_env_layers: int = 2,
+                 cutoff: float = 10.0, env_cutoff: float = 8.0, n_rbf: int = 24):
         super().__init__()
+        self.shells = {int(z): tuple((int(l), str(k)) for l, k in v)
+                       for z, v in (shells or DFTB_SHELLS).items()}
+        self.n_channels = n_channels
+        self.nmax = max(sum(shell_size(l, k) for l, k in s) for s in self.shells.values())
         self.featurizer = PairFeaturizer(cutoff, env_cutoff, n_rbf)
-        self.layout_kwargs = {"p_order": p_order}
-        if shells is not None:
-            self.layout_kwargs["shells"] = shells
         self.emb = nn.Embedding(max_z + 1, emb_dim)
         fz = self.featurizer
         self.env_net = _mlp([fz.env_dim + 3 * emb_dim, hidden, hidden])
         self.env_post = _mlp([hidden, hidden])
-        self.pair_net = _mlp([fz.pair_dim + 2 * emb_dim + hidden] + [hidden] * n_env_layers
-                             + [NMAX * NMAX])
-        # per-element-pair output scale/shift, learned on top of data normalisation
-        self.register_buffer("out_scale", torch.ones(NMAX, NMAX))
-        self.register_buffer("out_shift", torch.zeros(NMAX, NMAX))
-        self.hparams = dict(max_z=max_z, emb_dim=emb_dim, hidden=hidden,
+        nout = n_channels * self.nmax * self.nmax
+        self.pair_net = _mlp([fz.pair_dim + 2 * emb_dim + hidden] + [hidden] * n_env_layers + [nout])
+        self.register_buffer("out_scale", torch.ones(n_channels, self.nmax, self.nmax))
+        self.register_buffer("out_shift", torch.zeros(n_channels, self.nmax, self.nmax))
+        self.hparams = dict(shells={z: list(v) for z, v in self.shells.items()},
+                            n_channels=n_channels, max_z=max_z, emb_dim=emb_dim, hidden=hidden,
                             n_env_layers=n_env_layers, cutoff=cutoff, env_cutoff=env_cutoff,
-                            n_rbf=n_rbf, p_order=p_order, shells=shells)
+                            n_rbf=n_rbf)
 
     # ------------------------------------------------------------------ core
-    def predict_blocks(self, Z: torch.Tensor, pos: torch.Tensor):
-        """Return (ii, jj, blocks_global) with blocks (P, NMAX, NMAX), i <= j.
+    def layout(self, Z: torch.Tensor) -> BasisLayout:
+        return BasisLayout(Z.detach().cpu().numpy(), shells=self.shells)
 
-        Every off-diagonal pair is evaluated in both orientations (i->j and
-        j->i, each with its own local frame) and the two predictions are
-        averaged as H_ij = (f(i,j) + f(j,i)^T)/2.  This makes the result
-        exactly invariant to atom permutation, which a single orientation
-        is not (the frame z-axis flips with the pair order).
+    def predict_blocks(self, Z: torch.Tensor, pos: torch.Tensor):
+        """(ii, jj, blocks) with blocks (P, C, NMAX, NMAX) in the global frame, i <= j.
+
+        Every off-diagonal pair is evaluated in both orientations and the two
+        predictions averaged as H_ij = (f(i,j) + f(j,i)^T)/2, which makes the
+        result exactly invariant to atom permutation.
         """
         ii0, jj0 = build_pairs(pos, self.featurizer.cutoff)
         off = ii0 != jj0
@@ -66,57 +65,55 @@ class DeltaFockModel(nn.Module):
         blk = self._predict_oriented(Z, pos, ii, jj)
         n0 = ii0.shape[0]
         out = blk[:n0].clone()
-        out[off] = 0.5 * (blk[:n0][off] + blk[n0:].transpose(1, 2))
+        out[off] = 0.5 * (blk[:n0][off] + blk[n0:].transpose(-1, -2))
         return ii0, jj0, out
 
     def _predict_oriented(self, Z, pos, ii, jj):
         f = self.featurizer(Z, pos, ii, jj)
         R = f["R"]
         ei, ej = self.emb(Z[ii]), self.emb(Z[jj])
-        ek = self.emb(Z).unsqueeze(0).expand(ii.shape[0], -1, -1)     # (P,N,E)
+        ek = self.emb(Z).unsqueeze(0).expand(ii.shape[0], -1, -1)
         env_in = torch.cat([f["env"], ei.unsqueeze(1).expand_as(ek),
                             ej.unsqueeze(1).expand_as(ek), ek], dim=-1)
         msg = self.env_net(env_in) * f["env_w"].unsqueeze(-1)
-        env = self.env_post(msg.sum(1))                                # (P,H)
+        env = self.env_post(msg.sum(1))
         h = self.pair_net(torch.cat([f["pair"], ei, ej, env], dim=-1))
-        blk_local = h.view(-1, NMAX, NMAX) * self.out_scale + self.out_shift
-        onsite = (ii == jj).unsqueeze(-1).unsqueeze(-1)
-        blk_local = torch.where(onsite, 0.5 * (blk_local + blk_local.transpose(1, 2)), blk_local)
-        D = self._ao_rotations(Z, R)                                   # (P,4,4) for frame
-        Di = D * self._p_mask(Z[ii])
-        Dj = D * self._p_mask(Z[jj])
-        # local -> global: H_glob = D^T H_loc D   (D = D(R_frame))
-        return Di.transpose(1, 2) @ blk_local @ Dj
+        return self._finish(Z, ii, jj, R, h)
+
+    def _finish(self, Z, ii, jj, R, h):
+        """Shared tail: local block -> symmetrise onsite -> rotate to global."""
+        blk_local = h.view(-1, self.n_channels, self.nmax, self.nmax) * self.out_scale + self.out_shift
+        onsite = (ii == jj).view(-1, 1, 1, 1)
+        blk_local = torch.where(onsite, 0.5 * (blk_local + blk_local.transpose(-1, -2)), blk_local)
+        # Local-frame functions are phi_loc = D(R) phi_glob, so H_loc = D H_glob D^T and
+        # H_glob = D^-1 H_loc D^-T.  D^-1 = D(R^T) because D is a representation; it is
+        # NOT D^T for Cartesian d shells (xx, yy, zz are not mutually orthogonal).
+        Rinv = R.transpose(-1, -2)
+        Di = self.atom_rotations(Z[ii], Rinv).unsqueeze(1)              # (P,1,NMAX,NMAX)
+        Dj = self.atom_rotations(Z[jj], Rinv).unsqueeze(1)
+        return Di @ blk_local @ Dj.transpose(-1, -2)
 
     def forward(self, Z: torch.Tensor, pos: torch.Tensor) -> torch.Tensor:
-        """Full symmetric (nao x nao) ΔF matrix for one molecule."""
-        layout = BasisLayout(Z.detach().cpu().numpy(), **self.layout_kwargs)
+        """(n_channels, nao, nao) symmetric ΔF matrices for one molecule."""
+        layout = self.layout(Z)
         ii, jj, blk = self.predict_blocks(Z, pos)
         return assemble(layout, ii, jj, blk)
 
-    # --------------------------------------------------------------- helpers
-    def _p_mask(self, Zs: torch.Tensor) -> torch.Tensor:
-        """(P,4,4) mask keeping only the AO rows/cols the element actually has."""
-        layout_shells = self.layout_kwargs.get("shells")
-        from .basis import DEFAULT_MINIMAL_SHELLS
-        table = layout_shells or DEFAULT_MINIMAL_SHELLS
-        has_p = torch.tensor([1 in table[int(z)] for z in Zs.tolist()],
-                             device=Zs.device)
-        m = torch.zeros(Zs.shape[0], NMAX, NMAX, device=Zs.device)
-        m[:, 0, 0] = 1.0
-        m[has_p] = 1.0
-        return m
-
-    def _ao_rotations(self, Z: torch.Tensor, R: torch.Tensor) -> torch.Tensor:
-        """D(R) = blockdiag(1, P R P^T) in the stored p order, (P,4,4)."""
-        perm = {"xyz": (0, 1, 2), "yzx": (1, 2, 0)}[self.layout_kwargs["p_order"]]
-        Pm = torch.zeros(3, 3, device=R.device, dtype=R.dtype)
-        for cart, store in enumerate(perm):
-            Pm[store, cart] = 1.0
-        Rp = Pm @ R @ Pm.T
-        D = torch.zeros(R.shape[0], NMAX, NMAX, device=R.device, dtype=R.dtype)
-        D[:, 0, 0] = 1.0
-        D[:, 1:, 1:] = Rp
+    # --------------------------------------------------------------- rotation
+    def atom_rotations(self, Zs: torch.Tensor, R: torch.Tensor) -> torch.Tensor:
+        """(P, NMAX, NMAX) AO rotation D(R) for the element of each pair member,
+        zero beyond the atom's AO count so padding never leaks."""
+        P = R.shape[0]
+        D = torch.zeros(P, self.nmax, self.nmax, device=R.device, dtype=R.dtype)
+        Zs = Zs.tolist()
+        # group pairs by element so each element's shell structure is applied once
+        for z in set(Zs):
+            sel = torch.tensor([k for k, zz in enumerate(Zs) if zz == z], device=R.device)
+            off = 0
+            for l, kind in self.shells[int(z)]:
+                n = shell_size(l, kind)
+                D[sel, off:off + n, off:off + n] = _shell_rotation_torch(l, kind, R[sel])
+                off += n
         return D
 
     # ------------------------------------------------------------ persistence
@@ -133,39 +130,68 @@ class DeltaFockModel(nn.Module):
         return model
 
 
+def _shell_rotation_torch(l: int, kind: str, R: torch.Tensor) -> torch.Tensor:
+    """(P, n, n) rotation matrices for one shell type."""
+    P = R.shape[0]
+    if l == 0:
+        return torch.ones(P, 1, 1, device=R.device, dtype=R.dtype)
+    if l == 1:
+        perm = _P_PERM[kind]
+        Pm = torch.zeros(3, 3, device=R.device, dtype=R.dtype)
+        for cart, store in enumerate(perm):
+            Pm[store, cart] = 1.0
+        return Pm @ R @ Pm.T
+    if l == 2 and kind == "cart":
+        T = torch.zeros(P, 6, 6, device=R.device, dtype=R.dtype)
+        for i, (a, b) in enumerate(_D_MONO):
+            for j, (c, d) in enumerate(_D_MONO):
+                if c == d:
+                    T[:, i, j] = R[:, a, c] * R[:, b, c]
+                else:
+                    T[:, i, j] = R[:, a, c] * R[:, b, d] + R[:, a, d] * R[:, b, c]
+        nrm = torch.as_tensor(_D_NORM, device=R.device, dtype=R.dtype)
+        return nrm.view(1, 6, 1) * T / nrm.view(1, 1, 6)
+    raise NotImplementedError(f"l={l} kind={kind}")
+
+
 def assemble(layout: BasisLayout, ii: torch.Tensor, jj: torch.Tensor,
              blk: torch.Tensor) -> torch.Tensor:
-    """Scatter (P, NMAX, NMAX) blocks into a symmetric (nao, nao) matrix."""
+    """Scatter (P, C, NMAX, NMAX) blocks into symmetric (C, nao, nao) matrices."""
+    nC, nmax = blk.shape[1], blk.shape[2]
     nao = layout.nao
-    F = torch.zeros(nao, nao, device=blk.device, dtype=blk.dtype)
+    F = torch.zeros(nC, nao, nao, device=blk.device, dtype=blk.dtype)
     off = torch.as_tensor(layout.offsets, device=blk.device)
     nao_atom = torch.as_tensor(layout.atom_nao, device=blk.device)
-    # vectorised scatter via index grids
-    rows = off[ii].unsqueeze(-1) + torch.arange(NMAX, device=blk.device)     # (P,4)
-    cols = off[jj].unsqueeze(-1) + torch.arange(NMAX, device=blk.device)
-    rmask = torch.arange(NMAX, device=blk.device).unsqueeze(0) < nao_atom[ii].unsqueeze(-1)
-    cmask = torch.arange(NMAX, device=blk.device).unsqueeze(0) < nao_atom[jj].unsqueeze(-1)
-    mask = rmask.unsqueeze(-1) & cmask.unsqueeze(1)                           # (P,4,4)
-    r = rows.unsqueeze(-1).expand(-1, -1, NMAX)[mask]
-    c = cols.unsqueeze(1).expand(-1, NMAX, -1)[mask]
-    v = blk[mask]
-    F = F.index_put((r, c), v, accumulate=True)
-    F = F.index_put((c, r), v, accumulate=True)
-    # diagonal blocks were added twice
+    ar = torch.arange(nmax, device=blk.device)
+    rows = off[ii].unsqueeze(-1) + ar
+    cols = off[jj].unsqueeze(-1) + ar
+    rmask = ar.unsqueeze(0) < nao_atom[ii].unsqueeze(-1)
+    cmask = ar.unsqueeze(0) < nao_atom[jj].unsqueeze(-1)
+    mask = rmask.unsqueeze(-1) & cmask.unsqueeze(1)                        # (P, nmax, nmax)
+    r = rows.unsqueeze(-1).expand(-1, -1, nmax)[mask]
+    c = cols.unsqueeze(1).expand(-1, nmax, -1)[mask]
+    for ch in range(nC):
+        v = blk[:, ch][mask]
+        F[ch] = F[ch].index_put((r, c), v, accumulate=True)
+        F[ch] = F[ch].index_put((c, r), v, accumulate=True)
     diag = ii == jj
     if diag.any():
-        rd = rows[diag].unsqueeze(-1).expand(-1, -1, NMAX)[mask[diag]]
-        cd = cols[diag].unsqueeze(1).expand(-1, NMAX, -1)[mask[diag]]
-        F = F.index_put((rd, cd), -blk[diag][mask[diag]], accumulate=True)
+        md = mask[diag]
+        rd = rows[diag].unsqueeze(-1).expand(-1, -1, nmax)[md]
+        cd = cols[diag].unsqueeze(1).expand(-1, nmax, -1)[md]
+        for ch in range(nC):
+            F[ch] = F[ch].index_put((rd, cd), -blk[diag][:, ch][md], accumulate=True)
     return F
 
 
-def extract_blocks(layout: BasisLayout, M: np.ndarray, ii: np.ndarray, jj: np.ndarray
-                   ) -> np.ndarray:
-    """Target blocks (P, NMAX, NMAX), zero-padded, for the given pair list."""
-    out = np.zeros((len(ii), NMAX, NMAX))
+def extract_blocks(layout: BasisLayout, M: np.ndarray, ii, jj, nmax: int) -> np.ndarray:
+    """Target blocks (P, C, nmax, nmax), zero padded, from (C, nao, nao) matrices."""
+    M = np.asarray(M)
+    if M.ndim == 2:
+        M = M[None]
+    out = np.zeros((len(ii), M.shape[0], nmax, nmax))
     for p, (i, j) in enumerate(zip(ii, jj)):
-        bi, bj = layout.block(i, j)
-        sub = M[bi, bj]
-        out[p, : sub.shape[0], : sub.shape[1]] = sub
+        bi, bj = layout.block(int(i), int(j))
+        sub = M[:, bi, bj]
+        out[p, :, : sub.shape[1], : sub.shape[2]] = sub
     return out

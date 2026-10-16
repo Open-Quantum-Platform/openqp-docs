@@ -1,181 +1,108 @@
-"""Glue between mlfock and OpenQP / openqp-dftb.
+"""Glue between mlfock and OpenQP / openqp-dftb (optional imports only here).
 
-Nothing here is imported by the core package, so mlfock trains and predicts
-without an OpenQP installation.  Three services:
-
-* ``OpenQPOracle``        : geometry -> converged ROKS/ROHF FockRecord
-                            (Gaussian basis), the on-the-fly oracle.
-* ``DFTBBase``            : geometry -> (H_tb, S_tb) from the openqp-dftb
-                            adapter, the delta-learning base.
-* ``run_mrsf_with_orbitals`` : push ML orbitals into an OpenQP molecule,
-                            optionally polish with a few SCF iterations,
-                            then run the MRSF response on them.
-
-Feeding orbitals to the *native* MRSF-TDDFTB response is not possible from
-Python yet: the openqp-dftb C ABI only takes a warm-start MO file as an SCC
-guess (``OPENQP_DFTB_WARMSTART_MO``) and re-converges.  ``write_dftb_orbitals``
-writes the ML orbitals in a plain binary layout so a "fixed reference
-orbitals" entry point on the native side can consume them; see README.
+* ``OpenQPOracle``   : geometry -> converged ROKS record (the on-the-fly oracle)
+* ``run_reference``  : one-off ROKS run for a geometry
+* ``run_mrsf_tddftb_with_reference`` : MRSF-TDDFTB response on an external
+  reference file through the openqp-dftb adapter (OPENQP_DFTB_SIMPLE_MRSF_REF),
+  i.e. the "simple-MRSF" path of openqp-dftb/tools/simple_mrsf.
 """
 
 from __future__ import annotations
 
 import copy
+import os
 from pathlib import Path
 import numpy as np
 
-from .extract import (FockRecord, fock_from_openqp, hamiltonian_from_dftb_result,
-                      record_from_openqp, _coerce_mo_columns)
+from .extract import FockRecord, record_from_openqp
+
+BOHR2ANG = 0.52917721067
 
 
-def _runner(config: dict, project: str = "mlfock", log: str | None = None):
-    from oqp.pyoqp import Runner  # noqa: PLC0415
-    return Runner(project=project, input_dict=copy.deepcopy(config),
-                  log=log or f"{project}.log", silent=1, usempi=False)
+def _stringify(config: dict) -> dict:
+    return {sec: {k: str(v) for k, v in opts.items()} for sec, opts in config.items()}
+
+
+def _geometry_text(Z, pos_bohr) -> str:
+    from oqp.periodic_table import ELEMENTS_NAME  # noqa: PLC0415
+    pos = np.asarray(pos_bohr, float).reshape(-1, 3) * BOHR2ANG
+    return "\n".join(f"{ELEMENTS_NAME[int(z)]} {x:.10f} {y:.10f} {z_:.10f}"
+                     for z, (x, y, z_) in zip(Z, pos))
+
+
+def rohf_config(functional: str = "bhhlyp", basis: str = "6-31g*", charge: int = 0,
+                multiplicity: int = 3, maxit: int = 100, conv: float | None = None) -> dict:
+    cfg = {"input": {"system": "", "charge": charge, "method": "hf", "basis": basis,
+                     "functional": functional, "runtype": "energy"},
+           "scf": {"type": "rohf", "multiplicity": multiplicity, "maxit": maxit},
+           "guess": {"type": "huckel"}}
+    if conv is not None:
+        cfg["scf"]["conv"] = conv
+    return cfg
 
 
 class OpenQPOracle:
     """Run the reference open-shell SCF in OpenQP for a geometry.
 
-    ``config`` is an OpenQP input dict (same schema as the .inp file) with
-    ``scf_type=rohf`` (or ``uhf``), the functional and basis of the target
-    MRSF-TDDFT level, and ``method=hf``.  One Runner is kept and its
-    coordinates are updated per call.
+    A fresh Runner per geometry keeps the state simple; one ROKS/6-31G*
+    water takes ~0.5 s, so this is fine for data generation.
     """
 
-    def __init__(self, config: dict, project: str = "mlfock_oracle", polish_from_previous=True):
-        self.runner = _runner(config, project)
-        self.mol = self.runner.mol
-        self.polish_from_previous = polish_from_previous
-        self._first = True
+    def __init__(self, config: dict, project: str = "mlfock_oracle", workdir: str | None = None,
+                 silent: int = 1):
+        self.config = copy.deepcopy(config)
+        self.project = project
+        self.workdir = Path(workdir or ".")
+        self.silent = silent
+        self.shells = None
 
-    def __call__(self, Z, pos_bohr) -> FockRecord:
+    def __call__(self, Z, pos_bohr, tag: str = "") -> FockRecord:
+        from oqp.pyoqp import Runner  # noqa: PLC0415
         from oqp.library.single_point import SinglePoint  # noqa: PLC0415
-        pos = np.asarray(pos_bohr, dtype=float).reshape(-1, 3)
-        self.mol.update_system(pos.ravel())
-        sp = SinglePoint(self.mol)
-        # after the first geometry, reuse the previous orbitals as the guess
-        do_init = self._first or not self.polish_from_previous
-        sp.reference(do_init_scf=do_init)
-        self._first = False
-        rec = record_from_openqp(self.mol)
-        rec.coords_bohr = pos
+        cfg = copy.deepcopy(self.config)
+        cfg["input"]["system"] = _geometry_text(Z, pos_bohr)
+        runner = Runner(project=self.project, input_dict=_stringify(cfg),
+                        log=str(self.workdir / f"{self.project}.log"), silent=self.silent,
+                        usempi=False)
+        mol = runner.mol
+        SinglePoint(mol).reference()
+        rec = record_from_openqp(mol, tag=tag, shells=self.shells)
+        self.shells = rec.shells
+        rec.coords_bohr = np.asarray(pos_bohr, float).reshape(-1, 3)
         return rec
 
 
-class DFTBBase:
-    """DFTB reference Hamiltonian/overlap for a geometry via openqp-dftb."""
-
-    def __init__(self, config: dict, project: str = "mlfock_dftb"):
-        if "dftb" not in config:
-            raise ValueError("config needs a [dftb] section (method=dftb, type=mrsf ...)")
-        self.runner = _runner(config, project)
-        self.mol = self.runner.mol
-
-    def __call__(self, Z, pos_bohr):
-        from oqp.utils.tb_backends import make_tb_adapter  # noqa: PLC0415
-        self.mol.update_system(np.asarray(pos_bohr, dtype=float).ravel())
-        adapter = make_tb_adapter(self.mol)
-        adapter.energy()
-        result = adapter._last_result if hasattr(adapter, "_last_result") else None
-        if result is None or getattr(result, "mo_coefficients", None) is None:
-            # fall back to the tags the adapter publishes on the molecule
-            C = np.asarray(self.mol.data["OQP::VEC_MO_A"], dtype=float)
-            eps = np.asarray(self.mol.data["OQP::E_MO_A"], dtype=float).ravel()
-            n = eps.size
-            C = C.reshape(n, n, order="F")
-            from .extract import overlap_from_complete_orbitals, fock_from_orbitals
-            S = overlap_from_complete_orbitals(C)
-            return fock_from_orbitals(C, eps, S), S
-        return hamiltonian_from_dftb_result(result)
+def run_reference(Z, pos_bohr, **kw) -> FockRecord:
+    return OpenQPOracle(rohf_config(**kw))(Z, pos_bohr)
 
 
-# ------------------------------------------------------------ inject into OpenQP
-def inject_orbitals(mol, C: np.ndarray, eps: np.ndarray, n_alpha: int, n_beta: int):
-    """Overwrite OpenQP's MO/density tags with ML orbitals (Gaussian basis).
+def run_mrsf_tddftb_with_reference(Z, pos_bohr, reference_bin, nstate: int = 3,
+                                   dftb_options: dict | None = None, project: str = "mlfock_tb",
+                                   workdir: str | None = None):
+    """MRSF-TDDFTB state energies with an external reference file.
 
-    The memory layout of ``OQP::VEC_MO_A`` is detected from the existing
-    tag so the written array matches what the Fortran side expects.
+    Needs the openqp-dftb native library (OPENQP_DFTB_LIBRARY) and a DFTB
+    parameter set; ``dftb_options`` is merged into the [dftb] section
+    (e.g. {"parameter_path": ..., "response_cam_alpha": 0.5}).
     """
-    n = eps.size
-    existing = np.asarray(mol.data["OQP::VEC_MO_A"], dtype=float)
-    S = _overlap(mol, n)
-    probe = _coerce_mo_columns(existing, S, n)
-    # find the (order, transpose) that reproduces `existing` from `probe`
-    flat_existing = existing.ravel()
-    layout = None
-    for order in ("F", "C"):
-        for transpose in (False, True):
-            M = probe.T if transpose else probe
-            if np.allclose(M.ravel(order=order), flat_existing[: n * n]):
-                layout = (order, transpose)
-    if layout is None:
-        raise RuntimeError("cannot determine OQP::VEC_MO_A memory layout")
-    order, transpose = layout
-    M = C.T if transpose else C
-    new = M.ravel(order=order).reshape(existing.shape)
-    for tag in ("OQP::VEC_MO_A", "OQP::VEC_MO_B"):
-        arr = mol.data[tag]
-        np.asarray(arr)[...] = new.reshape(np.asarray(arr).shape)
-    for tag in ("OQP::E_MO_A", "OQP::E_MO_B"):
-        np.asarray(mol.data[tag])[...] = eps.reshape(np.asarray(mol.data[tag]).shape)
-    from .predict import density_matrix
-    Pa = C[:, :n_alpha] @ C[:, :n_alpha].T
-    Pb = C[:, :n_beta] @ C[:, :n_beta].T
-    for tag, P in (("OQP::DM_A", Pa), ("OQP::DM_B", Pb)):
-        if tag in mol.data:
-            arr = np.asarray(mol.data[tag])
-            arr[...] = _pack_like(P, arr)
-
-
-def run_mrsf_with_orbitals(mol, C, eps, n_alpha, n_beta, polish_iterations: int = 0):
-    """ML orbitals -> (optional SCF polish) -> MRSF response.  Returns state energies.
-
-    Mirrors ``SinglePoint.reference`` without the guess step.  With
-    ``polish_iterations=0`` the SCF driver is asked for a single pass
-    (maxit=1) and the response runs on the ML orbitals; with N>0 the SCF
-    may take up to N steps, which converges any residual error away.
-    """
-    from oqp.library.single_point import SinglePoint  # noqa: PLC0415
-    sp = SinglePoint(mol)
-    sp._prep_guess()                       # basis, 1e integrals, placeholder guess
-    inject_orbitals(mol, C, eps, n_alpha, n_beta)
-    old_maxit = mol.config["scf"]["maxit"]
-    mol.config["scf"]["maxit"] = max(1, int(polish_iterations))
+    from oqp.pyoqp import Runner  # noqa: PLC0415
+    from oqp.utils.tb_backends import make_tb_adapter  # noqa: PLC0415
+    cfg = {"input": {"system": _geometry_text(Z, pos_bohr), "charge": 0, "method": "dftb",
+                     "runtype": "energy"},
+           "dftb": {"type": "mrsf", **(dftb_options or {})},
+           "tdhf": {"nstate": nstate}}
+    old = os.environ.get("OPENQP_DFTB_SIMPLE_MRSF_REF")
+    os.environ["OPENQP_DFTB_SIMPLE_MRSF_REF"] = str(reference_bin)
     try:
-        mol.data.set_scf_maxit(mol.config["scf"]["maxit"]) if hasattr(mol.data, "set_scf_maxit") else None
-        sp._run_scf()
+        runner = Runner(project=project, input_dict=_stringify(cfg),
+                        log=str(Path(workdir or ".") / f"{project}.log"), silent=1, usempi=False)
+        energies = make_tb_adapter(runner.mol).energy()
     finally:
-        mol.config["scf"]["maxit"] = old_maxit
-    ref = [mol.mol_energy.energy]
-    mol.energies = ref
-    return sp.excitation(ref)
-
-
-def write_dftb_orbitals(path, C: np.ndarray, eps: np.ndarray, n_alpha: int, n_beta: int):
-    """Plain little-endian binary: int64 nbf, noca, nocb; float64 eps[nbf];
-    float64 C[nbf*nbf] column-major (one MO per column).  Intended for a
-    native "fixed reference orbitals" entry in openqp-dftb."""
-    n = eps.size
-    with open(path, "wb") as fh:
-        np.array([n, n_alpha, n_beta], dtype="<i8").tofile(fh)
-        np.asarray(eps, dtype="<f8").tofile(fh)
-        np.asarray(C, dtype="<f8").ravel(order="F").tofile(fh)
-
-
-# ----------------------------------------------------------------- utilities
-def _overlap(mol, n):
-    from .extract import _square_overlap
-    return _square_overlap(mol, n)
-
-
-def _pack_like(M: np.ndarray, template: np.ndarray) -> np.ndarray:
-    n = M.shape[0]
-    if template.size == n * n:
-        return M.reshape(template.shape)
-    if template.size == n * (n + 1) // 2:
-        return M[np.tril_indices(n)].reshape(template.shape)
-    raise ValueError(f"cannot pack ({n},{n}) into template of size {template.size}")
+        if old is None:
+            os.environ.pop("OPENQP_DFTB_SIMPLE_MRSF_REF", None)
+        else:
+            os.environ["OPENQP_DFTB_SIMPLE_MRSF_REF"] = old
+    return np.asarray(energies, float)
 
 
 def dump_records(records: list[FockRecord], out_dir):

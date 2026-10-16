@@ -1,4 +1,4 @@
-"""Assemble F = F_base + ΔF_ML, diagonalise, and estimate uncertainty."""
+"""Assemble F = Hcore + ΔF_ML, diagonalise, write the MRSF-TDDFTB reference."""
 
 from __future__ import annotations
 
@@ -8,30 +8,28 @@ import scipy.linalg
 import torch
 
 from .basis import BasisLayout
-from .model import DeltaFockModel
+from .extract import write_simple_mrsf_reference
 
 
 @dataclass
 class Orbitals:
-    F: np.ndarray            # AO Fock matrix used
+    F_eff: np.ndarray
+    F_alpha: np.ndarray
+    F_beta: np.ndarray
     S: np.ndarray
-    C: np.ndarray            # S-orthonormal MO coefficients, one MO per column
+    C: np.ndarray            # S-orthonormal canonical MOs, one per column
     eps: np.ndarray
-    uncertainty: float       # ensemble spread of ΔF (Hartree), 0 if single model
-    residual: float | None   # ||FPS - SPF|| if a Fock builder was supplied
+    uncertainty: float       # ensemble spread of ΔF (Hartree); 0 for a single model
+    residual: float | None   # true SCF residual if a fock_builder was supplied
+
+    def write_reference(self, path, layout: BasisLayout, n_alpha: int, n_beta: int):
+        write_simple_mrsf_reference(path, self.S, self.C, self.eps, self.F_alpha, self.F_beta,
+                                    layout, n_alpha, n_beta)
 
 
 class FockPredictor:
-    """Wraps one model or an ensemble.
-
-    Parameters
-    ----------
-    models : list of DeltaFockModel (an ensemble gives an uncertainty estimate)
-    fock_builder : optional callable ``(density_matrix) -> F`` from the
-        reference method (one DFT Fock build).  When given, ``predict`` also
-        returns the true self-consistency residual.  This costs one SCF
-        iteration, so use it only for the on-the-fly oracle gate.
-    """
+    """One model or an ensemble.  ``fock_builder(P_alpha, P_beta) -> (F_alpha, F_beta)``
+    optionally supplies a true Fock build for a self-consistency residual."""
 
     def __init__(self, models, fock_builder=None, device="cpu"):
         self.models = list(models) if isinstance(models, (list, tuple)) else [models]
@@ -39,48 +37,46 @@ class FockPredictor:
             m.eval().to(device)
         self.device = device
         self.fock_builder = fock_builder
-        self.layout_kwargs = self.models[0].layout_kwargs
+        self.shells = self.models[0].shells
 
     @torch.no_grad()
-    def delta(self, Z: np.ndarray, pos_bohr: np.ndarray) -> tuple[np.ndarray, float]:
-        Zt = torch.as_tensor(np.asarray(Z, dtype=int), dtype=torch.long, device=self.device)
-        pt = torch.as_tensor(np.asarray(pos_bohr, dtype=float), dtype=torch.get_default_dtype(),
+    def delta(self, Z, pos_bohr):
+        Zt = torch.as_tensor(np.asarray(Z, int), dtype=torch.long, device=self.device)
+        pt = torch.as_tensor(np.asarray(pos_bohr, float), dtype=torch.get_default_dtype(),
                              device=self.device)
         preds = np.stack([m(Zt, pt).cpu().numpy() for m in self.models])
-        mean = preds.mean(0)
-        spread = float(preds.std(0).max()) if len(self.models) > 1 else 0.0
-        return mean, spread
+        return preds.mean(0), (float(preds.std(0).max()) if len(self.models) > 1 else 0.0)
 
-    def predict(self, Z, pos_bohr, S, F_base=None, n_occ_alpha=None, n_occ_beta=None
-                ) -> Orbitals:
+    def predict(self, Z, pos_bohr, S, Hcore, n_alpha: int, n_beta: int) -> Orbitals:
         dF, spread = self.delta(Z, pos_bohr)
-        F = dF if F_base is None else np.asarray(F_base) + dF
-        F = 0.5 * (F + F.T)
-        eps, C = scipy.linalg.eigh(F, S)
+        F = dF + np.asarray(Hcore)[None]
+        F = 0.5 * (F + F.transpose(0, 2, 1))
+        eps, C = scipy.linalg.eigh(F[0], S)
         residual = None
-        if self.fock_builder is not None and n_occ_alpha is not None:
-            nb = n_occ_alpha if n_occ_beta is None else n_occ_beta
-            P = density_matrix(C, n_occ_alpha, nb)
-            F_true = self.fock_builder(P)
-            residual = commutator_residual(F_true, P, S)
-        return Orbitals(F, S, C, eps, spread, residual)
+        if self.fock_builder is not None:
+            Pa = C[:, :n_alpha] @ C[:, :n_alpha].T
+            Pb = C[:, :n_beta] @ C[:, :n_beta].T
+            Fa, Fb = self.fock_builder(Pa, Pb)
+            residual = max(commutator_residual(Fa, Pa, S), commutator_residual(Fb, Pb, S))
+        return Orbitals(F[0], F[1], F[2], np.asarray(S), C, eps, spread, residual)
 
 
-def density_matrix(C: np.ndarray, n_alpha: int, n_beta: int) -> np.ndarray:
-    """Total (alpha + beta) density from the lowest orbitals."""
-    Ca = C[:, :n_alpha]
-    Cb = C[:, :n_beta]
-    return Ca @ Ca.T + Cb @ Cb.T
-
-
-def commutator_residual(F: np.ndarray, P: np.ndarray, S: np.ndarray) -> float:
-    """max |FPS - SPF|: zero at self-consistency, the DIIS error measure."""
+def commutator_residual(F, P, S) -> float:
+    """max |FPS - SPF|, the DIIS error; zero at self-consistency."""
     E = F @ P @ S - S @ P @ F
     return float(np.abs(E).max())
 
 
-def orbital_overlap_fidelity(C_ml: np.ndarray, C_ref: np.ndarray, S: np.ndarray,
-                             n_occ: int) -> float:
-    """Occupied-space fidelity: mean singular value of C_ref^T S C_ml over occ."""
+def orbital_overlap_fidelity(C_ml, C_ref, S, n_occ: int) -> float:
+    """Mean singular value of C_ref^T S C_ml over the first n_occ orbitals (1 = identical span)."""
     M = C_ref[:, :n_occ].T @ S @ C_ml[:, :n_occ]
     return float(np.linalg.svd(M, compute_uv=False).mean())
+
+
+def subspace_fidelities(C_ml, C_ref, S, n_alpha, n_beta) -> dict:
+    """Fidelity of the closed, SOMO and virtual spaces separately (MRSF needs all three)."""
+    def fid(a, b):
+        M = C_ref[:, a:b].T @ S @ C_ml[:, a:b]
+        return float(np.linalg.svd(M, compute_uv=False).mean()) if b > a else 1.0
+    n = C_ml.shape[1]
+    return {"closed": fid(0, n_beta), "somo": fid(n_beta, n_alpha), "virtual": fid(n_alpha, n)}
