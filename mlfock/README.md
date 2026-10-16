@@ -23,6 +23,8 @@ the same basis and the same code path.
 | `mlfock/model.py`    | `DeltaFockModel`: predicts each pair block in its local frame, rotates back, symmetrizes over both pair orientations |
 | `mlfock/data.py`, `mlfock/train.py` | dataset and trainer (`python -m mlfock.train --data records/`) |
 | `mlfock/predict.py`  | assemble F, `eigh(F, S)`, ensemble uncertainty, optional true SCF residual |
+| `mlfock/esen_backbone.py` | wrapper around a pretrained Meta FAIR eSEN/UMA backbone (fairchem-core): l=0 scalars + l=1 vectors per atom, frozen or partially trainable, feature cache |
+| `mlfock/esen_model.py` | `ESENDeltaFockModel`: same frames/blocks, environment features from the backbone |
 | `mlfock/onthefly.py` | residual-gated active learning with background refits and a replay buffer |
 | `mlfock/oqp_bridge.py` | OpenQP oracle (ROKS SCF), DFTB base Hamiltonian, orbital injection into OpenQP |
 | `tests/`             | equivariance, permutation, round-trip, learning and on-the-fly tests (no OpenQP needed) |
@@ -54,6 +56,27 @@ from mlfock import OnTheFlyLearner
 from mlfock.oqp_bridge import OpenQPOracle
 learner = OnTheFlyLearner(models, OpenQPOracle(DFT_CONFIG), tol_uncertainty=2e-3)
 orb, used_oracle = learner.step(Z, pos, S_tb, H_tb, na, nb)
+```
+
+## Using Meta's pretrained eSEN backbone
+
+    pip install fairchem-core ase
+    huggingface-cli login          # eSEN / UMA checkpoints are gated
+    python -m mlfock.train --data records/ --backbone esen-sm-direct-all-omol --spin 3 --charge 0
+
+With the backbone frozen (default) its features are computed once per
+geometry and cached, so training costs the same as the small model.
+`--trainable-blocks N` unfreezes the last N backbone blocks for fine-tuning.
+`ESENBackbone` detects the checkpoint's l=1 component order empirically
+(`detect_l1_order`) by rotating a test molecule, so no convention has to be
+assumed.  OMol25 has no Fock matrices: the backbone brings chemistry, the
+labels still come from your ROKS runs, just far fewer of them.
+
+```python
+from mlfock.esen_backbone import ESENBackbone
+from mlfock.esen_model import ESENDeltaFockModel
+bb = ESENBackbone("esen-sm-direct-all-omol", charge=0, spin=3)
+model = ESENDeltaFockModel(bb, max_z=10)
 ```
 
 ## Two things that still need you

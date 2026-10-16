@@ -36,7 +36,8 @@ def train(model: DeltaFockModel, train_ds: FockDataset, val_ds: FockDataset | No
     with torch.no_grad():
         model.out_shift.copy_(mean.to(device))
         model.out_scale.copy_(std.to(device))
-    opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    params = [p for p in model.parameters() if p.requires_grad]
+    opt = torch.optim.Adam(params, lr=lr, weight_decay=weight_decay)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max(epochs, 1))
     history = []
     t0 = time.time()
@@ -50,7 +51,7 @@ def train(model: DeltaFockModel, train_ds: FockDataset, val_ds: FockDataset | No
             opt.zero_grad()
             loss = block_loss(model, item)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 10.0)
+            torch.nn.utils.clip_grad_norm_(params, 10.0)
             opt.step()
             tot += loss.item()
         sched.step()
@@ -91,14 +92,30 @@ def main(argv=None):
     ap.add_argument("--env-cutoff", type=float, default=8.0)
     ap.add_argument("--p-order", default="yzx", choices=["yzx", "xyz"])
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--backbone", default=None,
+                    help="fairchem checkpoint name, e.g. esen-sm-direct-all-omol; "
+                         "omit for the self-contained model")
+    ap.add_argument("--charge", type=int, default=0)
+    ap.add_argument("--spin", type=int, default=3, help="multiplicity of the reference")
+    ap.add_argument("--trainable-blocks", type=int, default=0,
+                    help="unfreeze the last N backbone blocks (0 = frozen, cached features)")
     args = ap.parse_args(argv)
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     ds = FockDataset.from_dir(args.data, args.cutoff, p_order=args.p_order)
     val = FockDataset.from_dir(args.val, args.cutoff, p_order=args.p_order) if args.val else None
     max_z = int(max(int(r.atomic_numbers.max()) for r in ds.records))
-    model = DeltaFockModel(max_z=max(max_z, 10), hidden=args.hidden, cutoff=args.cutoff,
-                           env_cutoff=args.env_cutoff, p_order=args.p_order)
+    if args.backbone:
+        from .esen_backbone import ESENBackbone
+        from .esen_model import ESENDeltaFockModel
+        bb = ESENBackbone(args.backbone, charge=args.charge, spin=args.spin,
+                          trainable_blocks=args.trainable_blocks)
+        model = ESENDeltaFockModel(bb, max_z=max(max_z, 10), hidden=args.hidden,
+                                   cutoff=args.cutoff, env_cutoff=args.env_cutoff,
+                                   p_order=args.p_order)
+    else:
+        model = DeltaFockModel(max_z=max(max_z, 10), hidden=args.hidden, cutoff=args.cutoff,
+                               env_cutoff=args.env_cutoff, p_order=args.p_order)
     train(model, ds, val, epochs=args.epochs, lr=args.lr)
     model.save(args.out, extra={"n_train": len(ds)})
     print(f"saved {args.out}")

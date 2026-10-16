@@ -18,5 +18,11 @@ from .model import DeltaFockModel
 from .predict import FockPredictor
 from .onthefly import OnTheFlyLearner
 
-__all__ = ["BasisLayout", "DeltaFockModel", "FockPredictor", "OnTheFlyLearner"]
+try:  # optional: pretrained Meta FAIR backbone
+    from .esen_model import ESENDeltaFockModel
+except ImportError:  # pragma: no cover
+    ESENDeltaFockModel = None
+
+__all__ = ["BasisLayout", "DeltaFockModel", "ESENDeltaFockModel", "FockPredictor",
+           "OnTheFlyLearner"]
 __version__ = "0.1.0"
