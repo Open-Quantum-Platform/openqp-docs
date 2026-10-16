@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mlfock"
+version = "0.1.0"
+description = "Learn Fock/KS matrices (or a delta over DFTB) from geometry for MRSF-TDDFT(B) orbitals"
+requires-python = ">=3.10"
+dependencies = ["numpy", "scipy", "torch"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["mlfock*"]
