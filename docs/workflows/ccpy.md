@@ -54,10 +54,15 @@ requires:
   during the CCpy installation: pip runs with a constraints file that pins the
   installed numpy and scipy versions. With an older numpy the call stops with
   an error; upgrade numpy and scipy in a separate step and restart Python;
-- `git`, a Fortran compiler and OpenBLAS. CCpy links its own 32-bit-integer
+- the build tools that the pinned CCpy README lists for a source build:
+  Fortran and C compilers, OpenBLAS, `pkg-config` and CMake, together with
+  `git` for the download. The CCpy Meson build locates OpenBLAS through these
+  host tools; pip cannot supply them. CCpy links its own 32-bit-integer
   OpenBLAS, separate from the 64-bit-integer (ILP64) BLAS/LAPACK used by OpenQP.
-  On Debian or Ubuntu install `libopenblas-dev`; on macOS the keg-only Homebrew
-  `openblas` is located automatically.
+  On Debian or Ubuntu install `git gcc gfortran pkg-config cmake
+  libopenblas-dev`. On macOS with Homebrew install `gcc pkg-config cmake
+  openblas`; OpenQP adds the keg-only Homebrew `openblas` to
+  `PKG_CONFIG_PATH` for the build automatically.
 
 Set `OPENQP_CCPY_AUTO_INSTALL=0` to forbid the download. A missing CCpy is then
 an `ImportError` whose message gives the `pip` command above. Concurrent
