@@ -56,7 +56,9 @@ Selects the radial grid family.
 | Default | `96` |
 | Used by | radial quadrature |
 
-Sets the number of radial points.
+Sets the number of radial points. With the default `pruned=auto`, a value
+other than `96` selects the unpruned `rad_npts` × `ang_npts` grid; see
+[`pruned`](#pruned).
 
 ### `ang_npts`
 
@@ -66,7 +68,9 @@ Sets the number of radial points.
 | Default | `302` |
 | Used by | angular quadrature |
 
-Sets the number of angular grid points.
+Sets the number of angular grid points. With the default `pruned=auto`, a
+value other than `302` selects the unpruned `rad_npts` × `ang_npts` grid; see
+[`pruned`](#pruned).
 
 ### `partfun`
 
@@ -83,14 +87,37 @@ Selects the partition function used to assign atomic grid weights.
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `SG2` |
+| Default | `auto` |
 | Used by | pruned DFT grids |
 
-Selects a pruned grid preset: `SG0`, `SG1`, `SG2`, or `SG3`. Write
-`pruned=none` (in `.inp` input an empty value, `pruned=`, means the same) to
-use the unpruned `rad_npts` × `ang_npts` grid at every radius; some regression
-examples do this so their reference numbers do not depend on a pruning
-scheme.
+Selects the atomic quadrature grid. Accepted values:
+
+| Value | Grid |
+| --- | --- |
+| `auto` (default) | `SG2` while `rad_npts` and `ang_npts` keep their defaults (`96` and `302`); the unpruned `rad_npts` × `ang_npts` grid as soon as either is changed. |
+| `SG0`, `SG1`, `SG2`, `SG3` | The named pruned preset. |
+| `none` | The unpruned `rad_npts` × `ang_npts` grid at every radius. `off`, `false`, `no` and an empty value (`pruned=` in `.inp` input) mean the same. |
+
+A pruned preset defines its own radial and angular grids, so `rad_npts` and
+`ang_npts` are not used for the atoms the preset covers. With the default,
+setting the grid size is therefore enough to obtain that grid:
+
+```text
+rks/bhhlyp/6-31g* dftgrid(rad_npts=128,ang_npts=590)
+```
+
+runs the unpruned 128 × 590 grid, and an input without grid keywords runs
+`SG2`. An explicit preset together with a non-default `rad_npts` or
+`ang_npts` runs the preset; for a DFT input the input checker then issues a warning that names
+the values that are not used. An unknown `pruned` value is an input error.
+The resolved value (`SG2`, another preset, or `none`) is written back into the
+configuration, so the printed and saved configuration state the grid that was
+used.
+
+Before this default was introduced, `pruned` defaulted to `SG2`, and an input
+that set only `rad_npts` and `ang_npts` ran on the `SG2` grid. To reproduce
+such a result, add `pruned=SG2`. Some regression examples set `pruned=none`
+so that their reference numbers do not depend on a pruning scheme.
 
 ### `grid_ao_pruned`
 

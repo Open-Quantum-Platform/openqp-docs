@@ -16,6 +16,11 @@ Coupled cluster is currently an energy-only post-SCF workflow:
 - Use `[scf] type=rhf`, `uhf`, or `rohf` for the reference.
 - Use `[cc]` for the frozen core and the solver controls.
 
+CR-CC(2,3), CC(P;Q) and the EOM-CC family (including IP/EA- and spin-flip
+EOM-CC) are available from Python through the external CCpy library on
+OpenQP Hartree-Fock orbitals; see
+[CCpy Coupled Cluster](ccpy.md).
+
 ## Energy
 
 ### `.oqp`

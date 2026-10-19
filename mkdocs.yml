@@ -61,6 +61,7 @@ nav:
       - HF and DFT: workflows/hf-dft.md
       - MP2: workflows/mp2.md
       - Coupled Cluster: workflows/coupled-cluster.md
+      - CCpy Coupled Cluster (external): workflows/ccpy.md
       - CASSCF Nuclear Gradient: workflows/casscf-gradient.md
       - CASPT2 Nuclear Gradient: workflows/caspt2-gradient.md
       - SC-NEVPT2 Nuclear Gradient: workflows/sc-nevpt2-gradient.md
