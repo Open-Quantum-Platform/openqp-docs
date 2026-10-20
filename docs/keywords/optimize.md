@@ -18,6 +18,65 @@ to the native optimizer while keeping state and convergence options in
 `[optimize]`. The lower-level `job.optimize(...)` section helper remains
 available for existing scripts.
 
+## QM/MM geometry optimisation
+
+With [`[input] qmmm_flag = true`](input.md#qmmm_flag), `runtype = optimize`
+minimises the **QM/MM** energy: the embedded QM energy in the ESPF field of
+the MM charges, the link-atom terms, and the classical MM energy, exactly the
+quantity the QM/MM dynamics drivers integrate. The gas-phase optimiser is not
+used, because it would move the QM fragment in vacuum while the environment
+sat still. The movable atoms are chosen with the `[qmmm]` active-atom keys —
+the QM region plus the MM residues within
+[`[qmmm] active_radius`](qmmm.md#active_radius), plus
+[`active_atoms`](qmmm.md#active_atoms) and minus
+[`frozen_atoms`](qmmm.md#frozen_atoms) — and the rest is fixed. The native trust-radius
+RFO/BFGS engine drives the search, in Cartesian coordinates by default (trust radius from
+[`[oqp] trust`](oqp.md) / `trust_max`), orbitals are reused between steps,
+and convergence is the same five-part test as the all-QM optimiser:
+[`energy_shift`](#energy_shift), [`rmsd_step`](#rmsd_step),
+[`max_step`](#max_step), [`rmsd_grad`](#rmsd_grad) and
+[`max_grad`](#max_grad). Only `method = hf` (HF and DFT), `tdhf`
+(TDHF/MRSF) and the tight-binding methods `dftb` and `xtb` are accepted.
+Options the QM/MM force does not carry are rejected rather than ignored:
+frozen-distance constraints (`freeze` or `frozen_distances` in `[oqp]` or
+`[optimize]`), D4 dispersion (`[input] d4`), the MD driver's QM-coordinate
+override (`[qmmm] qm_atoms_xyz` / `qm_list`), `[guess] swapmo`, and
+`[guess] continue_geom` (to continue, use the optimised full-system PDB as the
+new `[qmmm] pdb_file`).
+[`init_scf`](#init_scf) is honoured: by default the converged orbitals of
+the previous step seed the next SCF; `init_scf = true` restarts it at every
+geometry. `[oqp] coordsys` accepts `auto`, `cartesian` and `tric`; `auto`
+means Cartesian here because the movable set can be several disconnected
+fragments, and DLC/RIC are rejected because they remove the collective
+translations and rotations of the movable atoms relative to the fixed MM
+atoms. Relative
+`[qmmm] pdb_file` and `forcefield_files` entries not found in the working
+directory are looked up next to the input deck. After the run,
+`Runner.results()["energy"]` holds the QM/MM total energy of the reported
+geometry at index `istate`, and `mol.qmmm_optimization` records convergence,
+the number of evaluations, the final gradient measures and the movable atoms.
+The result is written
+as a full-system PDB ([`qmmm_output`](#qmmm_output)). Only plain
+minimisation is connected; MECI, MECP, TS, IRC, MEP and NEB refuse
+`qmmm_flag`.
+
+```text
+rhf/6-31g opt qmmm(forcefield_files="amber14-all.xml",qm_atoms="8,9,16,17,18",active_radius=3.0,frozen_atoms="6 name:CA")
+geom="ala.pdb 9 10 17 18 19"
+```
+
+This optimises the alanine dipeptide of the repository example
+`examples/QMMM/ala-dipeptide_RHF-QMMM-OPT-active` with the MM residues within
+3 Å of the QM region free to move, except the backbone N (index 6) and the
+CA atom, which are held. The `geom` indices are 1-based and `qm_atoms` lists the
+same atoms 0-based; `qmmm(...)` sets `qmmm_flag`, and `[qmmm] pdb_file` is
+taken from `geom`. For an excited state, use an MRSF route and name the state,
+for example `opt(S1)`.
+
+The selection keys are documented with the rest of the `[qmmm]` section under
+[Active atoms](qmmm.md#active-atoms-what-moves); they use ORCA's
+`%qmmm ActiveAtoms` syntax and are shared with the QM/MM dynamics drivers.
+
 ## Keywords
 
 ### `lib`
@@ -83,10 +142,45 @@ write physical labels directly, for example
 | Used by | state-specific and crossing searches |
 
 Target state indices. HF/DFT ground-state optimization uses `istate=0`.
-TDHF/MRSF state-specific workflows use positive state indices. MECI uses
+TDHF/MRSF state-specific workflows use positive state indices. A QM/MM
+optimisation (`qmmm_flag = true`) uses `istate` the same way and differentiates
+that root of the embedded QM fragment. MECI uses
 `istate` and `jstate` for the established two-state algorithms. The legacy TCI
 compatibility route uses all three and requires `istate < jstate < kstate`;
 new multistate inputs use [`states`](#states) with `meci_search=baeka`.
+
+### `qmmm_radius`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Å) |
+| Default | `0.0` |
+| Used by | QM/MM optimisation (`qmmm_flag = true`) |
+
+Radius of the movable shell around the QM region in a QM/MM geometry
+optimisation. Every MM residue with an atom within this distance of a QM atom
+moves with the QM atoms; everything else is held fixed. `0` moves the QM
+atoms alone. Whole residues are selected so that waters and side chains stay
+intact; in a periodic box the distance is the minimum-image distance.
+
+This key is an **alias** of [`[qmmm] active_radius`](qmmm.md#active_radius),
+which is the spelling the QM/MM dynamics drivers share; `[qmmm]` wins if both
+are given. The companion aliases `qmmm_active` and `qmmm_freeze` are
+[`[qmmm] active_atoms`](qmmm.md#active_atoms) and
+[`frozen_atoms`](qmmm.md#frozen_atoms). New decks should use the `[qmmm]`
+names — see [Active atoms](qmmm.md#active-atoms-what-moves).
+
+### `qmmm_output`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `<project>_opt.pdb` |
+| Used by | QM/MM optimisation (`qmmm_flag = true`) |
+
+File that receives the optimised **full-system** geometry (QM and MM atoms,
+in the topology of [`[qmmm] pdb_file`](qmmm.md#pdb_file)), ready to be used
+as the starting structure of a QM/MM dynamics run.
 
 ### `imult`, `jmult`
 

@@ -393,9 +393,9 @@ many nearby geometries (optimization, MD).
 | Used by | MRSF-TDDFT and UMRSF-TDDFT excitation energies |
 
 Requires an engine build containing [OpenQP PR #510](https://github.com/Open-Quantum-Platform/openqp/pull/510)
-for MRSF and [OpenQP PR #513](https://github.com/Open-Quantum-Platform/openqp/pull/513) for UMRSF.
-This keyword is not available in the 1.3.0 release; omit it from inputs and
-Python settings when using that release.
+for MRSF and [OpenQP PR #513](https://github.com/Open-Quantum-Platform/openqp/pull/513) for UMRSF,
+which are in `main` but not in the 1.3.1 or earlier releases; omit the keyword
+from inputs and Python settings when using those releases.
 
 Build the spin-pair coupling terms of the MRSF or UMRSF response once per energy
 calculation instead of in every Davidson iteration. The coupling between the
@@ -446,12 +446,14 @@ With a loose `resp_cutoff` such as `1e-6`, the Davidson residual can stall above
 the level the default path reaches, so keep `conv` at its default or looser
 there.
 
-```ini
-[tdhf]
-type=mrsf
-multiplicity=1
-nstate=3
-pair_cache=True
+```text
+mrsf(nstate=3)/bhhlyp/6-31g* tdhf(pair_cache=true)
+geom="h2o.xyz"
+```
+
+```text
+umrsf(nstate=3)/bhhlyp/6-31g* tdhf(pair_cache=true)
+geom="h2o.xyz"
 ```
 
 ```python
@@ -460,3 +462,51 @@ job.settings.tdhf(pair_cache=True)
 
 Example inputs: `examples/MRSF-TDDFT/H2O_MRSF_PAIR_CACHE.inp` and
 `examples/UMRSF-TDDFT/H2O_UMRSF_PAIR_CACHE.inp` in the engine repository.
+
+### XC response cache memory
+
+Requires an engine build containing [OpenQP PR #440](https://github.com/Open-Quantum-Platform/openqp/pull/440),
+which is in `main` but not in the 1.3.1 or earlier releases. Those releases
+have no response cache, so `OQP_XC_RESPONSE_CACHE_MB` has no effect there and
+the `[XCCACHE]` log lines and `examples/response_cache/` inputs are absent.
+
+TDDFT TDA/RPA Davidson, RHF/SF/MRSF Z-vector and RHF/UHF/ROHF CPHF
+calculations reuse fixed-reference LDA/GGA XC values and derivatives. The
+remaining space stores pruned atomic-orbital (AO) values and spatial derivatives
+on the integration grid. Every trial density is contracted anew. AO values here
+are basis-function values, not two-electron integrals.
+
+The MRSF nuclear gradient shares AO values and their spatial derivatives between
+its fixed-grid, moving-grid and ground-state XC sweeps. Changing the density
+invalidates reference XC data while preserving reusable AO data. Gradient
+consumers still compute their reference XC derivatives and density contractions.
+Absolute grid coordinates are restored for moving-grid derivatives. Meta-GGA
+response paths reuse AO blocks and recompute the reference XC data.
+
+The current MRSF Davidson sigma has no repeated semilocal XC integration; this
+cache does not add an XC term to its response equations. The preceding Davidson
+buffer reuse and contiguous reductions apply independently.
+
+Set the memory limit with the environment variable
+`OQP_XC_RESPONSE_CACHE_MB` (MiB, default `256`); `0` disables storage:
+
+```sh
+OQP_XC_RESPONSE_CACHE_MB=256 OQP_XC_TIMING=1 openqp h2o.oqp
+```
+
+The retained-cache limit applies to each active solver/grid cache on each MPI
+rank, shared by its OpenMP threads. It does not limit total process memory,
+temporary integration buffers, or the sum of independently owned caches.
+Blocks that do not fit are recomputed; they are never treated as zero. The
+cache does not change numerical thresholds, grid or precision. The `perf`
+preset does not select this memory limit.
+
+Geometry, basis data, grid points/weights and AO screening settings invalidate
+AO data. Reference density or orbitals, occupations, functional revision and XC
+derivative order additionally invalidate reference XC data. Solver-owned caches
+are released when their owner returns, including early returns.
+
+`OQP_XC_TIMING=1` adds `[XCCACHE]` lines with retained bytes, AO block hits and
+XC block hits. Compare `0`, a small partial-cache limit, and `256` on the same
+calculation to measure the useful limit for a given system. The engine's
+`examples/response_cache/` directory provides MRSF, TDA and RPA gradient inputs.

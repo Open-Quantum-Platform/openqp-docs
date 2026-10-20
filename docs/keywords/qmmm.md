@@ -204,7 +204,9 @@ full nonadiabatic QM/MM setup.
 | Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
 
 Path to the PDB file that defines the full QM+MM system (coordinates and
-topology) for ground-state `runtype=md` and nonadiabatic `runtype=namd`.
+topology) for ground-state `runtype=md`, nonadiabatic `runtype=namd` and
+QM/MM geometry optimisation (`runtype=optimize`, see
+[the optimize page](optimize.md#qmmm-geometry-optimisation)).
 Single-point QM/MM energy instead takes its PDB path and QM indices together
 from `[input] system = file.pdb <indices>`.
 
@@ -243,12 +245,92 @@ explicit `forcefield_files` value. New QM/MM-MD decks should set
 Zero-based indices of the atoms placed in the QM region, as individual indices
 and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. Either `qm_atoms` or the
 1-based selection after the PDB path in `[input] system` is sufficient; the
-other is derived. When both are given they must select the same atoms.
+other is derived. When both are given they must select the same atoms. The
+selection is normalised to ascending (topology) order by every driver, so the
+order you write does not matter.
 Whole-molecule QM selections (e.g. a solute in a solvent box) are the common
 case. A selection that cuts a covalent bond is capped with a hydrogen [link
 atom](#link-atoms) and the MM frontier charge is treated per
 [`frontier_scheme`](#frontier_scheme); in NAMD this is limited to schemes
 without analytic NAC (see [Link atoms](#link-atoms)).
+
+### `active_atoms`
+
+| Field | Value |
+| --- | --- |
+| Type | string (index list, ranges, or `name:` groups) |
+| Default | *(empty)* |
+| Used by | QM/MM geometry optimisation, QM/MM MD and NAMD-QMMM |
+
+The atoms the calculation is allowed to move. The spelling follows ORCA's
+`%qmmm ActiveAtoms {0:5 16 21:30} end`, so a selection can be copied from
+either side without editing: indices are **zero-based** (as
+[`qm_atoms`](#qm_atoms) is) and a range may be written `first:last` (ORCA) or
+`first-last`. Braces, commas, semicolons and spaces all separate groups, so
+`{0:5 16}`, `0-5,16` and `0:5 16` select the same atoms.
+
+A group written `name:` selects by PDB atom name, matched case-insensitively
+over the whole system — `name:P,OP1,OP2,O5'` is a nucleic-acid backbone in one
+line. The QM region is always active and does not need to be listed.
+
+Leaving this empty keeps each driver's own default: an optimisation moves the
+QM region alone, dynamics propagates every atom. See
+[Active atoms](#active-atoms-what-moves) for what "held" means physically.
+
+### `frozen_atoms`
+
+| Field | Value |
+| --- | --- |
+| Type | string (index list, ranges, or `name:` groups) |
+| Default | *(empty)* |
+| Used by | QM/MM geometry optimisation, QM/MM MD and NAMD-QMMM |
+
+Atoms taken back **out** of the active set, in the same syntax as
+[`active_atoms`](#active_atoms). This is the one-line way to hold a protein or
+nucleic-acid backbone that [`active_radius`](#active_radius) would otherwise set
+free:
+
+```text
+qmmm(active_radius=4.0,frozen_atoms="name:P,OP1,OP2,O5',C5',C4',C3',O3'")
+```
+
+Used on its own it means "everything else moves", which is usually what a
+dynamics deck wants. It may not name a QM atom — the QM region is what the
+calculation moves — and that is reported as an error rather than silently
+ignored.
+
+### `active_radius`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Å) |
+| Default | `0.0` |
+| Used by | QM/MM geometry optimisation, QM/MM MD and NAMD-QMMM |
+
+Adds every MM residue with an atom within this distance of a QM atom to the
+active set — ORCA's `ActiveCore_Extension`. `0` adds nothing. **Whole residues**
+are selected, so waters and side chains stay intact; in a periodic box the
+distance is the minimum-image distance. The residue that carries the QM atoms is
+the exception: a covalent cut runs through it, so its MM atoms are selected one
+by one.
+
+### `active_from_pdb`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | QM/MM geometry optimisation, QM/MM MD and NAMD-QMMM |
+
+Reads the active set from the **B-factor column** of
+[`pdb_file`](#pdb_file) — `1` marks an active atom, `0` an atom to hold — which
+is ORCA's `Use_Active_InfoFromPDB`. This keeps the selection with the structure,
+so a prepared system carries its own active region and no index list has to be
+maintained alongside it. A file whose B-factor column is zero everywhere is
+reported as an error rather than run as an empty selection.
+
+A runnable deck is
+`examples/QMMM/H2CO-water_BHHLYP-MRSF-NAMD-QMMM-active.inp`.
 
 ### `cutoff`
 
@@ -259,10 +341,26 @@ without analytic NAC (see [Link atoms](#link-atoms)).
 | Values | `NoCutoff`, `PME`, `Ewald`, `CutoffNonPeriodic`, `CutoffPeriodic` |
 | Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
 
-OpenMM nonbonded method for the MM region. `NoCutoff` is used for isolated
-(non-periodic) clusters. `PME` (particle-mesh Ewald) or `Ewald` select a
-periodic box and enable ESPF-PME electrostatics for a solvated/periodic system;
-these turn on the periodic branch of the driver.
+OpenMM nonbonded method for the MM region. `NoCutoff` (and `CutoffNonPeriodic`)
+treat the system as an isolated cluster with a direct Coulomb sum, even when the
+PDB carries a `CRYST1` record. `PME` (particle-mesh Ewald), `Ewald` and
+`CutoffPeriodic` select a periodic (orthorhombic) box: the MM-MM part is
+evaluated by OpenMM with that method, and the QM/MM electrostatics of the
+`electrostatic` embedding are evaluated by Ewald summation — the MM potential
+and its gradient at every QM centre, the forces on the MM atoms from the ESPF
+charges and their images, and the interaction of the QM charges with their own
+periodic images, which is made self-consistent with the ESPF charges outside
+the SCF — in NAMD with the relaxed charges of the propagated state — (the run
+stops with an error if that loop does not converge). The periodic branch is
+available to `runtype = md`, to the QM/MM `runtype = optimize`, and to
+same-spin FSSH (`runtype = namd`, `[md] soc = false`); SOC-NAMD requires
+`NoCutoff`. See
+[`ewald_tol`](#ewald_tol), [`lj_switch`](#lj_switch), [`h_lj`](#h_lj) and
+[`mm_charge_width`](#mm_charge_width) for the related controls. These
+controls belong to the drivers built on the ESPF QM/MM force (`runtype = md`,
+`namd` and the QM/MM `optimize`); a single-point QM/MM energy uses the
+non-periodic point-charge path and the input checker rejects them there rather
+than ignoring them.
 
 ### `embedding`
 
@@ -278,7 +376,7 @@ Selects how the MM environment couples to the QM subsystem.
 | Value | Meaning |
 | --- | --- |
 | `electrostatic` | Full ESPF electrostatic embedding. The MM charges polarize the QM density through the ESPF operator, and the QM density reacts on the MM atoms via ESPF-fitted charges. This is the production value and gives the analytic, energy-conserving QM/MM gradient. |
-| `mechanical` | No electrostatic coupling into the QM Hamiltonian; the QM/MM interaction is mechanical (bonded/van der Waals) only. |
+| `mechanical` | No electrostatic coupling into the QM Hamiltonian: the QM subsystem runs a gas-phase SCF (zero embedding field), and OpenMM evaluates the QM–MM electrostatics with the fixed force-field charges of the QM atoms (intra-QM non-bonded pairs excluded). The MM energy is then differentiated at the charges it was built with, so the force is the exact gradient of the energy and the scheme conserves energy in dynamics; it simply omits the polarisation of the QM density by the environment. |
 
 Legacy spellings such as `espf` and `split` appear in older decks; new inputs
 should use `electrostatic`.
@@ -322,6 +420,73 @@ Apply rigid-water (SHAKE/RATTLE) constraints to MM water molecules. QM atoms are
 never constrained. Rigid water removes the stiff O-H stretch from the MM region
 and allows a normal MD timestep (~0.5-1 fs). The nonadiabatic velocity-Verlet
 loop always constrains MM rigid water; QM atoms move under the QM forces.
+
+### `ewald_tol`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | unset (OpenMM default, `5e-4`) |
+| Used by | periodic QM/MM MD, NAMD-QMMM and QM/MM optimisation (`cutoff = PME` / `Ewald`) |
+
+Error tolerance of the OpenMM PME/Ewald evaluation of the MM-MM electrostatics.
+OpenMM's default gives a force error of about 0.5 kJ/mol/nm, which is the floor
+of any finite-difference force check or NVE energy-conservation test on a
+periodic box; use `1e-6` for such validation work. Ignored for non-periodic
+cutoffs. Must be a positive number.
+
+### `lj_switch`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation with a finite cutoff |
+
+Switch the MM Lennard-Jones interactions smoothly to zero over the last 15 % of
+the nonbonded cutoff (OpenMM `setUseSwitchingFunction`). A plain truncation makes
+the MM energy discontinuous when pairs cross the cutoff, which shows up as a
+drift of the total energy in NVE dynamics (about +10 kJ/mol/ps for a solvated
+dipeptide with the OpenMM defaults). No effect under `NoCutoff`.
+
+### `h_lj`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
+
+Give Lennard-Jones parameters to MM hydrogens that have none in the force field
+(TIP3P water hydrogens), using the CHARMM TIP3P values (R_min/2 = 0.2245 Å,
+ε = 0.046 kcal/mol). Without them nothing but the QM density keeps a water
+hydrogen from approaching a QM oxygen too closely, since a point charge has no
+Pauli wall. QM atoms are never modified. On its own this is a weak barrier; see
+[`mm_charge_width`](#mm_charge_width).
+
+### `mm_charge_width`
+
+| Field | Value |
+| --- | --- |
+| Type | float (Å) |
+| Default | unset (point charges) |
+| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
+
+Represent the MM charges as Gaussians of this width in the QM/MM electrostatics
+(full-ESPF `embedding = electrostatic` only; other embeddings reject it).
+The QM-MM pair potential `1/r` becomes `erf(μr)/r` with `μ = 1/(√2 w)`,
+consistently in the energy, the QM and MM forces, the direct sum and the
+real-space part of the Ewald sum; the MM-MM interactions and the QM-image term
+are untouched. This is the erf damping of the reference Tinker ESPF
+implementation (its `ERFMU` keyword); `0.7` Å corresponds to its default
+`μ = 1/Å`. It removes the `1/r` singularity a bare point charge presents to the
+QM density, which otherwise lets a solvent hydrogen collapse onto a QM carbonyl
+oxygen through a polarisation runaway of the ESPF charges, after which the MRSF
+Z-vector equations diverge. Must be a positive number; `0` or unset means point
+charges. In a periodic box the damping correction is summed over the minimum
+image inside the real-space cutoff (half the shortest box edge) only, so the
+width must be short-ranged on that scale: `w ≤ L_min / (9 √2)` (1.26 Å for a
+16 Å box); larger values are rejected with a message giving the bound.
 
 ### `nonbondedmethod`
 
@@ -521,6 +686,58 @@ When `qm_atoms_xyz` is present and `qm_list` is omitted, rows are used in QM
 atom order. If supplied, `qm_list` must have the same length as the QM atom
 selection and contain valid XYZ indices.
 
+## Active atoms (what moves)
+
+A solvated or biomolecular QM/MM system is mostly environment, and propagating
+all of it is what makes a long trajectory or a large optimisation expensive.
+The `[qmmm]` keys [`active_atoms`](#active_atoms),
+[`frozen_atoms`](#frozen_atoms), [`active_radius`](#active_radius) and
+[`active_from_pdb`](#active_from_pdb) select which atoms actually move. They
+follow ORCA's `%qmmm ActiveAtoms` naming and syntax, and they are read by the
+**QM/MM optimiser, ground-state QM/MM MD and the NAMD-QMMM drivers alike**.
+
+The active set is assembled as
+
+```text
+QM region  +  active_radius shell  +  active_atoms  −  frozen_atoms
+```
+
+and the QM region is always in it.
+
+!!! note "Held is not absent"
+    Freezing an atom changes what moves, never the physics. A held atom keeps
+    its MM charge, its contribution to the ESPF embedding field that polarizes
+    the QM density, and the force it exerts on the atoms that do move. It is
+    simply not integrated — so no work is done on it, and energy conservation
+    still applies to the atoms that move. What changes is the cost and the
+    reported number of degrees of freedom.
+
+Each driver holds an atom in the way that is natural for it:
+
+| Path | How a held atom is held |
+| --- | --- |
+| `runtype=optimize` | its coordinates never enter the optimisation vector |
+| `runtype=namd` (FSSH, SOC, SOC-MCH) | its rows are skipped in the velocity-Verlet update, so it keeps zero velocity; the Maxwell draw, the centre-of-mass correction and the degree-of-freedom count all run over the atoms that move |
+| `runtype=md` | OpenMM gives the particle **zero mass**, which is how OpenMM holds an atom in place |
+
+Rigid-water constraints are resolved against the selection, because SHAKE/RATTLE
+cannot satisfy a constraint between a moving atom and a fixed one — it would drag
+the fixed atom. A constrained pair that straddles the boundary is made whole:
+held if either atom was frozen, moving otherwise. Constraints inside the held set
+are then dropped, since those atoms never move.
+
+Defaults preserve every existing deck: with none of these keys set, an
+optimisation moves the QM region alone and dynamics propagates every atom. A
+NAMD restart is bound to the selection so a restart cannot silently change what
+moves, but only once a selection is actually requested — checkpoints written
+before these keys existed keep validating.
+
+The optimiser also accepts the `[optimize]` spellings
+[`qmmm_radius`](optimize.md#qmmm_radius) — the released name of the movable
+shell — together with `qmmm_active` and `qmmm_freeze`, as aliases of
+`active_radius`, `active_atoms` and `frozen_atoms`; `[qmmm]` wins if both are
+given, and only the `[qmmm]` spelling reaches the dynamics drivers.
+
 ## Covalent QM/MM boundaries
 
 Most QM/MM calculations put a whole molecule (or a set of whole molecules) in the
@@ -619,6 +836,12 @@ the ESPF grid switching width is selected automatically — see
     schemes that do not use analytic NAC. `TDC_NAC` and `NAC` require a
     whole-molecule QM region.
 
+The ESPF gradient accounts for the fitting grid moving with the atoms (the
+translational counter-terms of every grid point are charged to its parent
+atom), so the force is the exact derivative of the embedded energy and QM/MM
+molecular dynamics conserves the total energy in vacuum and in a periodic box,
+with or without a link atom.
+
 ## ESPF grid switching
 
 The ESPF embedding gradient carries a small finite-difference residual (the
@@ -685,4 +908,7 @@ native ESPF module:
   [`[md]`](md.md) section and see the
   [SOC-NAMD-QMMM workflow](../workflows/soc-namd-qmmm.md).
 - Use `cutoff = PME` (or `Ewald`) with a solvated periodic water box for
-  production QM/MM-MD; `NoCutoff` is for isolated clusters.
+  production QM/MM-MD; `NoCutoff` is for isolated clusters. For energy
+  conservation in solution set `ewald_tol = 1e-6` and `lj_switch = true`; for
+  excited-state (MRSF) dynamics in water add `mm_charge_width = 0.7` (and
+  optionally `h_lj = true`).
