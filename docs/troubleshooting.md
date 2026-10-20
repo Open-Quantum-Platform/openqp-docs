@@ -82,10 +82,15 @@ and keep the run type at `energy` for the current production PCM path.
 
 ## MP2 Stops at the Build Guard
 
-Standalone MP2 uses direct per-occupied-MO-pair Coulomb builds. Large systems
-can abort before the correlation step if the number of pair builds exceeds the
-`OQP_MP2_MAX_JBUILDS` guard. Reduce the basis/problem size first; raise the
-guard only when you have checked the expected runtime and memory cost.
+The default `[mp2] transform=auto` selects a packed AO-to-MO transformation
+when the direct pair-build count exceeds `OQP_MP2_MAX_JBUILDS`. If the packed
+transformation fails, the direct fallback is still subject to that guard.
+Explicit `transform=direct` stops when the pair-build count exceeds the guard;
+use `auto` or `n5` to select a packed transformation instead. Explicit `n5`
+requires a packed form and stops if neither full nor occupied-virtual storage
+can fit or allocate. Reduce the basis/problem size when packed storage is
+unavailable; raise the direct-build guard only after checking runtime and
+memory cost. See [MP2 transformation selection](keywords/mp2.md#transform).
 
 ## Documentation Looks Stale
 

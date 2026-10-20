@@ -97,6 +97,7 @@ run them directly.
 | `ala-dipeptide_BHHLYP-MRSF-NAMD-QMMM-linkatom.oqp` | NAMD | QM/MM surface hopping across a covalent boundary with a scheme that does not use analytic NAC. |
 | `ala-dipeptide_RKS-QMMM-GROUND-STATE-MD.oqp` | Ground-state MD | Ground-state QM/MM MD in the unified `md(...) qmmm(...)` form. |
 | `ala-dipeptide_RHF-QMMM-OPT-linkatom.oqp` | Optimization | QM/MM geometry optimization across a covalent boundary. |
+| `ala-box_BHHLYP-MRSF-NAMD-QMMM-PME.oqp` | NAMD | The same covalent boundary in a **periodic TIP3P box** (`cutoff=PME`, Ewald QM/MM electrostatics), exercising `ewald_tol`, `lj_switch`, `h_lj` and `mm_charge_width`. |
 | `ala-dipeptide_BHHLYP-QMMM-MD-RCD.oqp` | Ground-state MD | QM/MM MD across a **covalent boundary**: alanine dipeptide, QM = the C-terminal amide, hydrogen link-atom cap + `frontier_scheme=rcd`. |
 | `run.oqp` | Ground-state MD | Whole-molecule QM region: one water of a water dimer. |
 | `ala.oqp` | Single-point | QM/MM energy of the alanine amide. |

@@ -80,18 +80,33 @@ the same embedding. The default full-ESPF electrostatics (`embedding=electrostat
 give a finite-difference-exact analytic gradient and energy-conserving dynamics.
 Rigid-water SHAKE/RATTLE constraints are applied to the MM region inside the
 velocity-Verlet loop, so a normal (~0.5 fs) timestep can be used; QM atoms are
-never constrained. A periodic water box uses particle-mesh Ewald
-(`cutoff=PME`) with ESPF-PME electrostatics. See the
+never constrained. A periodic water box (particle-mesh Ewald, `cutoff=PME`,
+ESPF-PME electrostatics) is available to the same-spin FSSH driver; the
+SOC-NAMD drivers run isolated clusters (`cutoff=NoCutoff`). See the
 [`[qmmm]`](../keywords/qmmm.md) page and
 [References](../references.md#qmmm-espf-embedding).
 
 ### Scope and limitations
 
 The validated SOC-NAMD-QMMM setting is a **whole-molecule QM region**: a
-solvated chromophore in a periodic (PME) water box, with the whole chromophore
-in the QM region. Same-spin QM/MM NAMD also accepts a covalent QM/MM boundary
-(hydrogen link atoms) with schemes that do not use analytic NAC; see
+solvated chromophore with the whole chromophore in the QM region. Covalent
+QM/MM boundaries (hydrogen link atoms) are also accepted, in same-spin and
+SOC-NAMD, with schemes that do not use analytic NAC; see
 [Link atoms](../keywords/qmmm.md#link-atoms).
+
+In the periodic branch (`cutoff=PME`, same-spin FSSH only) the QM-image term
+is iterated to self-consistency with the relaxed ESPF charges of the
+**propagated state**, so the force integrated is the derivative of the
+reported energy of that state; each iteration is logged as
+`QM-image field, active-state iteration`, and after a surface hop the field
+is re-iterated for the new state before its force is integrated. The relaxed
+charges inherit the Z-vector residual, so periodic MRSF dynamics should set
+`[tdhf] zvconv = 1e-8` (the input checker warns otherwise): the image loop
+then converges in two gradient evaluations per step instead of four or five.
+The spin-adiabatic SOC-NAMD state is a mixture of MCH states without
+per-iteration relaxed charges, so SOC-NAMD rejects periodic boxes (use
+`cutoff=NoCutoff`, the default). The tight-binding (`method=dftb/xtb`) NAMD
+path supports non-periodic clusters only.
 
 ## How the driver is selected
 
@@ -107,9 +122,10 @@ and `soc_basis`:
 | **`true`** | **`true`** | `adiabatic` | **`NAMD_SOC_QMMM`** (spin-adiabatic SOC-NAMD + ESPF QM/MM) |
 | **`true`** | **`true`** | **`mch`** | **`NAMD_SOC_MCH_QMMM`** (MCH-basis SOC-NAMD + ESPF QM/MM) |
 
-## Example deck: SOC-NAMD-QMMM in a periodic water box
+## Example deck: SOC-NAMD-QMMM in a water cluster
 
-A complete deck for a chromophore solvated in a periodic TIP3P water box. The
+A complete deck for a chromophore solvated in a TIP3P water cluster (SOC-NAMD
+is non-periodic; the same deck with `soc=false` may use `cutoff=PME`). The
 whole chromophore is the QM region (`qm_atoms`); the water is MM.
 
 `.oqp`:
@@ -119,7 +135,7 @@ mrsf(nstate=3)/bhhlyp/6-31g*
 namd(S1,scheme=custom,tdc=npi,rescale=isotropic,thrshe=0.367493,frustrated=reflect,
      soc=true,soc_basis=mch)
 md(nstep=200,dt=0.5)
-qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-14",cutoff=PME,rigidwater=true)
+qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",qm_atoms="0-14",rigidwater=true)
 geom="chromophore_water.pdb"
 ```
 
@@ -143,10 +159,9 @@ job = OpenQP("chromophore_socnamd_qmmm", silent=1)
 job.molecule("chromophore_water.pdb 1-15", basis="6-31g*")
 job.theory.mrsf(functional="bhhlyp", nstate=3)   # ROHF triplet reference + MRSF
 
-# ESPF QM/MM embedding in a periodic TIP3P water box
+# ESPF QM/MM embedding in a TIP3P water cluster
 job.qmmm(
     forcefield=["amber14-all.xml", "amber14/tip3p.xml"],
-    cutoff="PME",
     embedding="electrostatic",
     rigidwater=True,
 )
@@ -200,7 +215,6 @@ grad_wthr  = 0.001
 pdb_file         = chromophore_water.pdb
 forcefield_files = amber14-all.xml,amber14/tip3p.xml
 qm_atoms         = 0-14
-cutoff           = PME
 embedding        = electrostatic
 rigidwater       = True
 ```
@@ -221,11 +235,14 @@ Notes on the deck:
   10 eV, is the default for
   both same-spin and SOC dynamics and blocks large-gap transitions outside the
   intended local crossing region.
-- **QM region.** [`qm_atoms`](../keywords/qmmm.md#qm_atoms) must be a whole
-  molecule (see [Scope and limitations](#scope-and-limitations)).
-- **Periodicity.** [`cutoff=PME`](../keywords/qmmm.md#cutoff) selects the
-  periodic ESPF-PME branch for a solvated box; use `NoCutoff` for an isolated
-  cluster.
+- **QM region.** [`qm_atoms`](../keywords/qmmm.md#qm_atoms) is normally a whole
+  molecule; a covalent cut is capped with hydrogen link atoms and needs a
+  scheme without analytic NAC (see
+  [Scope and limitations](#scope-and-limitations)).
+- **Periodicity.** SOC-NAMD runs isolated clusters (`cutoff=NoCutoff`).
+  [`cutoff=PME`](../keywords/qmmm.md#cutoff) selects the periodic ESPF-PME
+  branch for a solvated box and is available to the same-spin FSSH driver
+  (`soc=false`) only.
 
 ## Trajectory records, restart, and energy conservation
 
