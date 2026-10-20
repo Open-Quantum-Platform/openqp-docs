@@ -68,6 +68,22 @@ IR and Raman intensities are produced from supported Hessian/frequency
 workflows. See [Hessian and Frequencies](hessian.md) for the main Hessian
 workflow page.
 
+With the analytical ground-state Hessian (RHF/RKS, UHF/UKS, ROHF/ROKS), the
+intensities are analytic and need no extra calculations:
+
+- **IR.** Comes from the nuclear derivatives of the dipole moment, built from
+  the relaxed density derivatives the Hessian already computes.
+- **Raman.** Comes from the nuclear derivatives of the static polarizability.
+  - It needs three extra CPHF right-hand sides plus a fixed number of
+    derivative-integral passes, independent of the number of atoms.
+  - For Kohn-Sham, the exchange-correlation terms are central differences
+    along the relaxed orbital path; no SCF or CPHF is re-solved.
+- **Effective core potentials.** These cases are included.
+- **Numerical Hessian.** Intensities still come from finite differences:
+  6N displaced SCF + CPHF calculations.
+- **Log.** The log states which backend produced the intensities, and the
+  `.hess.json` sidecar records it in `vibrational_intensity_metadata`.
+
 `.oqp`:
 
 ```text
@@ -106,5 +122,7 @@ Runnable `.oqp` inputs:
 
 - [`examples/HESS/H2O_RHF-DFT_ANA_HESS.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_ANA_HESS.oqp)
 - [`examples/HESS/H2O_RHF-DFT_NUM_HESS.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2O_RHF-DFT_NUM_HESS.oqp)
+- [`examples/HESS/H2Oplus_UHF_ANA_HESS_IR_RAMAN.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2Oplus_UHF_ANA_HESS_IR_RAMAN.oqp)
+- [`examples/HESS/H2Oplus_ROHF_ANA_HESS_IR_RAMAN.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/HESS/H2Oplus_ROHF_ANA_HESS_IR_RAMAN.oqp)
 
 Each has a same-stem legacy `.inp` companion.
