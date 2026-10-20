@@ -3,9 +3,11 @@
 Each worked example is one small molecule, one complete `.oqp` input that you
 can copy and run as it is, and the results that the run produces. The
 coordinates are written inside the input, so no separate geometry file is
-needed. The one exception is the [QM/MM example](formaldehyde-qmmm.md), which
-reads its structure and force field from three extra files (a PDB file and two
-OpenMM XML files) that are downloaded with it into the same folder. Run the input, then compare your numbers with the reference values on
+needed. Two examples need extra files, downloaded with them into the same
+folder: the [QM/MM example](formaldehyde-qmmm.md) reads its structure and force
+field from a PDB file and two OpenMM XML files, and the all-electron inputs of
+the [gold hydride example](auh-relativity.md) read an uncontracted basis set
+from a JSON file. Run the input, then compare your numbers with the reference values on
 the page.
 
 ```bash
@@ -127,6 +129,18 @@ time.
 ![Formaldehyde with water](../assets/worked-examples/mol-hcho-2water.png)
 <strong>QM/MM solvent shift</strong>
 <span>n→π* shift of formaldehyde from two water molecules, QM/MM vs full QM.</span>
+</a>
+
+<a class="oqp-card" href="auh-relativity/" markdown>
+![AuH curves](../assets/worked-examples/plot-auh-curves.svg)
+<strong>Relativity in gold hydride</strong>
+<span>Non-relativistic vs DKH2 vs relativistic ECP: the Au–H bond shrinks by 0.2 Å.</span>
+</a>
+
+<a class="oqp-card" href="hi-ecp/" markdown>
+![HI sigma orbital](../assets/worked-examples/orb-hi-sigma.png)
+<strong>Effective core potentials</strong>
+<span>HI with the def2-SVP ECP: optimization, frequency, dipole, valence orbitals.</span>
 </a>
 
 </div>

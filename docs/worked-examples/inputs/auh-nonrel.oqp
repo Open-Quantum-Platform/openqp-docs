@@ -1,0 +1,5 @@
+dft/pbe0/file:x2c-svpall_uncontracted_auh.json
+geom="""
+Au 0.000000 0.000000 0.000000
+H  0.000000 0.000000 1.550000
+"""

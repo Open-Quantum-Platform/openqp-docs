@@ -1,0 +1,5 @@
+dft/pbe0/def2-svp properties(scf_prop="el_mom,mulliken")
+geom="""
+I 0.000000 0.000000 -0.011754
+H 0.000000 0.000000 1.611754
+"""

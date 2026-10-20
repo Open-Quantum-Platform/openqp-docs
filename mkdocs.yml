@@ -57,6 +57,8 @@ nav:
       - SF-TDDFT and spin contamination: worked-examples/ethylene-sf-tddft.md
       - CASSCF and CASPT2 vs FCI: worked-examples/lih-caspt2.md
       - QM/MM solvent shift: worked-examples/formaldehyde-qmmm.md
+      - Relativity in gold hydride: worked-examples/auh-relativity.md
+      - Effective core potentials: worked-examples/hi-ecp.md
   - OQP Studio:
       - Overview: studio/index.md
       - Download: studio/download.md
