@@ -161,7 +161,8 @@ Fixed centre for `center=point`.
 | Default | `O` |
 
 Atom name (as in the PDB/topology) that places each solvent molecule, or `com`
-for the molecular centre of mass. The name must occur exactly once in each
+for the molecular centre of mass (in a periodic cell the molecule is first made
+whole along its topology bonds). The name must occur exactly once in each
 solvent residue.
 
 ### `resnames`
