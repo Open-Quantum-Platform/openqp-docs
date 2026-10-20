@@ -138,7 +138,7 @@ its own storage requirements.
 Concise input and Python:
 
 ```text
-mp2(reference=uhf)/6-31g mp2(transform=n5)
+mp2(reference=uhf,transform=n5)/6-31g
 geom="h2o.xyz"
 ```
 
@@ -147,8 +147,8 @@ job.theory.mp2(reference="uhf", basis="6-31g")
 job.settings.mp2(transform="n5")
 ```
 
-The exact section form is `mp2/6-31g mp2(transform=n5)`. In legacy input, use
-`[mp2] transform=n5`. The log reports `MP2 path: direct-J`, `MP2 path: n5 full`,
+The exact section form `mp2(reference=uhf)/6-31g mp2(transform=n5)` is
+equivalent. In legacy input, use `[mp2] transform=n5`. The log reports `MP2 path: direct-J`, `MP2 path: n5 full`,
 or `MP2 path: n5 occupied-virtual` for each selected or attempted form. A full
 attempt can fail before the occupied-virtual fallback succeeds; a path message
 alone does not establish completion. The correlated total energy is reported

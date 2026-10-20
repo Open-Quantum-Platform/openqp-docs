@@ -205,7 +205,8 @@ geom="h2o.xyz"
 MP2 route parentheses accept `reference`, `variant`, `transform`,
 `same_spin_scale`, and `opposite_spin_scale`. The transformation selector can
 also use the exact section form `mp2(reference=uhf)/6-31g mp2(transform=n5)`;
-other MP2 settings use `mp2(...)` as an exact section call. `reference=uhf`, for example, preserves a
+other MP2 settings use `mp2(...)` as an exact section call. `reference=uhf`,
+for example, preserves a
 deliberate UMP2 reference even when `mult=1`. Use physical state labels in the
 driver for state-specific work.
 `mrsf(...) energy` defaults to the singlet target manifold. `energy(T0)`
