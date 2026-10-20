@@ -11,14 +11,16 @@ specific input contract.
 | --- | --- |
 | HF and DFT | RHF, ROHF, and UHF references. |
 | MP2 | RHF, UHF, and ROHF energies with spin-scaled variants; analytic RHF gradients and RHF gradient-driven geometry calculations. |
-| Coupled cluster | Energy-only CCSD and CCSD(T) on RHF, UHF, and ROHF references, with a frozen core. In-core integrals; the open-shell path is a spin-orbital solver for small systems. See [Coupled Cluster](workflows/coupled-cluster.md). |
+| Coupled cluster (native) | Energy-only CCSD and CCSD(T) on RHF, UHF, and ROHF references, with a frozen core, from `.oqp`, `.inp` or Python input. In-core integrals; the open-shell path is a spin-orbital solver for small systems. See [Coupled Cluster](workflows/coupled-cluster.md). |
+| Coupled cluster (external CCpy) | Python only, no input keyword: the external CCpy library, downloaded on first use, on converged RHF, ROHF, or UHF Hartree-Fock orbitals from OpenQP, without point-group symmetry, with frozen core and deleted virtual orbitals. OpenQP returns a CCpy driver that runs CCpy's CCSD, CR-CC(2,3), CC(P;Q), EOM-CC, IP/EA-EOM-CC, and spin-flip EOM-CC energies. Compared with PySCF orbitals driven through the same CCpy commit for CCSD, CR-CC(2,3), and SF-EOMCCSD. See [CCpy Coupled Cluster](workflows/ccpy.md). |
 | Wavefunction methods | Native determinant-space FCI, CASCI, CASSCF, state-averaged CASSCF, CASPT2, NEVPT2, and QDPT-family energies on an RHF reference. State-specific CASSCF, dedicated SA-CASSCF, single-state CASPT2/MRMP2, MCQDPT2, XMS-CASPT2/XMCQDPT2, and single-state SC-NEVPT2 have analytic nuclear gradients; the SA-CASSCF compatibility spelling, multi-set MS-CASPT2, and partially contracted NEVPT2 use central differences. See [Wavefunction methods](keywords/wavefunction.md). |
 | CASSCF nuclear gradient | Analytic gradients for state-specific `casscf`, the weighted SA-CASSCF objective, and an individual averaged root through a coupled orbital and CI Z-vector. Individual-state gradients support gradient-driven optimization; the weighted objective currently supports direct gradients only. CASCI and FCI remain energy-only. See [CASSCF Nuclear Gradient](workflows/casscf-gradient.md). |
 | CASPT2 nuclear gradient | Analytic gradients for single-state CASPT2/MRMP2, MCQDPT2, and XMS-CASPT2/XMCQDPT2 (`[pt2] gradient=auto` prefers them and falls back to central differences when a precondition fails). See [CASPT2 Nuclear Gradient](workflows/caspt2-gradient.md). |
 | SC-NEVPT2 nuclear gradient | Analytic gradient and gradient-driven geometry calculations for single-state, strongly contracted Dyall-Hamiltonian NEVPT2 on a state-specific CASSCF reference. See [SC-NEVPT2 Nuclear Gradient](workflows/sc-nevpt2-gradient.md). |
 | TDHF/TDDFT | Energy and gradient workflows for supported references. |
-| SF-TDDFT and MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. |
-| UMRSF-TDDFT | Energy-only UHF-reference workflow. |
+| SF-TDDFT | Spin-flip energies and analytic gradients from an ROHF or UHF high-spin reference, with the gradient-driven `optimize`, `meci` and `tci` workflows; numerical Hessians with the ROHF reference. NACME, SOC, NAMD and MECP require MRSF-TDDFT. See [SF-TDDFT](workflows/sf-tddft.md). |
+| MRSF-TDDFT | Multiconfigurational ground- and excited-state energies, gradients, NACME, SOC, and optimization workflows. See [MRSF-TDDFT](workflows/mrsf-tddft.md). |
+| UMRSF-TDDFT | UHF-reference energies and analytic nuclear gradients (`runtype=grad`, `optimize`, `meci`, `mecp`, `tci`) for HF, LDA/GGA and global-hybrid functionals. |
 | MRSF-EKT | IP/EA analysis with Dyson-like orbital data. |
 
 ## Properties
@@ -34,9 +36,10 @@ specific input contract.
 | MRSF excited-state analysis | NTOs, attachment/detachment densities, state-to-state transition densities, cube export, QCSchema export, FCIDUMP export, and external-code comparisons through `oqp.interop`. |
 | Nonadiabatic MD (NAMD) | Tully surface hopping, SOC-NAMD, and ESPF QM/MM embedding. See [SOC-NAMD-QMMM](workflows/soc-namd-qmmm.md). |
 | QM/MM | ESPF electrostatic embedding for single-point energies, ground-state MD, and nonadiabatic dynamics. See [`[qmmm]`](keywords/qmmm.md). |
-| Scalar relativistic correction | Spin-free DKH correction through `[scf] scal_rel=1` or `2`. |
+| Scalar relativistic correction | Spin-free DKH correction through `[scf] scal_rel=1` or `2`, decoupled in the decontracted basis by default (`[scf] scal_rel_decontract`). |
 | PCM/ddX | Energy-only reference-SCF path for RHF/ROHF. |
 | NMR | Nuclear magnetic shielding via `[properties] scf_prop=nmr`. |
+| ACID current-density maps | ACID and induced-current-density cubes via `scf_prop=nmr,acid`, ground state, GIAO only, Cartesian bases up to f. See [ACID Current-Density Maps](workflows/acid.md). |
 | IR/Raman | Frequency-analysis intensities from supported Hessian workflows. |
 
 ## Geometry and Paths
@@ -84,5 +87,6 @@ constraint types that the concise grammar does not yet support.
   The closed-shell Cholesky path can still *build* its vectors directly from
   recomputed AO integrals, skipping the packed AO store — see
   [`cholesky_direct`](keywords/cc.md#cholesky_direct).
-- UMRSF-TDDFT gradients and Hessians are not part of the documented production
-  surface yet.
+- UMRSF-TDDFT Hessians, NACME and SOC are not part of the documented production
+  surface yet; UMRSF gradients with range-separated, meta-GGA or double-hybrid
+  functionals, or with custom spin-pair-coupling scales, remain energy-only.
