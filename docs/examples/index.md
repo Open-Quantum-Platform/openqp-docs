@@ -5,6 +5,9 @@ The
 are the preferred source of runnable input decks. Use them as templates before
 writing a new input from scratch.
 
+For self-contained inputs with reference results and explanations, start with
+the [Worked Examples](../worked-examples/index.md).
+
 Every sectioned `*.inp` deck has a same-stem readable `*.oqp` companion. The
 two files describe the same calculation, so new users can start from the
 shorter `.oqp` form while existing scripts can keep using `.inp` unchanged.

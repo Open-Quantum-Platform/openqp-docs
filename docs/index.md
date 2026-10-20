@@ -18,6 +18,8 @@ workflows and keywords.
   overrides, BLAS/LAPACK choices, and external dependency cache behavior.
 - [Quickstart](quickstart.md): the shortest path from a molecule to an OpenQP
   output file.
+- [Worked Examples](worked-examples/index.md): copy-and-run `.oqp` inputs for
+  small molecules, with pictures and the reference results each run produces.
 - [OQP Studio](studio/index.md): install and use the desktop interface for
   molecular building, execution, analysis, and ray-traced rendering.
 - [`.oqp` input](oqp-input.md): the recommended input style used first

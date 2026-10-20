@@ -111,6 +111,10 @@ new input examples in this manual lead with `.oqp`.
 
 ## Next Calculations
 
+For complete copy-and-run inputs with the expected results, molecule and orbital
+pictures, and an explanation of each result, see
+[Worked Examples](worked-examples/index.md).
+
 Use these `.oqp` inputs as nearby templates. Every linked `.oqp` example has
 a same-stem legacy `.inp` companion.
 
