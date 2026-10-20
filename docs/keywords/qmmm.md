@@ -427,7 +427,7 @@ loop always constrains MM rigid water; QM atoms move under the QM forces.
 | --- | --- |
 | Type | float |
 | Default | unset (OpenMM default, `5e-4`) |
-| Used by | periodic QM/MM MD and NAMD-QMMM (`cutoff = PME` / `Ewald`) |
+| Used by | periodic QM/MM MD, NAMD-QMMM and QM/MM optimisation (`cutoff = PME` / `Ewald`) |
 
 Error tolerance of the OpenMM PME/Ewald evaluation of the MM-MM electrostatics.
 OpenMM's default gives a force error of about 0.5 kJ/mol/nm, which is the floor
@@ -441,7 +441,7 @@ cutoffs. Must be a positive number.
 | --- | --- |
 | Type | boolean |
 | Default | `False` |
-| Used by | QM/MM MD and NAMD-QMMM with a finite cutoff |
+| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation with a finite cutoff |
 
 Switch the MM Lennard-Jones interactions smoothly to zero over the last 15 % of
 the nonbonded cutoff (OpenMM `setUseSwitchingFunction`). A plain truncation makes
@@ -455,7 +455,7 @@ dipeptide with the OpenMM defaults). No effect under `NoCutoff`.
 | --- | --- |
 | Type | boolean |
 | Default | `False` |
-| Used by | QM/MM MD and NAMD-QMMM (`electrostatic` embedding) |
+| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
 
 Give Lennard-Jones parameters to MM hydrogens that have none in the force field
 (TIP3P water hydrogens), using the CHARMM TIP3P values (R_min/2 = 0.2245 Å,
@@ -470,7 +470,7 @@ Pauli wall. QM atoms are never modified. On its own this is a weak barrier; see
 | --- | --- |
 | Type | float (Å) |
 | Default | unset (point charges) |
-| Used by | QM/MM MD and NAMD-QMMM (`electrostatic` embedding) |
+| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
 
 Represent the MM charges as Gaussians of this width in the QM/MM electrostatics
 (full-ESPF `embedding = electrostatic` only; other embeddings reject it).
