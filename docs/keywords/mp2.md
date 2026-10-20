@@ -1,6 +1,7 @@
 # `[mp2]`
 
-The `[mp2]` section controls spin-component scaling for standalone
+The `[mp2]` section controls spin-component scaling and energy integral
+transformation for standalone
 `[input] method=mp2` calculations. Ordinary MP2 does not require this section;
 the defaults are conventional unscaled MP2.
 
@@ -105,6 +106,54 @@ E(MP2) = c_ss * (E_aa + E_bb) + c_os * E_ab
 Named presets set both scale factors internally. If you provide
 `same_spin_scale` or `opposite_spin_scale` with a named preset, those explicit
 numbers are not used; choose `variant=custom` instead.
+
+### `transform`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `auto` |
+| Values | `auto`, `direct`, `n5` |
+| Used by | standalone MP2 correlation energy |
+
+Selects the AO-to-MO transformation used for the correlation energy:
+
+- `auto` uses direct per-occupied-virtual-pair Coulomb builds when their count
+  is within `OQP_MP2_MAX_JBUILDS` and the basis has at most 120 functions.
+  Otherwise it tries the packed transformation. If that fails, direct builds
+  remain available only when their count satisfies the guard.
+- `direct` requests direct Coulomb builds and retains the same pair-count
+  guard. It stops when the guard is exceeded.
+- `n5` requires the packed transformation, including for small bases. A full
+  transformation can fall back to occupied-virtual storage. If the packed
+  transformation cannot fit or allocate, the calculation stops; it does not
+  change to direct Coulomb builds.
+
+The two packed forms use the same MP2 expression. UHF and ROHF opposite-spin
+components use the occupied-virtual form with both spin-orbital coefficient
+sets. Memory checks include scratch and the ranks on each node. This setting
+controls the energy transformation only; the analytic-gradient assembly has
+its own storage requirements.
+
+Concise input and Python:
+
+```text
+mp2(reference=uhf,transform=n5)/6-31g
+geom="h2o.xyz"
+```
+
+```python
+job.theory.mp2(reference="uhf", basis="6-31g")
+job.settings.mp2(transform="n5")
+```
+
+The exact section form `mp2(reference=uhf)/6-31g mp2(transform=n5)` is
+equivalent. In legacy input, use `[mp2] transform=n5`. The log reports `MP2 path: direct-J`, `MP2 path: n5 full`,
+or `MP2 path: n5 occupied-virtual` for each selected or attempted form. A full
+attempt can fail before the occupied-virtual fallback succeeds; a path message
+alone does not establish completion. The correlated total energy is reported
+only after a successful transformation. These messages do not constitute a
+performance comparison.
 
 ### `same_spin_scale`
 
