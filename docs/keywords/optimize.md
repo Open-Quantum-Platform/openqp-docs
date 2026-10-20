@@ -30,20 +30,26 @@ the QM region plus the MM residues within
 [`[qmmm] active_radius`](qmmm.md#active_radius), plus
 [`active_atoms`](qmmm.md#active_atoms) and minus
 [`frozen_atoms`](qmmm.md#frozen_atoms) — and the rest is fixed. The native trust-radius
-RFO/BFGS engine drives the search in Cartesian coordinates (trust radius from
+RFO/BFGS engine drives the search, in Cartesian coordinates by default (trust radius from
 [`[oqp] trust`](oqp.md) / `trust_max`), orbitals are reused between steps,
 and convergence is the same five-part test as the all-QM optimiser:
 [`energy_shift`](#energy_shift), [`rmsd_step`](#rmsd_step),
 [`max_step`](#max_step), [`rmsd_grad`](#rmsd_grad) and
-[`max_grad`](#max_grad). Only `method = hf`, `tdhf` (MRSF) and the
-tight-binding methods are accepted. Options the QM/MM force does not carry
-are rejected rather than ignored: frozen-distance constraints
-(`[oqp] freeze`), D4 dispersion (`[input] d4`), and the MD driver's
-QM-coordinate override (`[qmmm] qm_atoms_xyz` / `qm_list`).
+[`max_grad`](#max_grad). Only `method = hf` (HF and DFT), `tdhf`
+(TDHF/MRSF) and the tight-binding methods `dftb` and `xtb` are accepted.
+Options the QM/MM force does not carry are rejected rather than ignored:
+frozen-distance constraints (`freeze` or `frozen_distances` in `[oqp]` or
+`[optimize]`), D4 dispersion (`[input] d4`), the MD driver's QM-coordinate
+override (`[qmmm] qm_atoms_xyz` / `qm_list`), `[guess] swapmo`, and
+`[guess] continue_geom` (to continue, use the optimised full-system PDB as the
+new `[qmmm] pdb_file`).
 [`init_scf`](#init_scf) is honoured: by default the converged orbitals of
 the previous step seed the next SCF; `init_scf = true` restarts it at every
-geometry. `[oqp] coordsys` is honoured, with `auto` meaning Cartesian here
-because the movable set can be several disconnected fragments. Relative
+geometry. `[oqp] coordsys` accepts `auto`, `cartesian` and `tric`; `auto`
+means Cartesian here because the movable set can be several disconnected
+fragments, and DLC/RIC are rejected because they remove the collective
+translations and rotations of the movable atoms relative to the fixed MM
+atoms. Relative
 `[qmmm] pdb_file` and `forcefield_files` entries not found in the working
 directory are looked up next to the input deck. After the run,
 `Runner.results()["energy"]` holds the QM/MM total energy of the reported
@@ -54,19 +60,18 @@ as a full-system PDB ([`qmmm_output`](#qmmm_output)). Only plain
 minimisation is connected; MECI, MECP, TS, IRC, MEP and NEB refuse
 `qmmm_flag`.
 
-```ini
-[input]
-runtype   = optimize
-qmmm_flag = true
-system    = box.pdb 207 208 ... 220        # 1-based QM atoms
-[optimize]
-istate        = 0                          # ground state; n = n-th TDHF/MRSF root
-[qmmm]
-pdb_file      = box.pdb
-qm_atoms      = 206,207,...,219            # same atoms, 0-based
-active_radius = 4.0                        # MM residues within 4 A move too
-frozen_atoms  = name:P,OP1,OP2,O5'         # ...but hold the backbone
+```text
+rhf/6-31g opt qmmm(forcefield_files="amber14-all.xml",qm_atoms="8,9,16,17,18",active_radius=3.0,frozen_atoms="6 name:CA")
+geom="ala.pdb 9 10 17 18 19"
 ```
+
+This optimises the alanine dipeptide of the repository example
+`examples/QMMM/ala-dipeptide_RHF-QMMM-OPT-active` with the MM residues within
+3 Å of the QM region free to move, except the backbone N (index 6) and the
+CA atom, which are held. The `geom` indices are 1-based and `qm_atoms` lists the
+same atoms 0-based; `qmmm(...)` sets `qmmm_flag`, and `[qmmm] pdb_file` is
+taken from `geom`. For an excited state, use an MRSF route and name the state,
+for example `opt(S1)`.
 
 The selection keys are documented with the rest of the `[qmmm]` section under
 [Active atoms](qmmm.md#active-atoms-what-moves); they use ORCA's
@@ -187,6 +192,11 @@ as the starting structure of a QM/MM dynamics run.
 
 Multiplicity labels for MECP-style crossing searches. MECP requires different
 values.
+The MECP driver switches the response multiplicity to each value in turn, so
+the response method must resolve both spin manifolds. Use `[tdhf] type=mrsf`, or
+`type=umrsf` where its analytic gradient is available (HF, LDA/GGA and global
+hybrids; `imult` and `jmult` from {1, 3}); conventional RPA/TDA (one spin manifold per run)
+and SF-TDDFT are rejected for MECP.
 
 ### `energy_shift`
 
