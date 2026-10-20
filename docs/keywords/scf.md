@@ -486,11 +486,13 @@ Level shift used by the SOSCF converger.
 | --- | --- |
 | Type | integer |
 | Default | `1` (`0` for [`runtype = md`](input.md#runtype) and `namd`) |
-| Used by | SCF logging |
+| Values | `0`, `1`, `2`, `3` |
+| Used by | the text log of the whole run |
 
-Controls how much the SCF writes to the log. This is the older spelling of
-the run-wide log level `[input] verbose`; when both are given, the one that
-differs from `1` takes effect, and `[input] verbose` wins if both differ.
+Older spelling of [`[input] verbose`](input.md#verbose), which sets the log level
+for the whole run. It is still read: when both are given, the one that differs
+from the default `1` wins, `[input]` first. Its effect on the molecular-orbital
+table after each SCF is:
 
 | Value | Effect |
 | --- | --- |
