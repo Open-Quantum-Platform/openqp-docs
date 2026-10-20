@@ -51,11 +51,10 @@ them from each trajectory.
 
 ## Periodic QM/MM
 
-In a periodic cell each CV is measured at its minimum image: the CV atoms are
-unwrapped along the atom pairs the CVs use, each atom at the image nearest the
-atom it is bonded to. The run stops only when the CV pairs close a ring whose
-minimum images cannot be placed consistently. CV atom indices are 1-based
-indices of the full QM+MM system.
+In a periodic cell each CV is measured at its own minimum image: every atom
+pair a CV uses is taken at its minimum-image separation, independently of the
+other CVs. The run stops only when a pair is exactly half the box length apart
+along an axis. CV atom indices are 1-based indices of the full QM+MM system.
 
 When the reaction involves solvent molecules, put them in the QM region and add
 the [FlexiBLE boundary](../keywords/flexible.md) so that QM solvent does not

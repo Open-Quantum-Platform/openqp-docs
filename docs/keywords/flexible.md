@@ -59,7 +59,8 @@ boundary. It is a QM molecule when all its atoms are in `qmmm(qm_atoms=...)`
 and an MM molecule when none are. A residue split between the QM and MM regions
 is an error. At least one QM and one MM solvent molecule are required, and the
 anchor atom must sit at the same position in every solvent residue. The anchor
-must have a positive mass: the boundary force of a molecule acts on its anchor,
+must have a positive mass, and so must the `atoms` that define
+`center=solute` together: the boundary force of a molecule acts on its anchor,
 and a massless virtual site (such as the M site of a four-site water) cannot
 carry it. Use the oxygen or `anchor=com` for such models.
 
