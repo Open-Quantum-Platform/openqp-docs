@@ -488,21 +488,24 @@ Level shift used by the SOSCF converger.
 | Default | `1` (`0` for [`runtype = md`](input.md#runtype) and `namd`) |
 | Used by | SCF logging |
 
-Controls how much the SCF writes to the log.
+Controls how much the SCF writes to the log. This is the older spelling of
+the run-wide log level `[input] verbose`; when both are given, the one that
+differs from `1` takes effect, and `[input] verbose` wins if both differ.
 
 | Value | Effect |
 | --- | --- |
 | `0` | No molecular-orbital table. |
-| `1` | The orbital table after a converged SCF (the default). |
-| `2` and above | The orbital table even when the SCF did not converge. |
+| `1` | Orbital energies, without coefficients, after a converged SCF (the default). |
+| `2` and above | Orbital energies and coefficients, also when the SCF did not converge. |
 
 The orbital table is written after every SCF, and a dynamics run calls the SCF
 at least once per step, so at the default it is repeated for every step of the
 trajectory: a 100-step QM/MM surface-hopping run of an 18-atom QM region wrote
 405 tables and 83 MB of log, in which the 101 lines that report the dynamics
 are impossible to find. [`runtype = md`](input.md#runtype) and `namd`
-therefore default this keyword to `0`; write `verbose = 2` in the deck to get
-the tables back for a trajectory.
+therefore default this keyword to `0` unless `[input] verbose` or
+`[scf] verbose` is set to a value other than `1`; write `verbose = 2` in the
+deck to get the tables back for a trajectory.
 
 Only the log is affected. The orbitals of any frame remain available from the
 Molden file, the restart record and the
