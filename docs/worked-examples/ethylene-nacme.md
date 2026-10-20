@@ -65,9 +65,12 @@ coupling, the energy gaps, and the nonadiabatic coupling:
       0.00000000       0.00834302       0.16127661
 ```
 
-Rows and columns are S0, S1, S2. As the log explains, d_ij = (s_ij − s_ji)/Δt
-with Δt = 1 here, so d is dimensionless; divide by the time step in atomic
-units (0.5 fs = 20.67 a.u.) to obtain the time-derivative coupling.
+Rows and columns are S0, S1, S2. The printed coupling is
+d_ij = (s_ij − s_ji)/(2Δt) with Δt = 1, so d is dimensionless: for example
+d(S0,S1) = (0.55690871 + 0.54636930)/2 = 0.55163901. (The log header writes the
+formula without the factor 2, but the printed values include it.) Divide by
+the time step in atomic units (0.5 fs = 20.67 a.u.) to obtain the
+time-derivative coupling.
 
 | Quantity | Reference value |
 | --- | --- |

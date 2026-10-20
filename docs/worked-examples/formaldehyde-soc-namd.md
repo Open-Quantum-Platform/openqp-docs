@@ -14,6 +14,11 @@ run on the triplet before it returns to S1.
     stop this run at the first trajectory write after the singlet → triplet
     hop, with `ValueError: NAMD trajectory schema/model mismatch on append`.
 
+    The reference trajectory below was run with GitHub `main` commit `958495f`
+    plus the #535 fix (commit `20272ac5b`), not with the build used for the
+    other pages. Surface hopping is sensitive to rounding, so later hop times
+    can differ between machines and builds even with the same seed.
+
 <div class="oqp-figs" markdown>
 <figure markdown>
 ![Formaldehyde](../assets/worked-examples/mol-hcho.png)

@@ -18,11 +18,22 @@ openqp water-scf.oqp
 
 Every input on these pages can also be downloaded from the link under its code
 block. With 2 to 8 CPU threads, most runs take between 2 seconds and 1
-minute. The path, conical-intersection, and dynamics examples take longer:
-about 3.5 minutes for each IRC direction and for the MECI search, 4.5 minutes
-for methanol MD, 5 minutes for the QM/MM dynamics, 2.5 minutes for formaldehyde SOC-NAMD,
-and 9 minutes for ethylene NAMD. Each page states its run
-time.
+minute. These take longer:
+
+| Example | Run time |
+| --- | --- |
+| HCN IRC, each direction | about 3.5 minutes |
+| Ethylene MECI search | about 3.5 minutes |
+| Ethylene S1 minimum-energy path | about 4.5 minutes |
+| Methanol ground-state MD | about 4.5 minutes |
+| Formaldehyde QM/MM excited-state dynamics | about 5 minutes |
+| Alanine-dipeptide QM/MM ground-state MD | about 6 minutes |
+| Formaldehyde SOC-NAMD | about 2.5 minutes |
+| Ethylene NAMD | about 9 minutes |
+| Benzene HF/cc-pVTZ with `symmetry(enabled=false)` | about 1.5 minutes |
+| Alanine-dipeptide QM/MM optimization | about 1 minute |
+
+Each page states its run time.
 
 <div class="oqp-gallery" markdown>
 
@@ -224,7 +235,11 @@ time.
 
 All reference values on these pages come from running exactly the inputs shown,
 with OpenQP 1.3.1 (GitHub `main`, commit `f5361a2`, 20 October 2026) on macOS
-x86_64 with 2 to 8 OpenMP threads. Molecule and orbital pictures are snapshots
+x86_64 with 2 to 8 OpenMP threads. The one exception is the
+[SOC-NAMD example](formaldehyde-soc-namd.md): it needs the fix in
+[openqp#535](https://github.com/Open-Quantum-Platform/openqp/pull/535) and was
+run with GitHub `main` commit `958495f` plus that fix (commit `20272ac5b`).
+Molecule and orbital pictures are snapshots
 of the [OQP Studio](../studio/index.md) 3D viewer, made from the output files of
 the same runs.
 
