@@ -100,6 +100,39 @@ frequency, the umbrella motion:
 | Pyramidal minimum | −56.4772657 hartree |
 | Experiment (inversion barrier) | about 24 kJ/mol |
 
+## The same transition state by QST2
+
+When both end points are known, a QST2 (quadratic synchronous transit) search
+locates the transition state directly, without a band of images:
+
+```text title="nh3-qst2.oqp"
+dft/pbe0/6-31g* ts(S0,search="qst2",product="nh3-inverted.xyz")
+geom="""
+N      0.000000     0.000000     0.098572
+H      0.000000     0.937063    -0.295716
+H     -0.811520    -0.468531    -0.295716
+H      0.811520    -0.468531    -0.295716
+"""
+```
+
+[Download nh3-qst2.oqp](inputs/nh3-qst2.oqp) (uses the same
+`nh3-inverted.xyz`)
+
+`ts(S0,search="qst2",product=...)` builds a guess between the two end points
+and refines it as a transition-state search. It converges in 7 steps, in about
+8 seconds, to −56.4672815 hartree, the same planar structure as the direct D3h
+optimization above (r(N–H) = 0.999 Å). With a third structure close to the
+transition state, `search="qst3"` with `guess="..."` uses it as an additional
+hint.
+
+| Method | Barrier | Runtime |
+| --- | --- | --- |
+| NEB, highest of 9 images | 26.23 kJ/mol | 30 s |
+| QST2 transition-state search | 26.21 kJ/mol | 8 s |
+| D3h optimization of the planar structure | 26.21 kJ/mol | — |
+
+NEB gives the whole path; QST2 gives only the transition state, but faster.
+
 ## Reading the result
 
 - **The band finds the path without a guess.** Starting only from the two

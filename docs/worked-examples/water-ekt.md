@@ -80,9 +80,41 @@ gives electron affinities instead) from the relaxed MRSF S0 density.
   Analysis or [OpenqpView](https://open-quantum-platform.github.io/OpenqpView/)
   and select them by label.
 
+## Electron affinities: ozone
+
+`ekt(ip=false,ea=true)` gives electron affinities instead. Ozone binds an extra
+electron (experimental electron affinity 2.10 eV), and a basis set with diffuse
+functions is needed for the anion:
+
+```text title="ozone-ekt-ea.oqp"
+mrsf(nstate=10)/bhhlyp/6-31+g* ekt(ip=false,ea=true)
+geom="""
+O      0.000000     0.000000     0.444340
+O      0.000000     1.083397    -0.222170
+O      0.000000    -1.083397    -0.222170
+"""
+```
+
+[Download ozone-ekt-ea.oqp](inputs/ozone-ekt-ea.oqp) (experimental geometry,
+r(O–O) = 1.272 Å, ∠OOO = 116.8°; about 6 seconds)
+
+```text
+  MRSF-EKT electron affinities (Dyson roots)
+  Rows index EKT Dyson roots/orbitals, not TDDFT excited states.
+  dyson      eig(ha)        eBE(ha)        eBE(eV)       metric       strength
+      1       -0.163309        0.163309        4.4439      1.000000      1.006303
+      2        0.095599       -0.095599       -2.6014      1.000000      0.999194
+```
+
+Only the first root is bound (positive electron binding energy): MRSF-EKT gives
+an electron affinity of 4.44 eV, 2.3 eV above experiment. Together with the
+ionization energies of water, which are about 2.3 eV too low, this shows that
+the EKT ionization and attachment energies at this level are shifted by a
+similar amount in opposite directions; compare trends between molecules
+rather than absolute values.
+
 ## Try next
 
-- Compute electron affinities with `ekt(ip=false,ea=true)`.
 - Compare `6-31g*` with `aug-cc-pvdz` for the first ionization energy.
 
 See also: [MRSF-EKT](../workflows/ekt.md), [`ekt`](../keywords/ekt.md).

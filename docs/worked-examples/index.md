@@ -7,8 +7,9 @@ needed. Some examples need extra files, downloaded with them into the same
 folder: the [QM/MM examples](formaldehyde-qmmm.md) read their structure and force
 field from a PDB file and two OpenMM XML files, and the all-electron inputs of
 the [gold hydride example](auh-relativity.md) read an uncontracted basis set
-from a JSON file, and the [NEB example](nh3-neb.md) reads its product
-structure from an XYZ file. Run the input, then compare your numbers with the reference values on
+from a JSON file, the [NEB example](nh3-neb.md) reads its product structure
+from an XYZ file, and the [alanine QM/MM example](alanine-qmmm.md) reads a PDB
+file. Run the input, then compare your numbers with the reference values on
 the page.
 
 ```bash
@@ -167,6 +168,54 @@ time.
 ![NH3 NEB](../assets/worked-examples/plot-nh3-neb.svg)
 <strong>Reaction path by NEB</strong>
 <span>Ammonia umbrella inversion with a 9-image nudged elastic band, checked against the planar transition state.</span>
+</a>
+
+<a class="oqp-card" href="formaldehyde-s1-opt/" markdown>
+![Absorption and emission](../assets/worked-examples/plot-hcho-absorption-emission.svg)
+<strong>Excited-state optimization</strong>
+<span>S0 and S1 minima of formaldehyde: absorption, emission, and the 0–0 energy.</span>
+</a>
+
+<a class="oqp-card" href="python-state-analysis/" markdown>
+![NTO](../assets/worked-examples/nto-s1-particle.png)
+<strong>Python API and state analysis</strong>
+<span>A Python script: MRSF run, natural transition orbitals, attachment/detachment cubes.</span>
+</a>
+
+<a class="oqp-card" href="formaldehyde-xas/" markdown>
+![XAS](../assets/worked-examples/plot-hcho-xas.svg)
+<strong>X-ray absorption</strong>
+<span>Carbon and oxygen K-edges of formaldehyde with MRSF-TDDFT ixcore.</span>
+</a>
+
+<a class="oqp-card" href="formaldehyde-umrsf/" markdown>
+![UMRSF](../assets/worked-examples/mol-hcho.png)
+<strong>UMRSF-TDDFT</strong>
+<span>MRSF-TDDFT with an unrestricted (UHF) triplet reference, compared with ROHF.</span>
+</a>
+
+<a class="oqp-card" href="ethylene-nacme/" markdown>
+![NACME](../assets/worked-examples/mol-namd-1015.png)
+<strong>Coupling between geometries (NACME)</strong>
+<span>State overlaps and derivative coupling between two frames near the S1→S0 hop.</span>
+</a>
+
+<a class="oqp-card" href="ethylene-casscf/" markdown>
+![CASSCF](../assets/worked-examples/mol-ethylene-twisted.png)
+<strong>CASSCF and XMCQDPT2</strong>
+<span>CASSCF(2,2) optimizations, the rotation barrier, and XMCQDPT2 states of ethylene.</span>
+</a>
+
+<a class="oqp-card" href="alanine-qmmm/" markdown>
+![Alanine dipeptide](../assets/worked-examples/mol-ala-opt.png)
+<strong>QM/MM across a covalent bond</strong>
+<span>Link-atom QM/MM optimization and dynamics of the alanine dipeptide.</span>
+</a>
+
+<a class="oqp-card" href="benzene-symmetry/" markdown>
+![Symmetry](../assets/worked-examples/plot-benzene-symmetry.svg)
+<strong>Molecular symmetry</strong>
+<span>Point-group detection, orbital labels, and a 3.4× faster SCF for benzene.</span>
 </a>
 
 </div>

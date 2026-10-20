@@ -90,6 +90,42 @@ xyz = rec["coordinates_bohr"]      # (nstep, natom, 3)
 | Hop to S0 | 101.5 fs, where the S1–S0 gap is 0.23 eV |
 | Total-energy range over 150 fs | 2.0 × 10⁻³ hartree (0.05 eV) |
 
+## The static picture: S1 minimum-energy path
+
+The trajectory follows the steepest way down on S1 only roughly, because the
+nuclei carry kinetic energy. The minimum-energy path (MEP) on S1 from the
+Franck–Condon region shows the underlying landscape:
+
+```text title="ethylene-s1-mep.oqp"
+mrsf(nstate=5)/bhhlyp/6-31g* mep(S1,maxit=100)
+geom="""
+C      0.000000     0.000000     0.664311
+C      0.000000     0.000000    -0.664311
+H      0.000000     0.923944     1.237411
+H      0.000000    -0.923944     1.237411
+H     -0.080527     0.920428    -1.237411
+H      0.080527    -0.920428    -1.237411
+"""
+```
+
+[Download ethylene-s1-mep.oqp](inputs/ethylene-s1-mep.oqp)
+
+The start is the planar geometry with one CH₂ group turned by 5°: at an exactly
+planar structure the S1 gradient has no twisting component, and the path would
+only stretch the C=C bond. `mep(S1)` then steps downhill on S1 until it
+reaches a minimum (about 4.5 minutes):
+
+```text
+   PyOQP: MEP Bracketed A Minimum Basin (30 points)
+```
+
+![S1 minimum-energy path](../assets/worked-examples/plot-ethylene-s1-mep.svg)
+
+Along the path S1 falls from 8.09 eV to 5.66 eV (relative to the planar S0
+minimum) while the twist grows from 7° to 90°; r(C–C) stays near 1.35 Å. The
+S1 minimum is the 90° twisted structure, the same region the trajectory reaches
+within 25 fs (the path uses 6-31G\*, the trajectory the smaller 6-31G basis set). The geometries of all points are in `mep_geom.xyz`.
+
 ## Reading the result
 
 - **S1 and S2 are nearly degenerate at the start** (8.38 and 8.42 eV at

@@ -63,6 +63,14 @@ nav:
       - Singlet-triplet crossing (MECP): worked-examples/ethylene-mecp.md
       - QM/MM excited-state dynamics: worked-examples/formaldehyde-qmmm-namd.md
       - Reaction path by NEB: worked-examples/nh3-neb.md
+      - Excited-state optimization: worked-examples/formaldehyde-s1-opt.md
+      - Python API and state analysis: worked-examples/python-state-analysis.md
+      - X-ray absorption: worked-examples/formaldehyde-xas.md
+      - UMRSF-TDDFT: worked-examples/formaldehyde-umrsf.md
+      - Coupling between geometries (NACME): worked-examples/ethylene-nacme.md
+      - CASSCF and XMCQDPT2: worked-examples/ethylene-casscf.md
+      - QM/MM across a covalent bond: worked-examples/alanine-qmmm.md
+      - Molecular symmetry: worked-examples/benzene-symmetry.md
   - OQP Studio:
       - Overview: studio/index.md
       - Download: studio/download.md

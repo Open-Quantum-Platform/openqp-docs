@@ -42,6 +42,11 @@ openqp lih-caspt2.oqp
   more. Uncontracted CASPT2 is meant for small molecules and active
   spaces; for ethylene in 6-31G\* the space would already hold about 4 × 10¹²
   determinants.
+- `frozen_core` in `cas(...)` is the number of doubly occupied orbitals
+  outside the active space (here the Li 1s pair). OpenQP checks it against
+  `active_electrons`: for ethylene with CAS(2,2), `frozen_core=2` is rejected
+  with `frozen_core is inconsistent with active_electrons`, and
+  `frozen_core=7` (all seven doubly occupied orbitals) is accepted.
 
 The same geometry with the other methods (each run takes 1–2 seconds):
 
@@ -98,6 +103,42 @@ The FCI run reports `PyOQP determinant count: 3025`: all 4 electrons in all
   its perturbative triples become less reliable as the bond breaks.
 - The FCI dissociation energy in this basis is 0.06811 hartree (1.85 eV), from
   the energies at 1.6 and 5.0 Å.
+
+## Optimize the bond length with analytic gradients
+
+CASSCF, CASPT2, and strongly contracted NEVPT2 (SC-NEVPT2) all have analytic
+nuclear gradients in OpenQP, so `opt` works directly. For SC-NEVPT2, the
+zeroth-order Hamiltonian and contraction are selected in `pt2(...)`:
+
+```text title="lih-nevpt2-opt.oqp"
+caspt2/6-31g opt cas(active_electrons=2,active_orbitals=2,frozen_core=1) pt2(h0=dyall,contraction=strong,gradient=analytic)
+geom="""
+Li     0.000000     0.000000     0.000000
+H      0.000000     0.000000     1.600000
+"""
+```
+
+[Download lih-nevpt2-opt.oqp](inputs/lih-nevpt2-opt.oqp) ·
+[lih-caspt2-opt.oqp](inputs/lih-caspt2-opt.oqp) (first line
+`caspt2/6-31g opt cas(...) pt2(gradient=analytic)`) ·
+[lih-casscf-opt.oqp](inputs/lih-casscf-opt.oqp)
+
+`pt2(h0=dyall,contraction=strong)` turns the CASPT2 route into SC-NEVPT2;
+`gradient=analytic` requests the analytic gradient and stops with an error
+rather than silently falling back to finite differences if a setting is not
+covered. The log confirms the route (`Analytic SC-NEVPT2 Nuclear Gradient`),
+and each optimization takes 2–7 seconds.
+
+| Method | r(Li–H) |
+| --- | --- |
+| CASSCF(2,2), analytic gradient | 1.6736 Å |
+| CASPT2(2,2), analytic gradient | 1.6721 Å |
+| SC-NEVPT2(2,2), analytic gradient | 1.6727 Å |
+| CCSD(T), fitted to a 0.025 Å scan | 1.6717 Å |
+| FCI, fitted to a 0.025 Å scan | 1.6717 Å |
+
+All three multireference bond lengths lie within 0.002 Å of FCI in this basis
+set. (The experimental bond length, 1.596 Å, needs a much larger basis set.)
 
 ## Try next
 
