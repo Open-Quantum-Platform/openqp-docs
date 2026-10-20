@@ -3,8 +3,10 @@
 OpenQP computes the nuclear gradient of the single-state, strongly contracted
 NEVPT2 (SC-NEVPT2) total energy analytically. The implemented energy is the
 Dyall-Hamiltonian, strongly contracted correction to a state-specific CASSCF
-reference. Set `[input] method=caspt2`, `[pt2] h0=dyall`,
-`contraction=strong`, and use a gradient-driven run type.
+reference. Set `[input] method=sc-nevpt2`, which implies `[pt2] h0=dyall`
+and `contraction=strong`, and use a gradient-driven run type. The older
+spelling, `method=caspt2` with `h0=dyall` and `contraction=strong`, selects the
+same route.
 
 Unlike CASSCF, SC-NEVPT2 is not variational with respect to the reference
 orbitals or CI coefficients. Its derivative therefore includes coupled orbital
@@ -26,8 +28,8 @@ at each geometry.
 
 The analytic route applies only when all of the following are true:
 
-- `method=caspt2`, `variant=caspt2`, `h0=dyall`, and
-  `contraction=strong` select single-state SC-NEVPT2;
+- `method=sc-nevpt2` (or `method=caspt2` with `variant=caspt2`, `h0=dyall`,
+  and `contraction=strong`) selects single-state SC-NEVPT2;
 - `reference=casscf` selects a state-specific, stationary CASSCF reference;
 - the reference is a closed-shell singlet from RHF orbitals, with no density
   functional and a contiguous inactive/active/virtual partition;
@@ -43,19 +45,19 @@ Python failure remains an error.
 
 ## Input example
 
-The concise `.oqp` request — the SC-NEVPT2 route is the `caspt2` model with the
-Dyall zeroth-order Hamiltonian and strong contraction selected in `pt2(...)`:
+The concise `.oqp` request; the `sc-nevpt2` model sets the Dyall
+zeroth-order Hamiltonian and strong contraction:
 
 ```text
-caspt2/sto-3g opt(S0) cas(active_electrons=2,active_orbitals=2,frozen_core=1)
-pt2(h0=dyall,contraction=strong,gradient=analytic)
+sc-nevpt2/sto-3g opt(S0) cas(active_electrons=2,active_orbitals=2,frozen_core=1)
+pt2(gradient=analytic)
 geom="""
 Li  0.0  0.0  0.0
 H   0.0  0.0  1.6
 """
 ```
 
-The equivalent legacy `.inp` spelling is:
+An equivalent legacy `.inp` input, in the older `method=caspt2` spelling, is:
 
 ```ini
 [input]
