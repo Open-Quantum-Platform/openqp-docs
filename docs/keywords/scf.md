@@ -485,13 +485,34 @@ Level shift used by the SOSCF converger.
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `1` |
+| Default | `1` (`0` for [`runtype = md`](input.md#runtype) and `namd`) |
 | Values | `0`, `1`, `2`, `3` |
 | Used by | the text log of the whole run |
 
 Older spelling of [`[input] verbose`](input.md#verbose), which sets the log level
 for the whole run. It is still read: when both are given, the one that differs
-from the default `1` wins, `[input]` first.
+from the default `1` wins, `[input]` first. Its effect on the molecular-orbital
+table after each SCF is:
+
+| Value | Effect |
+| --- | --- |
+| `0` | No molecular-orbital table. |
+| `1` | Orbital energies, without coefficients, after a converged SCF (the default). |
+| `2` and above | Orbital energies and coefficients, also when the SCF did not converge. |
+
+The orbital table is written after every SCF, and a dynamics run calls the SCF
+at least once per step, so at the default it is repeated for every step of the
+trajectory: a 100-step QM/MM surface-hopping run of an 18-atom QM region wrote
+405 tables and 83 MB of log, in which the 101 lines that report the dynamics
+are impossible to find. [`runtype = md`](input.md#runtype) and `namd`
+therefore default this keyword to `0` unless `[input] verbose` or
+`[scf] verbose` is set to a value other than `1`; write `verbose = 2` in the
+deck to get the tables back for a trajectory.
+
+Only the log is affected. The orbitals of any frame remain available from the
+Molden file, the restart record and the
+[trajectory file](../workflows/soc-namd-qmmm.md), and the setting does not change
+any computed quantity.
 
 ## TRAH Keywords
 
