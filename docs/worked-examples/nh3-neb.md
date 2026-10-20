@@ -31,22 +31,22 @@ file. Download both into one folder:
 [nh3-inverted.xyz](inputs/nh3-inverted.xyz).
 
 ```text title="nh3-neb.oqp"
-dft/pbe0/6-31g* neb(S0,product="nh3-inverted.xyz",images=9)
+dft/pbe0/6-31g* neb(S0,product="nh3-inverted.xyz",images=9) dftgrid(rad_npts=150,ang_npts=974)
 geom="""
-N      0.000000     0.000000     0.098572
-H      0.000000     0.937063    -0.295716
-H     -0.811520    -0.468531    -0.295716
-H      0.811520    -0.468531    -0.295716
+N      0.000000     0.000000     0.098477
+H      0.000000     0.937185    -0.295432
+H     -0.811626    -0.468592    -0.295432
+H      0.811626    -0.468592    -0.295432
 """
 ```
 
 ```text title="nh3-inverted.xyz"
 4
 NH3 with the umbrella inverted (mirror image through the xy plane)
-N      0.000000     0.000000    -0.098572
-H      0.000000     0.937063     0.295716
-H     -0.811520    -0.468531     0.295716
-H      0.811520    -0.468531     0.295716
+N      0.000000     0.000000    -0.098477
+H      0.000000     0.937185     0.295432
+H     -0.811626    -0.468592     0.295432
+H      0.811626    -0.468592     0.295432
 ```
 
 ```bash
@@ -58,12 +58,19 @@ openqp nh3-neb.oqp
   product is its mirror image.
 - `neb(S0,product=...,images=9)` relaxes a band of nine images, including the
   two fixed end points, on the ground-state surface. Both end points should be
-  minima of the same method and basis set.
+  minima of the same method, basis set and integration grid.
+- `dftgrid(rad_npts=150,ang_npts=974)` replaces the default SG2 grid with a
+  denser 150 × 974-point grid; every input on this page uses it. The default
+  grid is not symmetric under the three-fold rotation of NH₃, so it moves the
+  energy by about 1e-5 hartree when the molecule is rotated and splits the
+  degenerate vibrational frequencies by up to 2 cm⁻¹. The denser grid removes
+  both effects, at about ten times the cost.
 
-The run takes about 30 seconds and converges in 22 band iterations:
+The run takes about 7 minutes on 4 threads (under a minute with the default
+grid) and converges in 22 band iterations:
 
 ```text
-   PyOQP: NEB Has Converged (fmax=1.576e-03, frms=5.307e-04 in 22 iters)
+   PyOQP: NEB Has Converged (fmax=1.604e-03, frms=5.392e-04 in 22 iters)
    PyOQP: Native NEB path written to .../nh3-neb_neb.xyz
 ```
 
@@ -75,7 +82,7 @@ Avogadro to play the path. The energies:
 
 | Image | 1 | 2 | 3 | 4 | **5** | 6 | 7 | 8 | 9 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| E − E(min), kJ/mol | 0.00 | 4.22 | 13.66 | 22.68 | **26.23** | 22.68 | 13.66 | 4.22 | 0.00 |
+| E − E(min), kJ/mol | 0.00 | 4.21 | 13.70 | 22.76 | **26.32** | 22.76 | 13.70 | 4.21 | 0.00 |
 
 ## Check the top of the band
 
@@ -85,19 +92,21 @@ confirm it, optimize the planar structure directly
 planar geometry, the D3h symmetry keeps it planar and the optimization lands on
 the saddle point, r(N–H) = 0.999 Å. A Hessian there
 ([nh3-planar-ts.oqp](inputs/nh3-planar-ts.oqp)) has exactly one imaginary
-frequency, the umbrella motion:
+frequency, the umbrella motion, and the degenerate pair of bending modes
+(modes 2 and 3) agrees to 0.01 cm⁻¹:
 
 ```text
    Mode  Symmetry     Frequency(cm-1)      IR(km/mol)        Raman(activity)
-      1        b1           -889.14        25.658072             0.000001
-      2        a1           1608.73         1.921690            28.964403
+      1        b1           -890.85        25.657888             0.000000
+      2        b2           1608.52         1.918176            28.998035
+      3        a1           1608.53         1.918129            29.000777
 ```
 
 | Quantity | Reference value |
 | --- | --- |
-| Highest NEB image | 26.23 kJ/mol |
-| Optimized planar transition state | 26.21 kJ/mol (−56.4672815 hartree) |
-| Pyramidal minimum | −56.4772657 hartree |
+| Highest NEB image | 26.32 kJ/mol |
+| Optimized planar transition state | 26.30 kJ/mol (−56.4672609 hartree) |
+| Pyramidal minimum | −56.4772790 hartree |
 | Experiment (inversion barrier) | about 24 kJ/mol |
 
 ## The same transition state by QST2
@@ -106,12 +115,12 @@ When both end points are known, a QST2 (quadratic synchronous transit) search
 locates the transition state directly, without a band of images:
 
 ```text title="nh3-qst2.oqp"
-dft/pbe0/6-31g* ts(S0,search="qst2",product="nh3-inverted.xyz")
+dft/pbe0/6-31g* ts(S0,search="qst2",product="nh3-inverted.xyz") dftgrid(rad_npts=150,ang_npts=974)
 geom="""
-N      0.000000     0.000000     0.098572
-H      0.000000     0.937063    -0.295716
-H     -0.811520    -0.468531    -0.295716
-H      0.811520    -0.468531    -0.295716
+N      0.000000     0.000000     0.098477
+H      0.000000     0.937185    -0.295432
+H     -0.811626    -0.468592    -0.295432
+H      0.811626    -0.468592    -0.295432
 """
 ```
 
@@ -120,16 +129,16 @@ H      0.811520    -0.468531    -0.295716
 
 `ts(S0,search="qst2",product=...)` builds a guess between the two end points
 and refines it as a transition-state search. It converges in 7 steps, in about
-8 seconds, to −56.4672815 hartree, the same planar structure as the direct D3h
+20 seconds, to −56.4672609 hartree, the same planar structure as the direct D3h
 optimization above (r(N–H) = 0.999 Å). With a third structure close to the
 transition state, `search="qst3"` with `guess="..."` uses it as an additional
 hint.
 
 | Method | Barrier | Runtime |
 | --- | --- | --- |
-| NEB, highest of 9 images | 26.23 kJ/mol | 30 s |
-| QST2 transition-state search | 26.21 kJ/mol | 8 s |
-| D3h optimization of the planar structure | 26.21 kJ/mol | — |
+| NEB, highest of 9 images | 26.32 kJ/mol | 7 min |
+| QST2 transition-state search | 26.30 kJ/mol | 20 s |
+| D3h optimization of the planar structure | 26.30 kJ/mol | — |
 
 NEB gives the whole path; QST2 gives only the transition state, but faster.
 

@@ -1,4 +1,4 @@
-dft/pbe0/6-31g* opt
+dft/pbe0/6-31g* opt dftgrid(rad_npts=150,ang_npts=974)
 geom="""
 N      0.000000     0.000000     0.000000
 H      0.000000     1.016636     0.000000

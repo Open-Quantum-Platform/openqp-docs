@@ -23,6 +23,7 @@ minute. These take longer:
 | Example | Run time |
 | --- | --- |
 | HCN IRC, each direction | about 3.5 minutes |
+| NH₃ NEB on the 150 × 974 DFT grid | about 7 minutes |
 | Ethylene MECI search | about 3.5 minutes |
 | Ethylene S1 minimum-energy path | about 4.5 minutes |
 | Methanol ground-state MD | about 4.5 minutes |
@@ -239,6 +240,10 @@ x86_64 with 2 to 8 OpenMP threads. The one exception is the
 [SOC-NAMD example](formaldehyde-soc-namd.md): it needs the fix in
 [openqp#535](https://github.com/Open-Quantum-Platform/openqp/pull/535) and was
 run with GitHub `main` commit `958495f` plus that fix (commit `20272ac5b`).
+The [NEB example](nh3-neb.md) was rerun with commit `958495f` plus the
+frequency-projection fix in
+[openqp#538](https://github.com/Open-Quantum-Platform/openqp/pull/538)
+(commit `be1c9d2`); no value on that page depends on that fix.
 Molecule and orbital pictures are snapshots
 of the [OQP Studio](../studio/index.md) 3D viewer, made from the output files of
 the same runs.
