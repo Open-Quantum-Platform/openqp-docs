@@ -11,7 +11,11 @@ openqp water-scf.oqp
 ```
 
 Every input on these pages can also be downloaded from the link under its code
-block. With 2 to 4 CPU threads, each run takes between 2 seconds and 1 minute.
+block. With 2 to 8 CPU threads, most runs take between 2 seconds and 1
+minute. The path, conical-intersection, and dynamics examples take longer:
+about 3.5 minutes for each IRC direction and for the MECI search, 4.5 minutes
+for methanol MD, and 9 minutes for ethylene NAMD. Each page states its run
+time.
 
 <div class="oqp-gallery" markdown>
 
