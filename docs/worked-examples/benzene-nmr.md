@@ -66,6 +66,16 @@ the magnetic field (coupled-perturbed Kohn–Sham). For benzene:
          8   1.0       29.545189       -3.921758       -4.807423       25.623431       24.737766
 ```
 
+OQP Studio can color the atoms by these values and print them on the
+structure:
+
+<div class="oqp-figs" markdown>
+<figure markdown>
+![Benzene shieldings on the atoms](../assets/worked-examples/prop-benzene-shield.png)
+<figcaption>Benzene GIAO shieldings (ppm) on the atoms: C 72.1, H 24.7</figcaption>
+</figure>
+</div>
+
 Equivalent atoms agree to 0.01 ppm; the small spread comes from the DFT
 integration grid. Averaging over equivalent atoms:
 

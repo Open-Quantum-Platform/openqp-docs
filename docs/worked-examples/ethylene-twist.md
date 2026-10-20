@@ -100,6 +100,28 @@ relaxed barrier is lower.
 
 ![MRSF-TDDFT twist curves of ethylene](../assets/worked-examples/plot-ethylene-twist.svg)
 
+The dashed curve is the S0 energy from CASSCF(2,2) with the same basis set at
+the same geometries, with two electrons in the π and π\* orbitals. At 90° it
+lies 3.20 eV above its planar value, compared with 3.54 eV for MRSF-TDDFT S0;
+the two methods agree on the shape of the curve, while CASSCF(2,2) lacks the
+dynamic correlation that MRSF-TDDFT includes through the functional. The
+CASSCF input for 90° is
+
+```text title="ethylene-twisted-casscf.oqp"
+casscf/6-31g* cas(active_electrons=2,active_orbitals=2)
+geom="""
+C      0.000000     0.000000     0.664311
+C      0.000000     0.000000    -0.664311
+H      0.000000     0.923944     1.237411
+H      0.000000    -0.923944     1.237411
+H     -0.923944     0.000000    -1.237411
+H      0.923944     0.000000    -1.237411
+"""
+```
+
+[Download ethylene-twisted-casscf.oqp](inputs/ethylene-twisted-casscf.oqp);
+for the other angles, use the scan script below with this first line.
+
 | Twist | S0 (eV) | S1 (eV) | S2 (eV) |
 | --- | --- | --- | --- |
 | 0° | 0.000 | 8.380 | 8.415 |

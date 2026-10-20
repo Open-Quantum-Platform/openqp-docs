@@ -63,6 +63,48 @@ block. With 2 to 4 CPU threads, each run takes between 2 seconds and 1 minute.
 <span>Correlation energies of water at the MP2 and CCSD(T) levels.</span>
 </a>
 
+<a class="oqp-card" href="h2-dissociation/" markdown>
+![H2 dissociation](../assets/worked-examples/plot-h2-dissociation.svg)
+<strong>H₂ dissociation: six methods</strong>
+<span>RHF, UHF, PBE0, MP2, CASSCF, and CCSD along a breaking bond.</span>
+</a>
+
+<a class="oqp-card" href="allyl-radical/" markdown>
+![Allyl spin density](../assets/worked-examples/spin-allyl.png)
+<strong>Allyl radical spin density</strong>
+<span>Open-shell UKS optimization, spin populations, and spin polarization.</span>
+</a>
+
+<a class="oqp-card" href="water-ekt/" markdown>
+![Dyson orbital](../assets/worked-examples/dyson-water-1b1.png)
+<strong>Ionization energies (MRSF-EKT)</strong>
+<span>Ionization energies of water and the Dyson orbital of each ionization.</span>
+</a>
+
+<a class="oqp-card" href="benzene-acid/" markdown>
+![ACID of benzene](../assets/worked-examples/acid-benzene.png)
+<strong>Ring current (ACID)</strong>
+<span>Current-density isosurface showing the aromatic ring current of benzene.</span>
+</a>
+
+<a class="oqp-card" href="methanol-md/" markdown>
+![Methanol MD](../assets/worked-examples/plot-methanol-md.svg)
+<strong>Ground-state MD</strong>
+<span>200 fs of Born–Oppenheimer dynamics and an energy-conservation check.</span>
+</a>
+
+<a class="oqp-card" href="ethylene-meci/" markdown>
+![Conical intersection](../assets/worked-examples/plot-meci-cone.png)
+<strong>Conical intersection (MECI)</strong>
+<span>Locate the S0/S1 MECI of ethylene, its g and h vectors, and the cone.</span>
+</a>
+
+<a class="oqp-card" href="ethylene-namd/" markdown>
+![Ethylene NAMD](../assets/worked-examples/plot-ethylene-namd.svg)
+<strong>Nonadiabatic dynamics</strong>
+<span>Surface hopping from S1: twisting and return to S0 in 100 fs.</span>
+</a>
+
 </div>
 
 ## How the reference values were produced

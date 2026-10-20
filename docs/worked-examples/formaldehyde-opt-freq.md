@@ -99,6 +99,36 @@ derivatives. The run takes about 12 seconds.
 | 5 | a1 | 2944.35 | symmetric C–H stretch | 2782 |
 | 6 | b2 | 2999.92 | antisymmetric C–H stretch | 2843 |
 
+<div class="oqp-figs" markdown>
+<figure markdown>
+![Mode 1](../assets/worked-examples/mode-hcho-mode1-side.png)
+<figcaption>1 · b1 · 1203 cm⁻¹ · out-of-plane wag</figcaption>
+</figure>
+<figure markdown>
+![Mode 2](../assets/worked-examples/mode-hcho-mode2.png)
+<figcaption>2 · b2 · 1281 cm⁻¹ · CH₂ rock</figcaption>
+</figure>
+<figure markdown>
+![Mode 3](../assets/worked-examples/mode-hcho-mode3.png)
+<figcaption>3 · a1 · 1563 cm⁻¹ · CH₂ scissor</figcaption>
+</figure>
+<figure markdown>
+![Mode 4](../assets/worked-examples/mode-hcho-mode4.png)
+<figcaption>4 · a1 · 1882 cm⁻¹ · C=O stretch</figcaption>
+</figure>
+<figure markdown>
+![Mode 5](../assets/worked-examples/mode-hcho-mode5.png)
+<figcaption>5 · a1 · 2944 cm⁻¹ · symmetric C–H stretch</figcaption>
+</figure>
+<figure markdown>
+![Mode 6](../assets/worked-examples/mode-hcho-mode6.png)
+<figcaption>6 · b2 · 3000 cm⁻¹ · antisymmetric C–H stretch</figcaption>
+</figure>
+</div>
+
+The arrows show the direction in which each atom moves in the normal mode (the
+out-of-plane wag is viewed from the side).
+
 The experimental values are the observed gas-phase fundamentals. Computed
 harmonic frequencies are systematically higher, because the calculation omits
 anharmonicity; a scale factor of about 0.95 is commonly applied before comparison
@@ -116,6 +146,17 @@ The thermochemistry block at the end of the log gives, at 298.15 K and 1 atm:
 | Enthalpy H | −114.33715582 hartree |
 | Entropy term T·S | 0.02481901 hartree |
 | Gibbs free energy G | −114.36197483 hartree |
+
+## IR and Raman spectra
+
+![Computed IR and Raman spectra](../assets/worked-examples/plot-hcho-ir-raman.svg)
+
+Both spectra are normalized to their strongest band, so they show relative
+intensities only. The two techniques highlight different modes: in IR the
+antisymmetric C–H stretch and the C=O stretch are the strongest bands, while in
+Raman the symmetric C–H stretch dominates. The relative IR intensities are
+correct in OpenQP 1.3.1; only the absolute scale is affected by the issue
+below.
 
 !!! warning "IR intensities in OpenQP 1.3.1"
     The `IR(km/mol)` column of this release is about 23 times too small: the

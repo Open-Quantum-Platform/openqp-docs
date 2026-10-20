@@ -130,15 +130,43 @@ run `hess(S0,type=analytical)` at each of the three geometries and use the
 zero-point energies from the thermochemistry block, as in the
 [frequency example](formaldehyde-opt-freq.md).
 
+## Step 4: follow the reaction path (IRC)
+
+The intrinsic reaction coordinate (IRC) is the steepest-descent path from the
+TS down to each minimum. It proves that this TS connects HCN with HNC. Run it
+in both directions from the TS geometry:
+
+```text title="hcn-irc-forward.oqp"
+dft/pbe0/6-31g* irc(S0,hessian=analytical,maxit=120)
+geom="""
+C      0.025858     0.000000     0.022436
+N     -0.050362     0.000000     1.208979
+H      1.124504     0.000000     0.458585
+"""
+```
+
+[Download hcn-irc-forward.oqp](inputs/hcn-irc-forward.oqp) ·
+[hcn-irc-backward.oqp](inputs/hcn-irc-backward.oqp) (first line
+`dft/pbe0/6-31g* irc(S0,direction=backward,hessian=analytical,maxit=120)`)
+
+`hessian=analytical` starts the path along the imaginary mode of an analytic
+Hessian, and `maxit=120` allows up to 120 points (the default of 30 stops
+before the minimum). Each direction takes about 3.5 minutes. Both runs end
+with a line such as:
+
+```text
+   PyOQP: IRC Bracketed A Minimum Basin (49 points)
+```
+
+![IRC energy profile](../assets/worked-examples/plot-hcn-irc.svg)
+
+The forward path ends at −93.2811338 hartree after 49 points, next to the HNC
+minimum (−93.2812843), and the backward path at −93.3072173 after 37 points,
+next to the HCN minimum (−93.3072282). The log reports the step length as
+`step=0.100`.
+
 ## Try next
 
-- Follow the reaction path downhill from the TS with an intrinsic reaction
-  coordinate run: replace the first line of `hcn-ts-freq.oqp` with
-  `dft/pbe0/6-31g* irc(S0,hessian=analytical)`. The run computes up to 30 path
-  points by default (about 1 minute); in the reference run the energy fell from
-  the TS to −93.2719 hartree at point 30, on the way to HNC. See
-  [Transition-State Searches](../workflows/transition-state-search.md) for the
-  path-length and step controls.
 - Compare the barrier with a larger basis set, for example `def2-tzvp`, at
   geometries reoptimized with that basis.
 

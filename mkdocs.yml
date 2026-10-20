@@ -47,6 +47,13 @@ nav:
       - NMR chemical shifts: worked-examples/benzene-nmr.md
       - Transition state and barrier: worked-examples/hcn-isomerization.md
       - MP2 and CCSD(T) energies: worked-examples/water-correlation.md
+      - H2 dissociation, six methods: worked-examples/h2-dissociation.md
+      - Allyl radical spin density: worked-examples/allyl-radical.md
+      - Ionization energies (MRSF-EKT): worked-examples/water-ekt.md
+      - Ring current (ACID): worked-examples/benzene-acid.md
+      - Ground-state MD: worked-examples/methanol-md.md
+      - Conical intersection (MECI): worked-examples/ethylene-meci.md
+      - Nonadiabatic dynamics: worked-examples/ethylene-namd.md
   - OQP Studio:
       - Overview: studio/index.md
       - Download: studio/download.md

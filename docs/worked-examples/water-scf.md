@@ -97,6 +97,45 @@ larger than the experimental gas-phase dipole of water (1.85 D), which is
 typical of a small basis set without diffuse functions. Mulliken charges depend
 strongly on the basis set and are useful for trends, not as absolute values.
 
+## The SCF iterations
+
+![SCF convergence](../assets/worked-examples/plot-water-scf.svg)
+
+The energy change and the DIIS error fall by about an order of magnitude per
+iteration once DIIS takes over at iteration 2; the run stops when the error is
+below the threshold of 10⁻⁶.
+
+## All valence orbitals
+
+![Orbital energy levels of water](../assets/worked-examples/plot-water-mo-levels.svg)
+
+<div class="oqp-figs" markdown>
+<figure markdown>
+![2a1](../assets/worked-examples/orb-water-homo-3.png)
+<figcaption>2a1 (−27.9 eV): O 2s with O–H bonding</figcaption>
+</figure>
+<figure markdown>
+![1b2](../assets/worked-examples/orb-water-homo-2.png)
+<figcaption>1b2 (−14.5 eV): in-plane O–H bonding</figcaption>
+</figure>
+<figure markdown>
+![3a1](../assets/worked-examples/orb-water-homo-1.png)
+<figcaption>3a1 (−10.5 eV): in-plane lone pair</figcaption>
+</figure>
+<figure markdown>
+![1b1](../assets/worked-examples/orb-water-side-homo.png)
+<figcaption>1b1 HOMO (−8.3 eV): out-of-plane lone pair</figcaption>
+</figure>
+<figure markdown>
+![4a1](../assets/worked-examples/orb-water-lumo.png)
+<figcaption>4a1 LUMO (2.2 eV): O–H antibonding</figcaption>
+</figure>
+<figure markdown>
+![2b2](../assets/worked-examples/orb-water-lumop1.png)
+<figcaption>2b2 (4.6 eV): O–H antibonding</figcaption>
+</figure>
+</div>
+
 ## Look at the orbitals
 
 The orbitals are in `water-scf_scf_rhf_pbe0_6-31gs.molden`. Open this file in
@@ -104,6 +143,25 @@ The orbitals are in `water-scf_scf_rhf_pbe0_6-31gs.molden`. Open this file in
 [OpenqpView](https://open-quantum-platform.github.io/OpenqpView/) and select
 orbital 5 (HOMO) or 6 (LUMO). The pictures above use an isovalue of
 0.05 a.u.; red and blue mark the two signs of the orbital.
+
+## Atomic charges on a larger molecule
+
+The same `properties(...)` call works for any molecule. For acetone at its
+PBE0/6-31G* geometry ([acetone-charges.oqp](inputs/acetone-charges.oqp)), the
+dipole moment is 2.856 D and the Mulliken charges are O −0.427, carbonyl C
++0.452, methyl C −0.611, and H +0.194 to +0.210. OQP Studio can color the
+atoms by these charges and print each value on its atom:
+
+<div class="oqp-figs" markdown>
+<figure markdown>
+![Acetone Mulliken charges](../assets/worked-examples/prop-acetone-charges.png)
+<figcaption>Acetone, Mulliken charges shown on the atoms in OQP Studio</figcaption>
+</figure>
+<figure markdown>
+![Acetone](../assets/worked-examples/mol-acetone.png)
+<figcaption>Acetone</figcaption>
+</figure>
+</div>
 
 ## Try next
 
