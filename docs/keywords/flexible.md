@@ -8,8 +8,9 @@ kind, so a QM water cannot diffuse into the MM region and an MM water cannot
 diffuse into the QM region while the QM/MM partition of the atoms stays fixed.
 
 `[flexible]` is connected only to `runtype=namd` (`namd(...)` in `.oqp`) with
-QM/MM (`qmmm(...)`). It is rejected for every other runtype and for all-QM
-NAMD. In `.oqp` input write it as `flexible(...)`:
+QM/MM (`qmmm(...)`). It is rejected for every other runtype, for all-QM
+NAMD, and for SOC-NAMD (`soc=true`), whose propagators do not apply the
+conservative restraints. In `.oqp` input write it as `flexible(...)`:
 
 ```text
 mrsf(nstate=2)/bhhlyp/6-31g
@@ -57,7 +58,10 @@ A residue whose name is listed in `resnames` is a solvent molecule of the
 boundary. It is a QM molecule when all its atoms are in `qmmm(qm_atoms=...)`
 and an MM molecule when none are. A residue split between the QM and MM regions
 is an error. At least one QM and one MM solvent molecule are required, and the
-anchor atom must sit at the same position in every solvent residue.
+anchor atom must sit at the same position in every solvent residue. The anchor
+must have a positive mass: the boundary force of a molecule acts on its anchor,
+and a massless virtual site (such as the M site of a four-site water) cannot
+carry it. Use the oxygen or `anchor=com` for such models.
 
 ## Periodic cells
 

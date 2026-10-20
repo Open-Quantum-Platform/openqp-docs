@@ -31,10 +31,13 @@ The atomic force is the exact derivative of `V`. `V` is added to the potential
 energy, so it is part of the conserved energy in NVE and of the energy balance
 in NVT.
 
-In a periodic QM/MM cell every CV atom is placed at the minimum image of the
-first CV atom before the CVs are measured. The run stops when two CV atoms are
-then not closer than half the shortest box length, because a CV would otherwise
-be measured across an ambiguous image.
+In a periodic QM/MM cell the CV atoms are unwrapped along the atom pairs the
+CVs use (the two atoms of a distance, both pairs of an asymmetric distance, and
+both arms of an angle from its vertex): each atom is placed at the minimum
+image of the atom it is bonded to, so every CV takes its minimum-image value.
+The run stops only when the CV pairs close a ring that cannot be placed
+consistently, that is when a pair is then not closer than half the box length
+along some axis.
 
 ## Keywords
 
