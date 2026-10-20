@@ -43,7 +43,9 @@ converger_type=trah
 ```
 
 For difficult cases, use `alternative_scf=trah`, `escalation=soscf,trah`, MOM,
-or pFON as appropriate.
+or pFON as appropriate. TRAH cannot be used with `mom=true` or `rstctmo=true`:
+for those calculations use `diis` or `soscf`, and TRAH is left out of the
+escalation ladder.
 
 ## Too Many Threads
 

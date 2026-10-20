@@ -6,7 +6,8 @@ Platform.
 
 The manual covers the OQP Studio desktop application, installation, input
 files, Python usage, build options, capabilities, examples, keyword references,
-and workflows including HF/DFT, MP2, TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT,
+and workflows including HF/DFT, MP2, coupled cluster (native CCSD/CCSD(T) and
+the external CCpy library from Python), TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT,
 PCM/ddX, SOC, NACME, EKT, Hessians, optimization, molecular symmetry, and
 spectroscopy-related properties.
 
