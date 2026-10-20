@@ -60,6 +60,57 @@ The same-stem `.inp` file is retained for legacy use.
 For TDHF, use the same structure without `[input] functional`:
 [`examples/TDHF/H2O_TDHF_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDHF/H2O_TDHF_ENERGY.oqp).
 
+## Closed-shell triplet states
+
+On a closed-shell RHF/RKS reference, conventional RPA/TDA also gives the
+triplet excitation energies. Set `[tdhf] multiplicity=3` and keep the
+reference a singlet (`[scf] type=rhf`, `multiplicity=1`). The triplet response
+has no Coulomb term and uses the `f_aa - f_ab` exchange-correlation kernel;
+oscillator strengths are zero. Energies, analytic gradients and geometry
+optimizations are available (`runtype=energy`, `grad`, `optimize`).
+Triplet Hessians, NACs, crossings and open-shell references are rejected by
+the input checker. Use MRSF-TDDFT for those triplet workflows.
+
+`.oqp` (`T0` is the lowest triplet; `nstate` triplet roots are solved):
+
+```text
+tddft(nstate=3)/b3lyp5/6-31g* energy(T0)
+geom="h2o.xyz"
+```
+
+Python (`multiplicity` stays the reference multiplicity):
+
+```python
+job.theory.tddft(functional="b3lyp5", basis="6-31g*", nstate=3,
+                 state_multiplicity=3)
+```
+
+Legacy `.inp`: the energy example above with
+
+```ini
+[tdhf]
+nstate=3
+multiplicity=3
+```
+
+Runnable example:
+[`examples/TDDFT/H2O_B3LYP5-TDDFT_TRIPLET_ENERGY.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDDFT/H2O_B3LYP5-TDDFT_TRIPLET_ENERGY.oqp).
+
+Gradient of the lowest triplet (`.oqp`; legacy `.inp`: `runtype=grad` and
+`[properties] grad=1`):
+
+```text
+tddft(nstate=3)/b3lyp5/6-31g* grad(T0)
+geom="h2o.xyz"
+```
+
+Runnable example:
+[`examples/TDDFT/H2O_B3LYP5-TDDFT_TRIPLET_GRADIENT.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/TDDFT/H2O_B3LYP5-TDDFT_TRIPLET_GRADIENT.oqp).
+Triplet gradients and optimizations require OpenQP with
+[openqp#502](https://github.com/Open-Quantum-Platform/openqp/pull/502);
+triplet energies alone need
+[openqp#475](https://github.com/Open-Quantum-Platform/openqp/pull/475).
+
 ## Gradient
 
 In ordinary TDHF/TDDFT, `S1` means the first excited state.

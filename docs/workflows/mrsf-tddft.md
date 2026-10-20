@@ -180,11 +180,27 @@ The same-stem `.inp` file is retained for legacy use.
 - For SOC, `mrsf(nstate=3)/... soc` requests `S0`--`S2` and `T0`--`T2`.
   Use `mrsf/... soc(ns=3,nt=5)` for unequal counts; `ns` and `nt` must appear
   together and cannot be combined with route `nstate`.
-- NAMD uses the same zero-based labels. `namd(T0,soc=true)` means the first
+- NAMD uses the same zero-based labels. `namd(T0,scheme=Overlap,soc=true)` means the first
   triplet MCH state and lowers to `[md] init_state=T0`; it must not be written
   as `T1` merely because the internal response root is 1.
 - For ordinary TDDFT, see [TDDFT and TDHF](tddft.md).
 - For spin-flip TDDFT without mixed-reference correction, use
   [SF-TDDFT](sf-tddft.md).
-- UMRSF-TDDFT uses `[tdhf] type=umrsf` with a UHF reference and is currently an
-  energy-only workflow.
+- UMRSF-TDDFT uses `[tdhf] type=umrsf` with a UHF triplet reference. Besides
+  energies it provides analytic nuclear gradients (`runtype=grad`) and the
+  gradient-driven `optimize`, `meci`, `mecp` and `tci` workflows for HF, LDA/GGA
+  and global-hybrid functionals; `job.theory.umrsf(...)` is the compact-API
+  counterpart of `job.theory.mrsf(...)`. Range-separated, meta-GGA and
+  double-hybrid functionals and custom spin-pair-coupling scales are
+  energy-only, and Hessians, NACME and SOC are not available for UMRSF.
+  Gradient-driven UMRSF runs accept singlet and triplet response states
+  (`[tdhf] multiplicity=1` or `3`; roots are numbered from 1 within that
+  manifold, so `grad=1` with `multiplicity=1` is S0). In Python, the
+  `multiplicity` argument of `job.theory.umrsf(...)` sets the UHF reference;
+  select a triplet response with a following `job.tdhf(multiplicity=3)`. UMRSF
+  gradients also accept effective core potentials, and the
+  input checker rejects `[properties] td_prop=True`, `[tdhf] ixcore` and
+  QM/MM (`qmmm_flag=True`) for them because the relaxed density and ESPF
+  charges those paths consume are not produced. See
+  `examples/UMRSF-TDDFT/H2CO_BHHLYP_UMRSFTDDFT_GRAD.inp` and, with an ECP,
+  `examples/ECP/HBr_BHHLYP-UMRSFTDDFT_GRAD.inp`.

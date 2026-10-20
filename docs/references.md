@@ -133,6 +133,16 @@ SOC, scalar relativistic correction, PCM/ddX, or related workflows.
   surface hopping with Baeck-An couplings." Open Research Europe 1, 49 (2022).
   [doi:10.12688/openreseurope.13624.2](https://doi.org/10.12688/openreseurope.13624.2)
 
+## ACID (Anisotropy of the Induced Current Density)
+
+- Herges R and Geuenich D. "Delocalization of Electrons in Molecules." Journal
+  of Physical Chemistry A 105, 3214-3220 (2001).
+  [doi:10.1021/jp0034426](https://doi.org/10.1021/jp0034426)
+- Geuenich D, Hess K, Kohler F, and Herges R. "Anisotropy of the Induced
+  Current Density (ACID), a General Method To Quantify and Visualize Electronic
+  Delocalization." Chemical Reviews 105, 3758-3772 (2005).
+  [doi:10.1021/cr0300901](https://doi.org/10.1021/cr0300901)
+
 ## QM/MM (ESPF) Embedding
 
 - Ferre N and Angyan JG. "Approximate electrostatic interaction operator for
