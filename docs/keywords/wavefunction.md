@@ -325,7 +325,7 @@ geometries and retains the `grad_*` controls above.
 | `nroot` | `0` | Number of retained reference roots; zero inherits `[ci] nroot`. This count does not itself select the single-state PT2 target. |
 | `ipea_shift`, `level_shift`, `imaginary_shift`, `edshft` | `0.0` | Denominator regularization controls. |
 | `frozen` | `auto` | PT2 frozen core: freeze the standard deep-core orbitals automatically, use `0` to correlate all inactive orbitals, or give an explicit count. |
-| `engine` | `auto` | `auto`, `dense`, `direct` (NumPy), or `fortran` for QDPT. CASPT2 defaults to dense; explicit direct CASPT2 support is **unreleased** and requires the implementation linked below. QDPT retains its automatic direct selection. |
+| `engine` | `auto` | `auto`, `dense`, `direct` (NumPy), or `fortran`. `auto` selects the direct engine for the QDPT family and the dense engine for CASPT2/NEVPT2; an explicit `direct` or `fortran` request for a single-state CASPT2 energy is described [below](#direct-single-state-caspt2-energies). |
 | `nproc` | `0` | Worker count; zero selects the automatic value. |
 | `max_terms` | `30000000` | Direct-engine limit on generated single/double excitation terms, before duplicate external determinants are merged. |
 | `max_memory` | `2048` | PT2 memory ceiling in MiB, combined with the tighter `[cas]` ceiling. |
@@ -348,51 +348,30 @@ QDPT family (`mrmp2`, `mcqdpt2`, and `xmcqdpt2`) uses the diagonal-Fock direct
 engine and accepts `edshft`; `edshft` is mutually exclusive with real or
 imaginary level shifts.
 
-### Unreleased: explicit direct single-state CASPT2 energies
+### Direct single-state CASPT2 energies
 
-!!! warning "UNRELEASED — requires the companion engine implementation"
-
-    This section describes the proposed implementation in
-    [engine PR #479](https://github.com/Open-Quantum-Platform/openqp/pull/479),
-    which is not merged and has numerical and performance verification pending.
-    It does not describe support in any released OpenQP version or the current
-    engine `main`. To try it, build engine commit
-    [`8ea4f6c7c81e1f4b1b92e2fc01520dc324fa3694`](https://github.com/Open-Quantum-Platform/openqp/commit/8ea4f6c7c81e1f4b1b92e2fc01520dc324fa3694)
-    or a later commit containing that implementation. Current engines without
-    that change reject explicit CASPT2 `engine=direct`/`fortran` requests.
-
-In this unreleased implementation, for an uncontracted single-state CASPT2
-**energy**, `engine=direct` uses NumPy single/double-excitation summation, while
-`engine=fortran` requests the
+For an uncontracted single-state CASPT2 **energy**, `engine=direct` uses NumPy
+single/double-excitation summation, while `engine=fortran` requests the
 compiled streaming calculation. Both evaluate the same diagonal-Fock
 zeroth-order Hamiltonian as the dense single-state calculation without forming
 the full determinant Hamiltonian. `engine=auto` keeps the dense CASPT2
 calculation; selecting a direct engine is an explicit choice.
 
-```ini
-# UNRELEASED: requires engine PR #479 implementation at 8ea4f6c7c81e1f4b1b92e2fc01520dc324fa3694
-# or a later commit containing that change; not supported by released versions.
-[input]
-method=caspt2
-runtype=energy
-
-[pt2]
-reference=casscf
-variant=caspt2
-target_roots=0
-h0=fock
-contraction=uncontracted
-ipea_shift=0.0
-engine=direct
+```text
+caspt2/sto-3g cas(active_electrons=2,active_orbitals=2) pt2(engine=direct)
+geom="h4.xyz"
 ```
 
-Only with the required unreleased engine build, add this section to a CASPT2
-input with its geometry, basis, `[cas]` and `[ci]` settings. `reference=casci` is
-also supported. The spelling
-`contraction=none` is equivalent to `uncontracted`. The request must select one
-PT2 target root. Here `target_roots=0` selects the first CI root even if the
-preceding `[ci] nroot=2` retains two reference roots. Root slots are zero-based;
-use `target_roots=1` instead to correct the second retained CI root.
+The repository example
+[`examples/WF_methods/H4_CASPT2_direct.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/WF_methods/H4_CASPT2_direct.oqp)
+runs the same request on a CASCI reference.
+
+The default `reference=casscf` and `reference=casci` are both supported. The
+spelling `contraction=none` is equivalent to `uncontracted`. The request must
+select one PT2 target root: with the default `[ci] nroot=1` this is the only
+root, and `pt2(target_roots=0)` selects the first CI root even if
+`[ci] nroot=2` retains two reference roots. Root slots are zero-based; use
+`target_roots=1` instead to correct the second retained CI root.
 `variant=auto` also selects the single-state CASPT2 variant for `method=caspt2`.
 
 The direct CASPT2 energy requires `h0=fock`, `ipea_shift=0.0`, and at most 63
