@@ -407,7 +407,7 @@ Set the memory limit with the environment variable
 `OQP_XC_RESPONSE_CACHE_MB` (MiB, default `256`); `0` disables storage:
 
 ```sh
-OQP_XC_RESPONSE_CACHE_MB=256 OQP_XC_TIMING=1 openqp h2o.inp
+OQP_XC_RESPONSE_CACHE_MB=256 OQP_XC_TIMING=1 openqp h2o.oqp
 ```
 
 The retained-cache limit applies to each active solver/grid cache on each MPI
