@@ -425,8 +425,9 @@ individual-root gradient and its optimizer selector must name that same root.
 The compatibility numerical route instead indexes the state list published by
 `[state_average] target_roots`.
 
-The SC-NEVPT2 analytic route requires `[pt2] h0=dyall`,
-`contraction=strong`, `reference=casscf`, and a single state-specific root on a
+The SC-NEVPT2 analytic route requires `method=sc-nevpt2` (or `method=caspt2`
+with `[pt2] h0=dyall` and `contraction=strong`), `reference=casscf`, and a
+single state-specific root on a
 closed-shell RHF reference. With `gradient=auto`, an out-of-scope input or a
 geometry-specific applicability failure is reported and routed to central
 differences. With `gradient=analytic`, the same condition is an error rather
