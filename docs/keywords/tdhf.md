@@ -124,13 +124,15 @@ Target response state for workflows that read a single TDHF/MRSF state.
 Requested response-state multiplicity. For MRSF-TDDFT, this is the target spin
 multiplicity after spin flip, not necessarily the same as the high-spin ROHF
 reference multiplicity.
-For conventional RPA/TDA (`type=rpa` or `tda`) on a closed-shell RHF reference,
-only `multiplicity=1` is accepted: the response always contains the Coulomb
-term and the singlet exchange-correlation kernel, so a triplet request would
-reproduce the singlet roots. The input checker rejects `multiplicity=3`. For
-triplet states use `type=mrsf` (ROHF) or `type=umrsf` (UHF) with a triplet
-reference and set `[tdhf] multiplicity=3` as well: the reference multiplicity
-does not select the response multiplicity, which defaults to `1`.
+For conventional RPA/TDA (`type=rpa` or `tda`) on a closed-shell RHF/RKS
+reference, `multiplicity=1` gives singlet and `multiplicity=3` triplet
+excitation energies (triplet: no Coulomb term, `f_aa - f_ab` kernel, zero
+oscillator strengths). Triplet energies, gradients and geometry
+optimizations are available; the input checker rejects `multiplicity=3` with
+Hessians, NACs, crossings, an open-shell reference, and any other value. For
+those triplet workflows use `type=mrsf` with an ROHF triplet reference and set
+`[tdhf] multiplicity=3` as well: the reference multiplicity does not select
+the response multiplicity, which defaults to `1`.
 For SOC, do not set this as a single target multiplicity; the SOC workflow
 computes singlet and triplet response roots internally.
 
@@ -318,6 +320,44 @@ absorption workflows.
 2e-integral cutoff for the MRSF response build. `1e-8` is exact to ≪ µeV;
 looser values (e.g. `1e-6`) trade a few µeV for speed. Never tighter than the
 SCF integral cutoff. See [Performance](../performance.md).
+
+### `shared_f3`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | MRSF-TDDFT and UMRSF-TDDFT excitation-energy response |
+
+Requires an engine build containing [OpenQP PR #484](https://github.com/Open-Quantum-Platform/openqp/pull/484).
+This keyword is not available in the 1.3.0 release; omit it from inputs and
+Python settings when using that release.
+
+Use one shared exchange accumulator instead of a separate exchange accumulator
+for each OpenMP worker. The default retains the established private storage.
+With `shared_f3=True`, the density-dependent channels remain private, while the
+three exchange-only channels use shared storage. Concurrent exchange updates
+are synchronized; one-worker execution uses ordinary updates. All channels are
+included in the MPI reduction.
+
+With multiple OpenMP workers, the shared option reduces the number of exchange
+images allocated, but synchronization can increase response time. Compare both storage settings on
+the intended molecule and thread count before selecting it. This option does
+not select the storage used by the gradient Z-vector contractions or change
+precision, integral screening, or response convergence thresholds. `fp32`
+remains a separate setting.
+
+```ini
+[tdhf]
+type=mrsf
+shared_f3=True
+```
+
+```python
+job.settings.tdhf(shared_f3=True)
+# Restore private storage:
+job.settings.tdhf.shared_f3 = False
+```
 
 ### `fp32`
 
