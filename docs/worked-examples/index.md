@@ -25,6 +25,7 @@ minute. These take longer:
 | HCN IRC, each direction | about 3.5 minutes |
 | NH₃ NEB on the 150 × 974 DFT grid | about 7 minutes |
 | Ethylene MECI search | about 3.5 minutes |
+| NH₃ inversion NEB | about 7 minutes |
 | Ethylene S1 minimum-energy path | about 4.5 minutes |
 | Methanol ground-state MD | about 4.5 minutes |
 | Formaldehyde QM/MM excited-state dynamics | about 5 minutes |
