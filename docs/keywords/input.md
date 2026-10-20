@@ -78,7 +78,7 @@ longer evaluated as neutral dispersion models.
 | --- | --- |
 | Type | string |
 | Default | `hf` |
-| Values | `hf`, `tdhf`, `mp2`, `ccsd`, `ccsd(t)`, `fci`, `casci`, `casscf`, `sa-casscf`, `caspt2`, `ms-caspt2`, `xms-caspt2`, `mrmp2`, `mcqdpt2`, `xmcqdpt2` |
+| Values | `hf`, `tdhf`, `mp2`, `ccsd`, `ccsd(t)`, `fci`, `casci`, `casscf`, `sa-casscf`, `caspt2`, `ms-caspt2`, `xms-caspt2`, `nevpt2`, `sc-nevpt2`, `mrmp2`, `mcqdpt2`, `xmcqdpt2` |
 | Used by | workflow dispatch |
 
 Selects the electronic-structure driver. Use `method=hf` for HF and DFT
