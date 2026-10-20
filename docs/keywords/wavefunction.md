@@ -319,8 +319,8 @@ geometries and retains the `grad_*` controls above.
 | --- | --- | --- |
 | `reference` | `casscf` | `casscf` or fixed-orbital `casci` reference. |
 | `variant` | `auto` | Single-state, multistate, or extended-multistate variant inferred from the method by default. |
-| `h0` | `fock` | `fock` for CASPT2/QDPT or `dyall` for NEVPT2. |
-| `contraction` | `uncontracted` | `uncontracted` or `strong` (SC-NEVPT2). |
+| `h0` | set by the method | `fock` for CASPT2/QDPT or `dyall` for NEVPT2. If unset, `nevpt2` and `sc-nevpt2` use `dyall`; every other PT2 method uses `fock`. |
+| `contraction` | set by the method | `uncontracted` or `strong` (SC-NEVPT2). If unset, `sc-nevpt2` uses `strong`; every other PT2 method uses `uncontracted`. |
 | `target_roots` | empty | Zero-based PT2 target root slots; `target_roots=0` explicitly corrects only the first CI root. Single-state methods accept one target root. |
 | `nroot` | `0` | Number of retained reference roots; zero inherits `[ci] nroot`. This count does not itself select the single-state PT2 target. |
 | `ipea_shift`, `level_shift`, `imaginary_shift`, `edshft` | `0.0` | Denominator regularization controls. |
@@ -336,10 +336,11 @@ geometries and retains the `grad_*` controls above.
 | `grad_gap_warn` | `1.0e-5` | Energy-gap threshold in Hartree used in the root-ordering warning. |
 | `grad_ranks_per_group` | `0` | MPI ranks assigned to one displaced energy; zero selects the automatic distribution. |
 
-For a molecular input, use `[input] method=nevpt2` with `[pt2] h0=dyall`
-and `contraction=uncontracted`, or `method=sc-nevpt2` with `h0=dyall` and
-`contraction=strong`. Specify these PT2 controls explicitly: the method name
-alone does not override the current input defaults. The Python
+For a molecular input, use `[input] method=nevpt2` (Dyall `h0`,
+uncontracted) or `method=sc-nevpt2` (Dyall `h0`, strong contraction). The
+method name sets `h0` and `contraction`, so they can be left out. An explicit
+value that contradicts the method, such as `method=nevpt2` with `h0=fock`, is
+rejected before the reference calculation starts. The Python
 `job.nevpt2(...)` convenience helper writes the matching method and PT2
 controls; `contraction="strong"` selects `sc-nevpt2`. The older
 `method=caspt2` with `[pt2] h0=dyall` remains supported; add
