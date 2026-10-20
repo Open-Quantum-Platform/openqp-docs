@@ -390,48 +390,69 @@ many nearby geometries (optimization, MD).
 | --- | --- |
 | Type | boolean |
 | Default | `False` |
-| Used by | MRSF-TDDFT excitation energies on an ROHF-like reference |
+| Used by | MRSF-TDDFT and UMRSF-TDDFT excitation energies |
 
-Requires an engine build containing [OpenQP PR #510](https://github.com/Open-Quantum-Platform/openqp/pull/510),
-which is in `main` but not in the 1.3.1 or earlier releases; omit the keyword
+Requires an engine build containing [OpenQP PR #510](https://github.com/Open-Quantum-Platform/openqp/pull/510)
+for MRSF and [OpenQP PR #513](https://github.com/Open-Quantum-Platform/openqp/pull/513) for UMRSF,
+which are in `main` but not in the 1.3.1 or earlier releases; omit the keyword
 from inputs and Python settings when using those releases.
 
-Build the spin-pair coupling terms of the MRSF response once per energy
+Build the spin-pair coupling terms of the MRSF or UMRSF response once per energy
 calculation instead of in every Davidson iteration. The coupling between the
 core–open and open–virtual excitations depends only on the two singly occupied
 orbitals. It is stored as a fixed matrix and added to every trial vector with
 one matrix multiplication, so each iteration builds only the exchange term that
-depends on the trial vector. Excitation energies agree with the default path to
-about `1e-11` Eh. On naphthalene/6-31G\* the response stage took 0.41–0.50 of
-the default time with 1 or 28 OpenMP threads and with 1–4 MPI processes.
+depends on the trial vector. UMRSF builds the matrix from the α and β singly
+occupied orbitals separately.
+
+MRSF excitation energies agree with the default path to about `1e-11` Eh. On
+naphthalene/6-31G\* the response stage took 0.41–0.50 of the default time with 1
+or 28 OpenMP threads and with 1–4 MPI processes.
+
+UMRSF excitation energies agree with the default path to `1e-9` Eh or better.
+On naphthalene/6-31G\* with 9 singlet states, the UMRSF energy stage took
+0.15–0.17 of the default time with 1, 8 or 28 OpenMP threads and with 1–4 MPI
+processes, and the whole run took about a third of the time. Peak memory was
+also lower, because each thread accumulates one exchange channel instead of
+eleven: 324 to 270 MiB with 1 thread and 1617 to 694 MiB with 28.
 
 The cache applies to the excitation-energy solve of any run type. Z-vector and
 gradient contractions are unchanged. The calculation falls back to the default
 contraction, and the log says
-`MRSF pair cache: not applicable to this calculation; standard contraction`, for:
+`MRSF pair cache: not applicable to this calculation; standard contraction`
+(`UMRSF pair cache: ...` for `type=umrsf`), for:
 
-- UMRSF (`type=umrsf`) and range-separated (CAM) functionals;
+- range-separated (CAM) functionals;
 - `fp32` response digestion;
 - functionals without exact exchange (`hfscale` of zero);
 - response multiplicities other than 1 and 3;
-- references whose α and β orbitals differ, or that do not have exactly two
-  more α than β electrons;
+- references that do not have exactly two more α than β electrons, and, for
+  MRSF, references whose α and β orbitals differ;
 - symmetry-reduced (petite-list) integrals;
 - systems where the stored matrix would exceed 256 MiB (about 2,900 basis
   functions).
 
-With an active external sigma device route (`OQP_ROUTEC_SIG`), the device
-builds the response instead, and the log says
+With an active external sigma device route (`OQP_ROUTEC_SIG`, MRSF only), the
+device builds the response instead, and the log says
 `MRSF pair cache: not used with the device sigma route`.
 
 The setup pass chooses which integrals to skip from the fixed open-shell
 densities rather than from the trial vectors. At the default `resp_cutoff` this
-changed excitation energies by less than `6e-12` Eh in tests. With a loose
-`resp_cutoff` such as `1e-6`, the Davidson residual can stall above the level the
-default path reaches, so keep `conv` at its default or looser there.
+changed MRSF excitation energies by less than `6e-12` Eh in tests. For UMRSF
+the largest change was `1.2e-9` Eh, in the highest roots of C4H6/6-31G\* with
+10 states. That is smaller than the `6e-9` Eh the default cutoff itself moves
+those roots, and with `resp_cutoff=1e-14` the two paths agree to `5e-13` Eh.
+With a loose `resp_cutoff` such as `1e-6`, the Davidson residual can stall above
+the level the default path reaches, so keep `conv` at its default or looser
+there.
 
 ```text
 mrsf(nstate=3)/bhhlyp/6-31g* tdhf(pair_cache=true)
+geom="h2o.xyz"
+```
+
+```text
+umrsf(nstate=3)/bhhlyp/6-31g* tdhf(pair_cache=true)
 geom="h2o.xyz"
 ```
 
@@ -439,8 +460,8 @@ geom="h2o.xyz"
 job.settings.tdhf(pair_cache=True)
 ```
 
-Example input: `examples/MRSF-TDDFT/H2O_MRSF_PAIR_CACHE.inp` in the engine
-repository.
+Example inputs: `examples/MRSF-TDDFT/H2O_MRSF_PAIR_CACHE.inp` and
+`examples/UMRSF-TDDFT/H2O_UMRSF_PAIR_CACHE.inp` in the engine repository.
 
 ### XC response cache memory
 
