@@ -56,7 +56,6 @@ see [Python Package Build Defaults](#python-package-build-defaults).
 | Option | Direct CMake default | Python package default | Values | Use |
 | --- | --- | --- | --- | --- |
 | `USE_LIBINT` | `ON` | `OFF` | `ON`, `OFF` | Build and use the external Libint two-electron integral path. `OFF` uses OpenQP's native Rys path. |
-| `ENABLE_OPENTRAH` | `ON` | `OFF` | `ON`, `OFF` | Build and link the external OpenTrustRegion solver. `OFF` drops `otr_interface.F90` and uses native TRAH fallback behavior. |
 | `ENABLE_DDX` | `OFF` | `OFF` | `ON`, `OFF` | Enable the optional ddX continuum-solvation backend. |
 | `DDX_ROOT` | Unset | Unset | Path or environment variable | When `ENABLE_DDX=ON`, use a prebuilt ddX install. If unset, OpenQP builds ddX v0.8.0 with matching BLAS integer width. |
 
@@ -69,8 +68,8 @@ see [Python Package Build Defaults](#python-package-build-defaults).
 
 `LINALG_LIB=auto` first tries a system BLAS/LAPACK. If nothing suitable is
 found, OpenQP falls back to the bundled NetLib build. `LINALG_LIB=none` is
-listed internally but rejected because OpenQP and OpenTrustRegion require
-BLAS/LAPACK.
+listed internally but rejected because OpenQP and its bundled externals
+require BLAS/LAPACK.
 
 Every build is ILP64 -- one 8-byte BLAS/LAPACK integer model on every platform,
 with no option to change it. `LINALG_LIB_INT64` was removed, and passing
@@ -83,8 +82,8 @@ Use ILP64 OpenBLAS or MKL on Linux, MKL ILP64 on Windows, and Accelerate's
 ## External Dependency Cache
 
 OpenQP builds several bundled external dependencies when needed, including
-Libint, NLopt, Libxc, tagarray, libecpint, NetLib LAPACK/BLAS, OpenTrustRegion,
-fprettify, and ddX.
+Libint, Libxc, tagarray, NetLib LAPACK/BLAS, the DFT-D4 stack (dftd4, mctc-lib,
+multicharge), fprettify, and ddX.
 
 | Option | Default | Values | Use |
 | --- | --- | --- | --- |
@@ -123,7 +122,7 @@ cmake -B build -G Ninja -DOQP_EXTERNALS_ROOT=/opt/openqp-cache/externals
 | `ENABLE_UBSAN` | `OFF` | `ON`, `OFF` | Enable UndefinedBehaviorSanitizer flags for GNU builds. |
 | `ENABLE_TSAN` | `OFF` | `ON`, `OFF` | Enable ThreadSanitizer flags for GNU builds. |
 | `ENABLE_MSAN` | `OFF` | `ON`, `OFF` | Declared but not currently used. |
-| `ENABLE_Formatter` | `ON` | `ON`, `OFF` | Add the Fortran formatting target using fprettify. |
+| `ENABLE_Formatter` | `OFF` | `ON`, `OFF` | Add the Fortran formatting target using fprettify. `OFF` by default so ordinary builds do not download the formatter. |
 
 Example debug build with runtime checks:
 
@@ -144,7 +143,6 @@ The top-level `pip install .` build uses these CMake overrides from
 | --- | --- | --- |
 | `USE_LIBINT` | `OFF` | Prefer the native Rys path for package builds. |
 | `ENABLE_OPENMP` | `ON` | Enable parallel production kernels by default. |
-| `ENABLE_OPENTRAH` | `OFF` | Avoid the external OpenTrustRegion dependency in ordinary package builds. |
 | `CMAKE_INSTALL_PREFIX` | `.` | Keep native runtime files package-local. |
 
 Platform wheel builds add a few more environment-level settings:
