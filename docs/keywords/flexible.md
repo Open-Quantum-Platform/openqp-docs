@@ -124,9 +124,11 @@ thermostat; set it to the simulation temperature explicitly.
 | Default | `solute` |
 | Values | `solute`, `point`, `molecules` |
 
-Boundary centre. `solute` is the mass-weighted centre of `atoms`, made whole
-across the periodic cell about its first atom; it moves with those atoms and
-they receive the reaction force. `point` is the fixed position `point`.
+Boundary centre. `solute` is the mass-weighted centre of `atoms`; in a
+periodic cell the atoms are first made whole along the bonds of the topology
+(an atom not bonded to the first centre atom is taken at its minimum image
+about that atom). The centre moves with those atoms and they receive the
+reaction force. `point` is the fixed position `point`.
 `molecules` is the centre of mass of all QM and MM solvent molecules of the
 boundary (nonperiodic QM/MM only).
 
