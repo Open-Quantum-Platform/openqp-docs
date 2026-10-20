@@ -140,9 +140,6 @@ difference comes from the DFT integration grid.
 
 - Start the optimization from your own guess, for example a structure with
   r(C=O) = 1.4 Å, and see how many steps it needs.
-- Add `pcm(water)` to a single-point energy at this geometry to estimate the
-  electrostatic solvation energy (requires an OpenQP build with
-  `-DENABLE_DDX=ON`; see [PCM/ddX](../workflows/pcm.md)).
 
 See also: [Optimization](../workflows/optimization.md),
 [Hessian and Frequencies](../workflows/hessian.md),
