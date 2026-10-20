@@ -392,9 +392,9 @@ many nearby geometries (optimization, MD).
 | Default | `False` |
 | Used by | MRSF-TDDFT excitation energies on an ROHF-like reference |
 
-Requires an engine build containing [OpenQP PR #510](https://github.com/Open-Quantum-Platform/openqp/pull/510).
-This keyword is not available in the 1.3.0 release; omit it from inputs and
-Python settings when using that release.
+Requires an engine build containing [OpenQP PR #510](https://github.com/Open-Quantum-Platform/openqp/pull/510),
+which is in `main` but not in the 1.3.1 or earlier releases; omit the keyword
+from inputs and Python settings when using those releases.
 
 Build the spin-pair coupling terms of the MRSF response once per energy
 calculation instead of in every Davidson iteration. The coupling between the
@@ -430,12 +430,9 @@ changed excitation energies by less than `6e-12` Eh in tests. With a loose
 `resp_cutoff` such as `1e-6`, the Davidson residual can stall above the level the
 default path reaches, so keep `conv` at its default or looser there.
 
-```ini
-[tdhf]
-type=mrsf
-multiplicity=1
-nstate=3
-pair_cache=True
+```text
+mrsf(nstate=3)/bhhlyp/6-31g* tdhf(pair_cache=true)
+geom="h2o.xyz"
 ```
 
 ```python
