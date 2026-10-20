@@ -25,9 +25,12 @@ minimises the **QM/MM** energy: the embedded QM energy in the ESPF field of
 the MM charges, the link-atom terms, and the classical MM energy, exactly the
 quantity the QM/MM dynamics drivers integrate. The gas-phase optimiser is not
 used, because it would move the QM fragment in vacuum while the environment
-sat still. The movable atoms are the QM region plus the MM residues within
-[`qmmm_radius`](#qmmm_radius); the rest is fixed. The native trust-radius
-RFO/BFGS engine drives the search in Cartesian coordinates (trust radius from
+sat still. The movable atoms are chosen with the `[qmmm]` active-atom keys —
+the QM region plus the MM residues within
+[`[qmmm] active_radius`](qmmm.md#active_radius), plus
+[`active_atoms`](qmmm.md#active_atoms) and minus
+[`frozen_atoms`](qmmm.md#frozen_atoms) — and the rest is fixed. The native trust-radius
+RFO/BFGS engine drives the search, in Cartesian coordinates by default (trust radius from
 [`[oqp] trust`](oqp.md) / `trust_max`), orbitals are reused between steps,
 and convergence is the same five-part test as the all-QM optimiser:
 [`energy_shift`](#energy_shift), [`rmsd_step`](#rmsd_step),
@@ -58,16 +61,21 @@ minimisation is connected; MECI, MECP, TS, IRC, MEP and NEB refuse
 `qmmm_flag`.
 
 ```text
-rhf/6-31g opt(qmmm_radius=3.0) qmmm(forcefield_files="amber14-all.xml",qm_atoms="8,9,16,17,18")
+rhf/6-31g opt qmmm(forcefield_files="amber14-all.xml",qm_atoms="8,9,16,17,18",active_radius=3.0,frozen_atoms="6 name:CA")
 geom="ala.pdb 9 10 17 18 19"
 ```
 
 This optimises the alanine dipeptide of the repository example
-`examples/QMMM/ala-dipeptide_RHF-QMMM-OPT-linkatom` with the MM residues
-within 3 Å of the QM region free to move. The `geom` indices are 1-based and
-`qm_atoms` lists the same atoms 0-based; `qmmm(...)` sets `qmmm_flag`, and
-`[qmmm] pdb_file` is taken from `geom`. For an excited state, use an MRSF
-route and name the state, for example `opt(S1,qmmm_radius=3.0)`.
+`examples/QMMM/ala-dipeptide_RHF-QMMM-OPT-active` with the MM residues within
+3 Å of the QM region free to move, except the backbone N (index 6) and the
+CA atom, which are held. The `geom` indices are 1-based and `qm_atoms` lists the
+same atoms 0-based; `qmmm(...)` sets `qmmm_flag`, and `[qmmm] pdb_file` is
+taken from `geom`. For an excited state, use an MRSF route and name the state,
+for example `opt(S1)`.
+
+The selection keys are documented with the rest of the `[qmmm]` section under
+[Active atoms](qmmm.md#active-atoms-what-moves); they use ORCA's
+`%qmmm ActiveAtoms` syntax and are shared with the QM/MM dynamics drivers.
 
 ## Keywords
 
@@ -154,6 +162,13 @@ optimisation. Every MM residue with an atom within this distance of a QM atom
 moves with the QM atoms; everything else is held fixed. `0` moves the QM
 atoms alone. Whole residues are selected so that waters and side chains stay
 intact; in a periodic box the distance is the minimum-image distance.
+
+This key is an **alias** of [`[qmmm] active_radius`](qmmm.md#active_radius),
+which is the spelling the QM/MM dynamics drivers share; `[qmmm]` wins if both
+are given. The companion aliases `qmmm_active` and `qmmm_freeze` are
+[`[qmmm] active_atoms`](qmmm.md#active_atoms) and
+[`frozen_atoms`](qmmm.md#frozen_atoms). New decks should use the `[qmmm]`
+names — see [Active atoms](qmmm.md#active-atoms-what-moves).
 
 ### `qmmm_output`
 
