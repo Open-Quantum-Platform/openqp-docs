@@ -378,12 +378,12 @@ given, the one that differs from the default `1` wins, `[input]` first.
 At every level, the LibXC header, the DFT grid description and each functional's
 references are written once per log file.
 
-Example:
+In `.oqp` input the level is a top-level option:
 
-```ini
-[input]
-verbose=2
+```text
+rks/pbe/6-31g verbose=2
+geom="h2o.xyz"
 ```
 
-In `.oqp` input the level is a top-level option (`rks/pbe/6-31g verbose=0`); from
-the Python API it is `job.control(verbose=0)`.
+From the Python API it is `job.control(verbose=2)`; in legacy sectioned input
+it is `[input] verbose=2`.
