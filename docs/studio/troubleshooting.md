@@ -1,5 +1,12 @@
 # OQP Studio Troubleshooting
 
+## macOS blocks the app before it starts
+
+For a developer-verification warning, a missing **Open Anyway** button, or a
+**damaged** message, follow the [Mac first-launch and security instructions](installation.md#macos-security-first-launch).
+They cover the Settings exception, download and signature verification, and a
+quarantine fallback limited to the verified OQP Studio app.
+
 ## The runner is unavailable
 
 In Execution, inspect the runner list, detected version, and executable path.
