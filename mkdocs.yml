@@ -54,6 +54,7 @@ nav:
       - Ground-state MD: worked-examples/methanol-md.md
       - Conical intersection (MECI): worked-examples/ethylene-meci.md
       - Nonadiabatic dynamics: worked-examples/ethylene-namd.md
+      - Intersystem crossing (SOC-NAMD): worked-examples/formaldehyde-soc-namd.md
       - SF-TDDFT and spin contamination: worked-examples/ethylene-sf-tddft.md
       - CASSCF and CASPT2 vs FCI: worked-examples/lih-caspt2.md
       - QM/MM solvent shift: worked-examples/formaldehyde-qmmm.md

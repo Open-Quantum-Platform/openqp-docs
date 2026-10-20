@@ -19,8 +19,8 @@ Every input on these pages can also be downloaded from the link under its code
 block. With 2 to 8 CPU threads, most runs take between 2 seconds and 1
 minute. The path, conical-intersection, and dynamics examples take longer:
 about 3.5 minutes for each IRC direction and for the MECI search, 4.5 minutes
-for methanol MD, 5 minutes for the QM/MM dynamics, and 9 minutes for ethylene
-NAMD. Each page states its run
+for methanol MD, 5 minutes for the QM/MM dynamics, 2.5 minutes for formaldehyde SOC-NAMD,
+and 9 minutes for ethylene NAMD. Each page states its run
 time.
 
 <div class="oqp-gallery" markdown>
@@ -113,6 +113,12 @@ time.
 ![Ethylene NAMD](../assets/worked-examples/plot-ethylene-namd.svg)
 <strong>Nonadiabatic dynamics</strong>
 <span>Surface hopping from S1: twisting and return to S0 in 100 fs.</span>
+</a>
+
+<a class="oqp-card" href="formaldehyde-soc-namd/" markdown>
+![Formaldehyde SOC-NAMD](../assets/worked-examples/plot-formaldehyde-soc-namd.svg)
+<strong>Intersystem crossing (SOC-NAMD)</strong>
+<span>Surface hopping with spin-orbit coupling: formaldehyde hops from S1 to T0 after pyramidalizing (experimental).</span>
 </a>
 
 <a class="oqp-card" href="ethylene-sf-tddft/" markdown>
