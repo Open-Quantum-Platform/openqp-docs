@@ -3,8 +3,8 @@
 Each worked example is one small molecule, one complete `.oqp` input that you
 can copy and run as it is, and the results that the run produces. The
 coordinates are written inside the input, so no separate geometry file is
-needed. Two examples need extra files, downloaded with them into the same
-folder: the [QM/MM example](formaldehyde-qmmm.md) reads its structure and force
+needed. Some examples need extra files, downloaded with them into the same
+folder: the [QM/MM examples](formaldehyde-qmmm.md) read their structure and force
 field from a PDB file and two OpenMM XML files, and the all-electron inputs of
 the [gold hydride example](auh-relativity.md) read an uncontracted basis set
 from a JSON file. Run the input, then compare your numbers with the reference values on
@@ -18,7 +18,8 @@ Every input on these pages can also be downloaded from the link under its code
 block. With 2 to 8 CPU threads, most runs take between 2 seconds and 1
 minute. The path, conical-intersection, and dynamics examples take longer:
 about 3.5 minutes for each IRC direction and for the MECI search, 4.5 minutes
-for methanol MD, and 9 minutes for ethylene NAMD. Each page states its run
+for methanol MD, 5 minutes for the QM/MM dynamics, and 9 minutes for ethylene
+NAMD. Each page states its run
 time.
 
 <div class="oqp-gallery" markdown>
@@ -141,6 +142,18 @@ time.
 ![HI sigma orbital](../assets/worked-examples/orb-hi-sigma.png)
 <strong>Effective core potentials</strong>
 <span>HI with the def2-SVP ECP: optimization, frequency, dipole, valence orbitals.</span>
+</a>
+
+<a class="oqp-card" href="ethylene-mecp/" markdown>
+![MECP](../assets/worked-examples/plot-mecp-twist.svg)
+<strong>Singlet–triplet crossing (MECP)</strong>
+<span>S0/T0 minimum-energy crossing point of ethylene and the spin-orbit coupling there.</span>
+</a>
+
+<a class="oqp-card" href="formaldehyde-qmmm-namd/" markdown>
+![QM/MM NAMD](../assets/worked-examples/plot-qmmm-namd.svg)
+<strong>QM/MM excited-state dynamics</strong>
+<span>Formaldehyde on S1 with two MM waters: pyramidalization and H-bond breaking.</span>
 </a>
 
 </div>
