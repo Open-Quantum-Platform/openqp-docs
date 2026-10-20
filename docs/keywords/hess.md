@@ -21,9 +21,11 @@ Selects the Hessian method:
   - It falls back to the numerical finite-difference Hessian for excited
     states and when the run uses something the analytical kernel does not
     differentiate.
-  - Those cases are PCM solvent, QM/MM embedding, scalar relativity, meta-GGA
-    or double-hybrid functionals, fractional occupations (`pfon`), basis
-    functions with L >= 4, and `symmetry_unique`.
+  - Those cases are PCM solvent, QM/MM embedding, an ODP bias, scalar
+    relativity, meta-GGA or double-hybrid functionals, fractional occupations
+    (`pfon`), basis functions with L >= 4 (or a basis that cannot be
+    inspected), a system without virtual orbitals, and the numerical-only
+    options `symmetry_unique` and `restart`.
   - The choice and its reason are written to the log.
 - **`numerical`**: forces the finite-difference Hessian.
 - **`analytical`**: requests the analytical Hessian. The input checker
