@@ -22,6 +22,7 @@ extra_css:
   - stylesheets/extra.css
 
 markdown_extensions:
+  - attr_list
   - admonition
   - tables
   - toc:
@@ -37,12 +38,18 @@ nav:
   - Quickstart: quickstart.md
   - OQP Studio:
       - Overview: studio/index.md
+      - Download: studio/download.md
+      - Release notes: studio/whats-new.md
+      - Engine compatibility: studio/engine-compatibility.md
       - Installation: studio/installation.md
       - Standalone and integrated packages: studio/packages.md
       - Builder and Workflows: studio/builder-workflows.md
+      - Workflow scientific reference: studio/workflow-reference.md
+      - QM/MM preparation and calculation: studio/qmmm.md
       - Execution and Projects: studio/execution.md
       - Analysis: studio/analysis.md
       - Art Rendering: studio/art.md
+      - Feedback and scientific issues: studio/feedback.md
       - Troubleshooting: studio/troubleshooting.md
   - Input Styles:
       - .oqp Input: oqp-input.md
@@ -54,6 +61,7 @@ nav:
       - HF and DFT: workflows/hf-dft.md
       - MP2: workflows/mp2.md
       - Coupled Cluster: workflows/coupled-cluster.md
+      - CCpy Coupled Cluster (external): workflows/ccpy.md
       - CASSCF Nuclear Gradient: workflows/casscf-gradient.md
       - CASPT2 Nuclear Gradient: workflows/caspt2-gradient.md
       - SC-NEVPT2 Nuclear Gradient: workflows/sc-nevpt2-gradient.md
@@ -65,6 +73,7 @@ nav:
       - Hessian and Frequencies: workflows/hessian.md
       - Orbital and Vibrational Output: workflows/orbital-vibrational-output.md
       - Optimization: workflows/optimization.md
+      - Transition-State Searches: workflows/transition-state-search.md
       - BaekA Multistate MECI: workflows/baeka-multistate-meci.md
       - Spin-Orbit Coupling: workflows/soc.md
       - NACME: workflows/nacme.md
@@ -72,6 +81,7 @@ nav:
       - PCM/ddX: workflows/pcm.md
       - MRSF-EKT: workflows/ekt.md
       - NMR, IR, and Raman: workflows/nmr-ir-raman.md
+      - ACID Current-Density Maps: workflows/acid.md
       - Molecular Symmetry: workflows/symmetry.md
   - Keywords:
       - Overview: keywords/index.md
@@ -84,6 +94,12 @@ nav:
       - dftgrid: keywords/dftgrid.md
       - tdhf: keywords/tdhf.md
       - md: keywords/md.md
+      - NAMD coupling schemes: keywords/md-schemes.md
+      - NAMD numerical continuity: keywords/md-continuity.md
+      - NAMD diagnostics: keywords/md-diagnostics.md
+      - Initial conditions and restart: keywords/md-initial-restart.md
+      - Ensembles and experimental SOC-NAMD: keywords/md-ensemble-soc.md
+      - NAMD advanced controls: keywords/md-advanced.md
       - qmmm: keywords/qmmm.md
       - properties: keywords/properties.md
       - hess: keywords/hess.md

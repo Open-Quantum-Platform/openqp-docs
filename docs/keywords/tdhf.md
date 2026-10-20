@@ -62,13 +62,20 @@ nstate=5
 
 Selects the response model. Use `mrsf` for production MRSF-TDDFT workflows.
 `sf` selects ordinary spin-flip TDDFT, and `umrsf` selects the unrestricted
-MRSF energy path. `qmrsf_dk` selects the quintet-reference dressed-kernel
+MRSF response model for energies and analytic nuclear gradients
+(`runtype=grad`, `optimize`, `meci`, `mecp`, and `tci`) with supported
+functionals. See [MRSF-TDDFT](../workflows/mrsf-tddft.md) for UMRSF gradient
+restrictions. `qmrsf_dk` selects the quintet-reference dressed-kernel
 method described in [QMRSF-DK](../workflows/qmrsf-dk.md). The legacy
 `mrsf_ekt_ip` and `mrsf_ekt_ea` values are
 energy-only; the current EKT workflow should use `[input] runtype=ekt`,
 `[tdhf] type=mrsf`, and the `[ekt]` section.
 
-MRSF and SF workflows require an ROHF reference in the current code path.
+MRSF workflows require an ROHF reference in the current code path. SF-TDDFT
+accepts an ROHF or a UHF reference; the UHF path covers energies and gradient
+workflows, while numerical Hessians still require ROHF (see
+[SF-TDDFT](../workflows/sf-tddft.md)). NAC, NAMD and SOC require `type=mrsf`
+regardless of the reference.
 UMRSF-TDDFT requires a UHF reference. QMRSF-DK requires a quintet
 (`[scf] multiplicity=5`) ROHF/ROKS reference and `[input] runtype=energy`.
 
@@ -117,6 +124,15 @@ Target response state for workflows that read a single TDHF/MRSF state.
 Requested response-state multiplicity. For MRSF-TDDFT, this is the target spin
 multiplicity after spin flip, not necessarily the same as the high-spin ROHF
 reference multiplicity.
+For conventional RPA/TDA (`type=rpa` or `tda`) on a closed-shell RHF/RKS
+reference, `multiplicity=1` gives singlet and `multiplicity=3` triplet
+excitation energies (triplet: no Coulomb term, `f_aa - f_ab` kernel, zero
+oscillator strengths). Triplet energies, gradients and geometry
+optimizations are available; the input checker rejects `multiplicity=3` with
+Hessians, NACs, crossings, an open-shell reference, and any other value. For
+those triplet workflows use `type=mrsf` with an ROHF triplet reference and set
+`[tdhf] multiplicity=3` as well: the reference multiplicity does not select
+the response multiplicity, which defaults to `1`.
 For SOC, do not set this as a single target multiplicity; the SOC workflow
 computes singlet and triplet response roots internally.
 
@@ -169,7 +185,10 @@ Maximum number of Z-vector iterations for gradient/property workflows.
 | Default | `1.0e-6` |
 | Used by | Z-vector convergence |
 
-Convergence threshold for Z-vector equations.
+Convergence threshold for Z-vector equations. The TDDFT, SF-TDDFT, MRSF-TDDFT and
+UMRSF-TDDFT solvers stop when the Euclidean norm of the Z-vector residual is below
+`sqrt(zvconv)`, so the default `1.0e-6` bounds the residual by `1.0e-3`. Lower it
+(for example `1.0e-10`) when gradients are compared with finite differences.
 
 ### `z_solver`
 
@@ -193,15 +212,53 @@ GMRES, `2` is MINRES, and `3` is AUTO.
 
 Subspace dimension for GMRES when that solver is selected.
 
-### `tlf`
+### `tlf` (legacy internal name)
 
 | Field | Value |
 | --- | --- |
 | Type | integer |
-| Default | `2` |
-| Used by | response-model internals |
+| Default | `0` (exact) |
+| Used by | MRSF state-overlap minor determinants |
 
-Response-model selector used by the native TDHF/MRSF implementation.
+This internal keyword remains in `[tdhf]` because the state-overlap minor
+evaluation was historically implemented in the TDHF/MRSF response code. It is
+not a TDDFT excitation-energy setting and is not a user-selectable NAMD method.
+Only `tlf=0` is supported; nonzero TLF orders are rejected.
+
+The setting selects how the MRSF state overlap between consecutive geometries,
+`<Psi_I(t-dt)|Psi_J(t)>`, is evaluated. The reference determinant is shared, so
+the overlap factorizes into a contraction of the response amplitudes with three
+classes of minor determinants of the MO overlap matrix: `s_ij` one-hole
+occupied minors, `s_ab` particle minors, and `s_ia` mixed minors. `tlf` selects
+the treatment of `s_ij` and `s_ab`; `s_ia` is always exact.
+
+| Internal value | Minors | Notes |
+| --- | --- | --- |
+| `0` (`notlf`, `exact`) | Exact Gaussian-elimination minors, no truncation | Invariant to orbital rotations between steps. This is *not* the zeroth-order TLF(0) of the paper, which is not implemented. |
+
+The truncated Leibniz formula assumes the MOs of consecutive steps are nearly
+orthonormal, i.e. that the MO overlap matrix is close to diagonal. When
+near-degenerate doubly occupied orbitals rotate into each other within one
+nuclear step -- a 45-degree mixing of two occupied orbitals has been observed in
+hot uracil trajectories -- the diagonal MO overlaps fall to about 0.7 and a
+truncated TLF treatment can return a collapsed state overlap (diagonal elements
+around 0.3-0.4) even though
+the SCF solution and the MRSF surfaces are continuous. Norm-preserving
+interpolation then turns that collapse into a large spurious time-derivative
+coupling.
+
+The exact minors are invariant to such rotations, and for molecules the size of
+uracil (30 occupied alpha orbitals, 6-31G*) they cost the same wall time as the
+previous truncated implementation. For large systems where the `nvir^2`
+particle minors dominate, the
+recommended route is Jacobi's complementary-minor identity -- all one- and
+two-hole minors from one LU factorization of the occupied block -- rather than
+truncation.
+
+The state-overlap section of the log states which evaluation was used
+(`state-overlap minors: exact minor determinants (tlf=0, default; ...)` or
+`TLF(n) truncated-Leibniz minors; ...`). NAMD additionally warns when every
+column norm of the retained state overlap falls below 0.5.
 
 ### `hfscale`, `cam_alpha`, `cam_beta`, `cam_mu`
 
@@ -263,6 +320,44 @@ absorption workflows.
 2e-integral cutoff for the MRSF response build. `1e-8` is exact to ≪ µeV;
 looser values (e.g. `1e-6`) trade a few µeV for speed. Never tighter than the
 SCF integral cutoff. See [Performance](../performance.md).
+
+### `shared_f3`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | MRSF-TDDFT and UMRSF-TDDFT excitation-energy response |
+
+Requires an engine build containing [OpenQP PR #484](https://github.com/Open-Quantum-Platform/openqp/pull/484).
+This keyword is not available in the 1.3.0 release; omit it from inputs and
+Python settings when using that release.
+
+Use one shared exchange accumulator instead of a separate exchange accumulator
+for each OpenMP worker. The default retains the established private storage.
+With `shared_f3=True`, the density-dependent channels remain private, while the
+three exchange-only channels use shared storage. Concurrent exchange updates
+are synchronized; one-worker execution uses ordinary updates. All channels are
+included in the MPI reduction.
+
+With multiple OpenMP workers, the shared option reduces the number of exchange
+images allocated, but synchronization can increase response time. Compare both storage settings on
+the intended molecule and thread count before selecting it. This option does
+not select the storage used by the gradient Z-vector contractions or change
+precision, integral screening, or response convergence thresholds. `fp32`
+remains a separate setting.
+
+```ini
+[tdhf]
+type=mrsf
+shared_f3=True
+```
+
+```python
+job.settings.tdhf(shared_f3=True)
+# Restore private storage:
+job.settings.tdhf.shared_f3 = False
+```
 
 ### `fp32`
 

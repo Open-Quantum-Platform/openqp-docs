@@ -284,25 +284,31 @@ control. `TCI` means the established legacy three-state controls `pen_sigma`,
 `trust_max`, `auto_recovery`, `recovery_maxit`, and `recovery_trust`; these
 apply to the native minimum, crossing-point, and transition-state optimizers.
 MEP and IRC own their path step and gradient threshold, while NEB owns its FIRE
-band controls; those drivers do not use `ENGINE`. `NAMD`
-means the current `[md]` controls `nstep`,
-`dt`, `active`, `substep`, `decoherence`, `edc_c`, `thrshe`, `tdc`, `trivial`,
-`trivial_thresh`, `init_temp`, `velocity`, `seed`, `rng_stream`,
-`first_hop_step`, `nacme_check`, `ba_gap_max`, `nacme_gate`,
-`nacme_gate_invariant_tol`, `nacme_gate_abs_tol`, `nacme_gate_rel_tol`,
-`nacme_gate_consecutive`, `nve_gate`, `nve_gate_abs_tol`,
-`nve_gate_step_tol`, `nve_gate_transition_tol`, `nve_gate_consecutive`,
-`trajectory_interval`, `restart_interval`,
-`trajectory_file`, `restart_file`, `restart`, `soc`,
-`soc_basis`, `soc_du_dt_corr`, `soc_tdc_grad_corr`, `grad_wthr`, `init_state`,
-`econs`, `dt_adaptive`, `dt_min`, and `dx_max`.
+band controls; those drivers do not use `ENGINE`. `MD` means the common
+nuclear controls `nstep`, `dt`, `velocity`, `temperature`, `seed`,
+`rng_stream`, `thermostat`, `friction`, `trajectory_file`, and `mo_reuse`.
+`NAMD` means the electronic controls `active`, `substep`, `decoherence`,
+`edc_c`, the required complete
+surface-hopping `scheme=BaeckAn|Overlap|TDC_NAC|NAC|custom`, and—only with
+`scheme=custom`—`thrshe`, `tdc`, `rescale`, and `frustrated`,
+`trivial`, `trivial_thresh`,
+`first_hop_step`, `nacme_check`, `ba_gap_max`, `nacme_policy`,
+`nacme_policy_invariant_tol`, `nacme_policy_abs_tol`, `nacme_policy_rel_tol`,
+`nacme_policy_consecutive`, `nve_policy`, `nve_policy_abs_tol`,
+`nve_policy_step_tol`, `nve_policy_transition_tol`, `nve_policy_consecutive`,
+`mo_reuse`, `scf_fail`, `scf_guess_retry`, `ref_follow`,
+`ref_switch_rescale`, `somo_tol`, `disc_rescale`, `disc_tol`,
+`disc_substeps`, `trajectory_interval`, `restart_interval`,
+`restart_file`, `restart`, `continuation_checkpoint`, `continuation_trajectory`,
+`soc`, `soc_basis`, `soc_du_dt_corr`, `soc_tdc_grad_corr`, `grad_wthr`,
+`init_state`, `econs`, `dt_adaptive`, `dt_min`, and `dx_max`.
 `NEB` means the native options `product`, `images`/`nimage`, `spring`, `climb`,
 `fmax`, `frms`, `climb_fmax`, `dt`/`neb_dt`, `maxmove`, `align`, `opt_ends`,
 `end_fmax`, and `output`.
 
 | Driver signature | Lowered option family |
 | --- | --- |
-| <code>energy([S0&#124;T0&#124;Q0])</code> | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet. |
+| <code>energy([S0&#124;T0&#124;Q0])</code> | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet; on conventional TDDFT/TDHF, `T0` selects the closed-shell triplet manifold. |
 | `grad([STATE],td_prop=...,export=...,title=...)` | Gradient target plus concise `[properties]` controls. Default target is `S0`, except that SF routes require `root=N`. |
 | `opt([STATE],OPT...,ENGINE...,freeze="distance(i,j)")` | Native minimum optimization. Default target is `S0`, except that SF routes require `root=N`. `freeze` holds one or more semicolon-separated atom-pair distances at their initial values. |
 | <code>meci(STATE1,STATE2,[algorithm=auglag&#124;penalty&#124;ubp&#124;hybrid],[gap_sigma=...],OPT...,ENGINE...)</code><br><code>meci(STATE1,STATE2[,STATE3...],algorithm=baeka,BAEKA_OPT...,BAEKA...,ENGINE...)</code> | Native intersection search for states of the same multiplicity. A two-state call defaults to `auglag`, the augmented Lagrangian, whose gap term is scaled by `gap_sigma` (default `10.0`); a call with three or more states selects `baeka`, the only N-state algorithm. Write `algorithm=baeka` explicitly only to select BaekA for two states; with three or more states it is implied and the canonical rendering omits it. State order is normalized. Use public `gap` rather than the internal `energy_gap` spelling in a BaekA call, and do not supply both. See [BaekA Multistate MECI](workflows/baeka-multistate-meci.md). |
@@ -317,8 +323,8 @@ means the current `[md]` controls `nstep`,
 | `bp(STATE1,STATE2,type=numerical,dx=...,nproc=...,restart=...,clean=...,align=...)` | Numerical branching-plane calculation between two states in the same spin manifold. |
 | `nacme(STATE1,STATE2,dt=...,align=...)` | Coupling matrix element; requires `geom2` or `guess(file2=...)`. |
 | `soc(soc_2e=...,ns=...,nt=...)` | Spin-orbit coupling; accepts no single target state. `ns` and `nt` must be supplied together. |
-| `md([S0]) qmmm(...)` | Ground-state QM/MM molecular dynamics. `qmmm(...)` is mandatory and owns the OpenMM controls. |
-| `namd([STATE],NAMD...)` | MRSF nonadiabatic molecular dynamics using the `[md]` controls listed above; defaults to `S1`. |
+| `md([S0],MD...)` | Ground-state gas-phase BOMD. Add `qmmm(...)` for ground-state QM/MM MD. It owns nuclear propagation: `nstep`, `dt`, `velocity`, `temperature`, `ensemble`, `friction`, `seed`, `rng_stream`, `mo_reuse`, and the output and continuation keywords `trajectory_file`, `trajectory_interval`, `energy_file`, `restart_file`, `restart_interval`, `restart`, `snapshot`, and `snapshot_interval`. See [Molecular Dynamics](keywords/md.md). |
+| `namd([STATE],NAMD...) md(MD...)` | MRSF nonadiabatic molecular dynamics; defaults to `S1`. `namd(...)` owns the electronic surface-hopping treatment and required `scheme`; `md(...)` owns nuclear propagation. Add `qmmm(...)` for QM/MM NAMD. |
 | <code>ekt([STATE],ip=true&#124;false,ea=true&#124;false)</code> | MRSF extended Koopmans IP/EA options; the parent state defaults to `S0`. |
 | <code>thermo([STATE],type=numerical&#124;analytical,dx=...,nproc=...,read=...,restart=...,temperature=...,clean=...)</code> | Alias that lowers to the supported Hessian path; the state defaults to `S0`. |
 | `prop([STATE],scf_prop=...,nmr_gauge=...,td_prop=...,export=...,title=...)` | MRSF-TDDFT/MRSF-TDHF property driver; defaults to `S0`. |
@@ -416,10 +422,10 @@ Modifiers may accompany the one primary driver:
 | --- | --- |
 | `d4` | Enable DFT-D4. `d4()` uses functional defaults; `d4(s6=...,s8=...,s9=...,a1=...,a2=...,alp=...)` supplies a complete explicit rational-damping set. |
 | `pcm([SOLVENT], pcm...)` | Enable PCM and optionally name a solvent, for example `pcm(water)`. The current production path is an RHF/ROHF, ddX, reference-SCF single-point energy. |
-| `nmr([gauge=cgo|giao])` | Request NMR shielding. Bare `nmr` defaults to GIAO. |
+| <code>nmr([gauge=cgo&#124;giao],[acid=true&#124;false],[acid_spacing=...],[acid_padding=...])</code> | Request NMR shielding. Bare `nmr` defaults to GIAO. `acid=true` additionally writes [ACID current-density cubes](workflows/acid.md) and requires GIAO; `acid_spacing` and `acid_padding` size their grid in bohr and are accepted only with `acid=true`. |
 | `ir` | Record that IR intensities are requested; valid only with `hess(...)` or `thermo()`. |
 | `raman` | Record that Raman activities are requested; valid only with `hess(...)` or `thermo()`. |
-| `qmmm(qmmm...)` | Supply QM/MM options and enable `qmmm_flag` automatically. It may accompany `energy`, `md`, or `namd`; `md` requires it. |
+| `qmmm(qmmm...)` | Supply QM/MM structural, force-field, and embedding options and enable `qmmm_flag` automatically. It may accompany `energy`, `opt`, `md`, or `namd`. |
 
 The compatibility spellings `d4=true` and `qmmm=true` remain accepted, but
 `d4` and `qmmm(...)` are preferred in canonical files.
@@ -432,19 +438,24 @@ In canonical `.oqp` input, `nmr` explicitly lowers to the GIAO gauge; use
 `nmr(gauge=cgo)` to request CGO. This canonical default does not alter the
 unchanged defaults of a traditional sectioned `.inp` file.
 
-Use `qmmm(n_steps=N,...)` for the QM/MM MD step count. `qmmm.n_steps` is the
-first-class schema key used by the OpenMM MD engine. Concise `.oqp` also accepts
-`qmmm(nsteps=N,...)` as a compatibility alias and lowers it to `n_steps`; do not
-write both spellings. In a traditional sectioned `.inp`, `[qmmm] nsteps` remains
-the separate legacy static-driver key.
+Use `md(nstep=N,dt=...,...)` for propagation in both gas-phase and QM/MM
+dynamics. The older `qmmm(n_steps=...)` and `qmmm(nsteps=...)` spellings remain
+read-time compatibility forms for existing QM/MM inputs; new inputs keep those
+controls in `md(...)`.
 
-`energy qmmm(...)` selects the active QM/MM single-point path. `md` is the
-ground-state QM/MM molecular-dynamics driver and therefore requires
-`qmmm(...)`. MRSF `namd(...)` may run gas phase or with `qmmm(...)`. Attaching
-`qmmm(...)` to `grad`, `opt`, or another driver is rejected because those
-generic backends do not yet provide a verified QM/MM gradient assembly.
-QM/MM/OpenMM controls belong in `qmmm(...)`; nonadiabatic-dynamics controls
-belong in `namd(...)` and lower to the legacy `[md]` section.
+`energy qmmm(...)` selects the active QM/MM single-point path. `md(...)` alone
+runs gas-phase ground-state BOMD. Adding `qmmm(...)` changes it to ground-state
+QM/MM MD. `namd(...) md(...)` runs gas-phase excited-state dynamics; adding
+`qmmm(...)` changes it to QM/MM NAMD. `opt(...) qmmm(...)` runs a QM/MM
+geometry optimization. Attaching `qmmm(...)` to `grad` or another driver is
+rejected because those backends do not yet provide a verified QM/MM gradient
+assembly. A dynamics control given both in `md(...)` and in `qmmm(...)` (for
+example `nstep` and `n_steps`, or `dt` and `timestep`), or both in `md(...)`
+and in `namd(...)`, is rejected.
+QM/MM structure, force-field, and embedding controls belong in `qmmm(...)`;
+common nuclear controls belong in `md(...)`; electronic surface-hopping
+controls belong in `namd(...)`. Both dynamics calls lower to the legacy `[md]`
+section.
 
 ## Advanced Section Calls
 
@@ -493,7 +504,7 @@ State labels always describe the physical target:
 | HF/DFT `S0` | Ground-state SCF surface | State index 0 |
 | Conventional TDDFT/TDHF `S0` | Ground-state DFT/HF surface for a state-specific derivative driver | State index 0 |
 | Conventional TDDFT/TDHF `Sn`, `n >= 1` | Singlet excited state `n` | Response root `n` |
-| Conventional TDDFT/TDHF `Tn`, `n >= 0` | Triplet response state `n` | Response root `n + 1`, target multiplicity 3 |
+| Conventional TDDFT/TDHF `energy(T0)`, `grad(Tn)`, `opt(Tn)` | Closed-shell triplet manifold (`energy`) or triplet state `n` (`grad`, `opt`), RHF/RKS reference | `[tdhf] multiplicity=3`, response root `n + 1`; Hessians, NACs and dynamics with `Tn` are rejected; use `mrsf(...)` for those |
 | SF family `root=N` | Response root whose spin character is assigned after diagonalization | Response root `N` |
 | All-electron MRSF `Sn`, `Tn`, or `Qn`, `n >= 0` | State `n` within the selected singlet, triplet, or quintet manifold | Response root `n + 1`, target multiplicity 1, 3, or 5 |
 
@@ -507,15 +518,19 @@ OpenQP also supplies the triplet ROHF reference for MRSF and the triplet UHF
 reference for UMRSF. These are implementation references, not requested
 triplet surfaces.
 MRSF NAMD uses exactly the same zero-based physical labels. For example,
-`namd(T0,soc=true)` lowers to legacy `[md] init_state=T0`; the first triplet is
-`T0`, not `T1`. A non-SOC `namd(T0)` selects internal active root 1, while an
+`namd(T0,scheme=Overlap,soc=true)` lowers to legacy `[md] init_state=T0`; the
+first triplet is `T0`, not `T1`. A non-SOC `namd(T0,scheme=Overlap)` selects
+internal active root 1, while an
 omitted NAMD state defaults to `S1`. Do not write the internal `active` or
 `init_state` selector alongside a physical driver state.
 
 SF-family state character cannot be assigned safely before diagonalization, so
 SF-TDDFT and SF-TDHF state-specific drivers require `root=N`
 instead of an `S` or `T` label.
-Conventional TD calculations accept `S` and `T` labels but reject `Q` labels;
+Conventional TD calculations (closed-shell RPA/TDA) accept `S` labels and, for
+the closed-shell triplet manifold, `energy(T0)`, `grad(Tn)` and `opt(Tn)`;
+other `T` targets (Hessians, NACs, dynamics) and all `Q` labels are rejected.
+Use an MRSF route for those triplet workflows.
 
 The following bookkeeping keys are reserved and cannot contradict the route or
 physical state syntax:
@@ -579,8 +594,8 @@ where a state-aware canonical workflow supports them.
 6. Ground-state QM/MM molecular dynamics:
 
     ```text
-    dft/pbe0/def2-svp md
-    qmmm(pdb_file="system.pdb",forcefield_files="amber14-all.xml",qm_atoms="0-2",n_steps=100)
+    dft/pbe0/def2-svp md(S0,nstep=100,dt=0.5)
+    qmmm(pdb_file="system.pdb",forcefield_files="amber14-all.xml",qm_atoms="0-2")
     geom="qm.xyz"
     ```
 
