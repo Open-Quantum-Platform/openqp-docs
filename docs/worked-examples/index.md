@@ -109,6 +109,24 @@ time.
 <span>Surface hopping from S1: twisting and return to S0 in 100 fs.</span>
 </a>
 
+<a class="oqp-card" href="ethylene-sf-tddft/" markdown>
+![SF-TDDFT roots](../assets/worked-examples/plot-sf-twist.svg)
+<strong>SF-TDDFT and spin contamination</strong>
+<span>SF-TDDFT roots of ethylene identified by ⟨S²⟩, compared with MRSF-TDDFT.</span>
+</a>
+
+<a class="oqp-card" href="lih-caspt2/" markdown>
+![LiH dissociation](../assets/worked-examples/plot-lih-dissociation.svg)
+<strong>CASSCF and CASPT2 vs FCI</strong>
+<span>LiH dissociation with RHF, UHF, CASSCF, CASPT2, CCSD(T), and exact FCI.</span>
+</a>
+
+<a class="oqp-card" href="formaldehyde-qmmm/" markdown>
+![Formaldehyde with water](../assets/worked-examples/mol-hcho-2water.png)
+<strong>QM/MM solvent shift</strong>
+<span>n→π* shift of formaldehyde from two water molecules, QM/MM vs full QM.</span>
+</a>
+
 </div>
 
 ## How the reference values were produced
