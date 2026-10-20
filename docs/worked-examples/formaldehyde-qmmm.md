@@ -77,39 +77,38 @@ H      0.000000    -0.938000    -1.120000
 
 ## What you get
 
-The log has one `ENERGIES AND STATES` block per step; the last one, after the
-0.5 fs step, reads:
+The log prints an excited-state summary table at every step. The first one is
+at the input structure, before the atoms move, and is the value to compare
+with the other two models:
 
 ```text
-   PyOQP S0                                 -115.1675366997
-   PyOQP S1                                 -115.0124521978
-   PyOQP S2                                 -114.8388455587
+ State      Energy       Excitation   Excitation(eV)  <S^2>         Transition dipole moment, a.u.        Oscillator
+           Hartree           eV        rel. S0                  X          Y          Z        Abs.      strength
+    S0   -115.1678881025    -3.219474     0.000000      0.002     0.0000     0.0000     0.0000     0.0000      0.0000
+    S1   -115.0129908096     0.995496     4.214970      0.007    -0.0000     0.0000     0.0002     0.0002      0.0000
 ```
 
-The absolute energies include the QM–MM interaction and are not comparable
-with the gas-phase energies; the excitation energy S1 − S0 is.
+`velocity=zero` only sets the initial velocities; the forces still move the
+atoms during the 0.5 fs step, so the last `ENERGIES AND STATES` block of the
+log (S1 − S0 = 4.220 eV) belongs to a slightly displaced structure. The
+absolute energies include the QM–MM interaction and are not comparable with
+the gas-phase energies; the excitation energy S1 − S0 is.
 
-| Model | S0 → S1 (n→π\*) | Shift from gas phase |
+| Model, same structure | S0 → S1 (n→π\*) | Shift from gas phase |
 | --- | --- | --- |
 | Gas phase | 4.091 eV | — |
-| QM/MM, 2 TIP3P waters | 4.220 eV | +0.13 eV |
+| QM/MM, 2 TIP3P waters | 4.215 eV | +0.12 eV |
 | Full QM, formaldehyde + 2 waters | 4.377 eV | +0.29 eV |
 
 In all three runs S1 is the dark A2 n→π\* state (zero transition dipole), so
-the numbers describe the same excitation. The log also prints an excited-state
-summary table at each step; the first one, at the input structure before the
-atoms move, gives 4.215 eV:
-
-```text
-    S1   -115.0129908096     0.995496     4.214970      0.007    -0.0000     0.0000     0.0002     0.0002      0.0000
-```
+the numbers describe the same excitation.
 
 ## Reading the result
 
 - **The excitation is blue-shifted.** The water hydrogens bind to the oxygen
   lone pair n, lowering its energy. Exciting an electron out of n therefore
   costs more in the hydrogen-bonded complex than in the gas phase.
-- **Point charges give about half of the shift here.** The QM/MM model
+- **Point charges give less than half of the shift here** (0.12 of 0.29 eV). The QM/MM model
   represents the waters only by fixed charges (and Lennard-Jones terms), while
   the full QM cluster also includes the polarization of the waters and the
   exchange and charge-transfer interactions at 1.95 Å. For quantitative work,

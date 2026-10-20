@@ -3,7 +3,9 @@
 Each worked example is one small molecule, one complete `.oqp` input that you
 can copy and run as it is, and the results that the run produces. The
 coordinates are written inside the input, so no separate geometry file is
-needed. Run the input, then compare your numbers with the reference values on
+needed. The one exception is the [QM/MM example](formaldehyde-qmmm.md), which
+reads its structure and force field from three extra files (a PDB file and two
+OpenMM XML files) that are downloaded with it into the same folder. Run the input, then compare your numbers with the reference values on
 the page.
 
 ```bash
