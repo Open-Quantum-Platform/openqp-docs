@@ -78,6 +78,7 @@ nav:
       - Spin-Orbit Coupling: workflows/soc.md
       - NACME: workflows/nacme.md
       - SOC-NAMD-QMMM: workflows/soc-namd-qmmm.md
+      - ODP Umbrella Sampling: workflows/odp-umbrella.md
       - PCM/ddX: workflows/pcm.md
       - MRSF-EKT: workflows/ekt.md
       - NMR, IR, and Raman: workflows/nmr-ir-raman.md
@@ -101,6 +102,8 @@ nav:
       - Ensembles and experimental SOC-NAMD: keywords/md-ensemble-soc.md
       - NAMD advanced controls: keywords/md-advanced.md
       - qmmm: keywords/qmmm.md
+      - flexible: keywords/flexible.md
+      - odp: keywords/odp.md
       - properties: keywords/properties.md
       - hess: keywords/hess.md
       - nac: keywords/nac.md
