@@ -61,6 +61,7 @@ nav:
       - Effective core potentials: worked-examples/hi-ecp.md
       - Singlet-triplet crossing (MECP): worked-examples/ethylene-mecp.md
       - QM/MM excited-state dynamics: worked-examples/formaldehyde-qmmm-namd.md
+      - Reaction path by NEB: worked-examples/nh3-neb.md
   - OQP Studio:
       - Overview: studio/index.md
       - Download: studio/download.md

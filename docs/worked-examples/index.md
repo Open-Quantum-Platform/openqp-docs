@@ -7,7 +7,8 @@ needed. Some examples need extra files, downloaded with them into the same
 folder: the [QM/MM examples](formaldehyde-qmmm.md) read their structure and force
 field from a PDB file and two OpenMM XML files, and the all-electron inputs of
 the [gold hydride example](auh-relativity.md) read an uncontracted basis set
-from a JSON file. Run the input, then compare your numbers with the reference values on
+from a JSON file, and the [NEB example](nh3-neb.md) reads its product
+structure from an XYZ file. Run the input, then compare your numbers with the reference values on
 the page.
 
 ```bash
@@ -154,6 +155,12 @@ time.
 ![QM/MM NAMD](../assets/worked-examples/plot-qmmm-namd.svg)
 <strong>QM/MM excited-state dynamics</strong>
 <span>Formaldehyde on S1 with two MM waters: pyramidalization and H-bond breaking.</span>
+</a>
+
+<a class="oqp-card" href="nh3-neb/" markdown>
+![NH3 NEB](../assets/worked-examples/plot-nh3-neb.svg)
+<strong>Reaction path by NEB</strong>
+<span>Ammonia umbrella inversion with a 9-image nudged elastic band, checked against the planar transition state.</span>
 </a>
 
 </div>
