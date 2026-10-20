@@ -386,6 +386,11 @@ many nearby geometries (optimization, MD).
 
 ### XC response cache memory
 
+Requires an engine build containing [OpenQP PR #440](https://github.com/Open-Quantum-Platform/openqp/pull/440),
+which is in `main` but not in the 1.3.1 or earlier releases. Those releases
+have no response cache, so `OQP_XC_RESPONSE_CACHE_MB` has no effect there and
+the `[XCCACHE]` log lines and `examples/response_cache/` inputs are absent.
+
 TDDFT TDA/RPA Davidson, RHF/SF/MRSF Z-vector and RHF/UHF/ROHF CPHF
 calculations reuse fixed-reference LDA/GGA XC values and derivatives. The
 remaining space stores pruned atomic-orbital (AO) values and spatial derivatives
