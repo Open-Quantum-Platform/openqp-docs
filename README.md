@@ -8,8 +8,10 @@ The manual covers the OQP Studio desktop application, installation, input
 files, Python usage, build options, capabilities, examples, keyword references,
 and workflows including HF/DFT, MP2, coupled cluster (native CCSD/CCSD(T) and
 the external CCpy library from Python), TDHF/TDDFT, SF-TDDFT, MRSF-TDDFT,
-PCM/ddX, SOC, NACME, EKT, Hessians, optimization, molecular symmetry, and
-spectroscopy-related properties.
+PCM/ddX, SOC, NACME, EKT, Hessians, optimization, molecular symmetry,
+spectroscopy-related properties, and ODP umbrella sampling in NVT and periodic
+QM/MM nonadiabatic dynamics (`[odp]`), including the FlexiBLE solvent boundary
+(`[flexible]`).
 
 Manual site:
 [https://open-quantum-platform.github.io/openqp-docs/](https://open-quantum-platform.github.io/openqp-docs/)

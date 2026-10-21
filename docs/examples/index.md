@@ -32,6 +32,7 @@ Shared Cartesian coordinates used by the concise decks live in
 | `examples/UMRSF-TDDFT` | UMRSF-TDDFT energy and analytic-gradient examples (Cartesian and spherical-harmonic bases). |
 | `examples/XAS` | X-ray absorption examples. |
 | `examples/MD` | Gas-phase ground-state Born--Oppenheimer MD with `md(...)`. |
+| `examples/ODP` | ODP umbrella windows for MRSF-TDDFT NAMD: an NVE window, the same window in Langevin NVT, a checkpoint-continuation script (`odp_restart.py`) and the WHAM analysis script (`odp_wham.py`); see [ODP Umbrella Sampling](../workflows/odp-umbrella.md). |
 | `examples/QMMM` | ESPF electrostatic QM/MM (requires OpenMM): NAMD / SOC-NAMD dynamics, ground-state QM/MM MD with checkpoints and phase-space snapshots, QM/MM optimization, covalent-boundary (link atom + `frontier_scheme`), and single-point energies. |
 
 Run a single example:
@@ -98,6 +99,7 @@ run them directly.
 | `ala-dipeptide_RKS-QMMM-GROUND-STATE-MD.oqp` | Ground-state MD | Ground-state QM/MM MD in the unified `md(...) qmmm(...)` form. |
 | `ala-dipeptide_RHF-QMMM-OPT-linkatom.oqp` | Optimization | QM/MM geometry optimization across a covalent boundary. |
 | `ala-box_BHHLYP-MRSF-NAMD-QMMM-PME.oqp` | NAMD | The same covalent boundary in a **periodic TIP3P box** (`cutoff=PME`, Ewald QM/MM electrostatics), exercising `ewald_tol`, `lj_switch`, `h_lj` and `mm_charge_width`. |
+| `ala-box_BHHLYP-MRSF-NAMD-QMMM-PME-FLEXIBLE-ODP.oqp` | NAMD (NVT, ODP) | The periodic box with one water moved into the QM region and kept near the solute by the [FlexiBLE boundary](../keywords/flexible.md), sampled as one [ODP umbrella window](../workflows/odp-umbrella.md) in Langevin NVT. |
 | `ala-dipeptide_BHHLYP-QMMM-MD-RCD.oqp` | Ground-state MD | QM/MM MD across a **covalent boundary**: alanine dipeptide, QM = the C-terminal amide, hydrogen link-atom cap + `frontier_scheme=rcd`. |
 | `run.oqp` | Ground-state MD | Whole-molecule QM region: one water of a water dimer. |
 | `ala.oqp` | Single-point | QM/MM energy of the alanine amide. |
