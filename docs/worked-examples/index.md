@@ -245,6 +245,10 @@ The [NEB example](nh3-neb.md) was rerun with commit `958495f` plus the
 frequency-projection fix in
 [openqp#538](https://github.com/Open-Quantum-Platform/openqp/pull/538)
 (commit `be1c9d2`); no value on that page depends on that fix.
+The absolute IR intensities on the
+[frequency page](formaldehyde-opt-freq.md#ir-and-raman-spectra) come from GitHub
+`main` commit `0b75a06`, which includes the IR unit fix
+[openqp#533](https://github.com/Open-Quantum-Platform/openqp/pull/533).
 Molecule and orbital pictures are snapshots
 of the [OQP Studio](../studio/index.md) 3D viewer, made from the output files of
 the same runs.

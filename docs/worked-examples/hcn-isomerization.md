@@ -84,9 +84,9 @@ H      1.124504     0.000000     0.458585
 
 OpenQP prints imaginary frequencies as negative numbers. Mode 1, −1158 cm⁻¹,
 is the only one, and its normal mode (shown above) moves the hydrogen from
-carbon toward nitrogen. This is the reaction coordinate. (The `IR(km/mol)`
-column of OpenQP 1.3.1 is about 23 times too small; see the
-[frequency example](formaldehyde-opt-freq.md).)
+carbon toward nitrogen. This is the reaction coordinate. (In OpenQP 1.3.1 the `IR(km/mol)`
+column is 23 times too small; this is fixed in current `main`, see the
+[frequency example](formaldehyde-opt-freq.md#ir-and-raman-spectra).)
 
 ## Step 3: the two minima
 

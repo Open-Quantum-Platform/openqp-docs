@@ -154,15 +154,37 @@ The thermochemistry block at the end of the log gives, at 298.15 K and 1 atm:
 Both spectra are normalized to their strongest band, so they show relative
 intensities only. The two techniques highlight different modes: in IR the
 antisymmetric C–H stretch and the C=O stretch are the strongest bands, while in
-Raman the symmetric C–H stretch dominates. The relative IR intensities are
-correct in OpenQP 1.3.1; only the absolute scale is affected by the issue
-below.
+Raman the symmetric C–H stretch dominates.
 
-!!! warning "IR intensities in OpenQP 1.3.1"
-    The `IR(km/mol)` column of this release is about 23 times too small: the
-    conversion factor applied to the atomic-unit dipole derivatives is the one
-    for (D/Å)²/amu. Relative intensities between modes are correct. Absolute
-    values will be listed on this page after the fix is released.
+The absolute values are in the log:
+
+```text
+   Mode  Symmetry     Frequency(cm-1)      IR(km/mol)      Raman(bohr^4/amu)
+      1        b1           1203.45         2.036547            26.254348
+      2        b2           1281.24        12.121916            89.365011
+      3        a1           1563.39         5.314512           181.220376
+      4        a1           1882.16       102.561925            47.219241
+      5        a1           2944.35        55.281427          1953.035868
+      6        b2           2999.92       156.454211           949.575196
+```
+
+| Mode | IR intensity (km/mol) | PySCF 2.13 (km/mol) |
+| --- | --- | --- |
+| 1 · out-of-plane wag | 2.04 | 2.04 |
+| 2 · CH₂ rock | 12.1 | 12.1 |
+| 3 · CH₂ scissor | 5.31 | 5.40 |
+| 4 · C=O stretch | 102.6 | 102.5 |
+| 5 · symmetric C–H stretch | 55.3 | 55.3 |
+| 6 · antisymmetric C–H stretch | 156.5 | 156.3 |
+
+!!! note "IR intensities in OpenQP 1.3.1 and earlier"
+    Builds before
+    [openqp#533](https://github.com/Open-Quantum-Platform/openqp/pull/533)
+    (merged 20 October 2026) print an `IR(km/mol)` column that is 23.07 times
+    too small, because the conversion factor for (D/Å)²/amu was applied to
+    atomic-unit dipole derivatives, and label the Raman column `Raman(activity)`.
+    Relative intensities and all other values are the same. The absolute values
+    above come from GitHub `main` commit `0b75a06`, which includes the fix.
 
 ## Look at the vibrations
 
@@ -174,8 +196,9 @@ to animate each normal mode; the C=O stretching mode is shown above.
 ## Cross-check
 
 PySCF 2.13 (PBE0/6-31G* with Cartesian d functions, analytic Hessian) at the
-same geometry gives frequencies within 2 cm⁻¹ of the values above. The small
-difference comes from the DFT integration grid.
+same geometry gives frequencies within 2 cm⁻¹ of the values above, and IR
+intensities from finite-difference dipole derivatives within 2 % (table above).
+The small differences come from the DFT integration grid.
 
 ## Try next
 
