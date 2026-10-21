@@ -72,6 +72,73 @@ a warm-up value.
 cases B and D is separately documented under
 [NAMD Numerical Continuity](md-continuity.md).
 
+## Analytic-NAC Evaluation Controls
+
+These `[md]` keywords tune how the analytic MRSF derivative coupling is
+evaluated for `TDC_NAC`, `NAC` and `nacme_check=analytic`. They require an
+engine build containing
+[OpenQP PR #547](https://github.com/Open-Quantum-Platform/openqp/pull/547);
+earlier engines read the environment variables named below instead, which
+current engines ignore with an input-check warning.
+
+### `hop_nac_pairs`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `selected` |
+| Values | `selected`, `all` |
+| Used by | `rescale=hop_analytic_nac` |
+
+`selected` evaluates the analytic vector only for the active--candidate pair
+when a hop is attempted; `all` evaluates every state pair at that step, which
+reproduces runs made before 2026-09-08 (the published uracil `TDC_NAC`
+ensembles). The hop direction is the same pair's vector either way. Formerly
+`OQP_NAMD_HOP_NAC_PAIRS`.
+
+```text
+namd(S1,scheme=TDC_NAC,hop_nac_pairs=all) md(nstep=400,dt=0.5)
+```
+
+### `nac_fuse_gradient`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | MRSF gradients when an analytic NAC is needed in the same step |
+
+Solve the MRSF gradient z-vector together with the all-pair analytic-NAC
+adjoint equations and reuse the resulting NACs, instead of two separate
+response solves. Formerly `OQP_MRSF_NAC_ZV_FUSE_GRADIENT`.
+
+### `nac_zv_predictor`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `off` |
+| Values | `off`, `transport`, `linear`, `transport_approx`, `linear_approx` |
+| Used by | ROHF analytic-NAC z-vector solve across MD steps |
+
+Predict the NAC z-vector from previous steps: `transport` carries the last
+solution into the current orbital basis, `linear` also extrapolates from the
+two previous steps. Both only supply the initial guess, so the NAC is
+unchanged to solver tolerance. The `*_approx` modes use the prediction **as
+the solution** between exact solves, which changes the NACs and the hops;
+use them only with [`nac_zv_exact_every`](#nac_zv_predictor-parameters) and
+after checking against exact runs. Formerly `OQP_MRSF_NAC_ZV_PREDICTOR`.
+
+#### `nac_zv_predictor` parameters
+
+| Keyword | Default | Meaning | Formerly |
+| --- | --- | --- | --- |
+| `nac_zv_eta` | `1.0` | linear-extrapolation weight, clamped to `[0, 2]` | `OQP_MRSF_NAC_ZV_ETA` |
+| `nac_zv_max_disp` | `0.25` bohr | RMS displacement per atom above which no prediction is used | `OQP_MRSF_NAC_ZV_MAX_DISP` |
+| `nac_zv_exact_every` | `0` | `*_approx`: force an exact solve every N steps (`0` = never) | `OQP_MRSF_NAC_ZV_EXACT_EVERY` |
+| `nac_zv_warmup_exact` | `0` | exact solves before the approximation is used (`0` = 1, or 2 for `linear*`) | `OQP_MRSF_NAC_ZV_WARMUP_EXACT` |
+| `nac_zv_overlap_min` | `0.5` | minimum MO and state overlap for accepting a transported guess | `OQP_MRSF_NAC_ZV_OVERLAP_MIN` |
+
 ## `thrshe`
 
 Positive maximum state-energy gap in Hartree for a hop attempt. Default:

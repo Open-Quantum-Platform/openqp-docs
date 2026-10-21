@@ -339,6 +339,33 @@ Example:
 omp_threads=16
 ```
 
+### `max_memory`
+
+| Field | Value |
+| --- | --- |
+| Type | float (MiB) |
+| Default | `0` (probe the machine) |
+| Used by | MP2 transformation choice, coupled-cluster block sizes and the CC/CCSD(T) memory guards |
+
+Memory budget for the whole job, in MiB like the `max_memory` keys of
+[`[fci]`](wavefunction.md) and `[cas]`. With `0` OpenQP measures what is
+available at run time: the tightest of physical RAM, the kernel's
+`MemAvailable` and the cgroup limit, which is what binds under SLURM or in a
+container. Set a budget when that answer is wrong, for example on a batch
+system that does not use cgroups, or to stay below what the node allows. A
+budget is a flat number for the whole job, so memory already allocated counts
+against it.
+
+Requires an engine build containing
+[OpenQP PR #547](https://github.com/Open-Quantum-Platform/openqp/pull/547);
+earlier engines read the `OQP_MEMORY_LIMIT_GB` environment variable (in GB)
+instead, which current engines ignore with an input-check warning.
+
+```ini
+[input]
+max_memory=64000
+```
+
 ### `perf`
 
 | Field | Value |
