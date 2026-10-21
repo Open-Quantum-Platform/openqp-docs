@@ -10,7 +10,7 @@ ODP windows run
 
 - in all-QM NAMD and in QM/MM NAMD,
 - in the NVE ensemble or the Langevin NVT ensemble
-  (`namd(...,ensemble=nvt,thermostat=langevin)`),
+  (`md(...,ensemble=nvt)`),
 - in nonperiodic QM/MM and in periodic orthorhombic QM/MM (`qmmm(cutoff=PME)`),
 - together with the [FlexiBLE](../keywords/flexible.md) solvent boundary, when
   solvent molecules belong to the QM region.
@@ -61,10 +61,11 @@ other CVs. The run stops only when a pair is exactly half the box length apart
 along an axis. CV atom indices are 1-based indices of the full QM+MM system.
 
 When the reaction involves solvent molecules, put them in the QM region and add
-the [FlexiBLE boundary](../keywords/flexible.md) so that QM solvent does not
-exchange with MM solvent during the window. The OpenQP example
+the [FlexiBLE boundary](../keywords/flexible.md), a finite bias that makes an
+exchange of QM and MM solvent during the window unlikely (penalized, not
+forbidden, for finite `alpha`). The OpenQP example
 `examples/QMMM/ala-box_BHHLYP-MRSF-NAMD-QMMM-PME-FLEXIBLE-ODP.oqp` combines a
-periodic PME box, one QM water held by FlexiBLE, and one NVT ODP window:
+periodic PME box, one QM water kept near the solute by FlexiBLE, and one NVT ODP window:
 
 ```text
 mrsf(nstate=2)/bhhlyp/6-31g
