@@ -60,6 +60,8 @@ full bibliographies inside each keyword entry.
 | [`[md]`](md.md) | Nonadiabatic surface-hopping molecular dynamics (`runtype=namd`), including experimental SOC-NAMD. |
 | [NAMD advanced controls](md-advanced.md) | Custom schemes, diagnostic criteria, electronic-structure continuity, restart, and SOC-specific controls. |
 | [`[qmmm]`](qmmm.md) | Hybrid QM/MM setup: QM region, force field, ESPF embedding, and link atoms. |
+| [`[flexible]`](flexible.md) | FlexiBLE boundary that keeps QM and MM solvent molecules apart in QM/MM NAMD. |
+| [`[odp]`](odp.md) | One-dimensional-projection (ODP) umbrella window for NAMD; windows are combined with WHAM. |
 | [`[properties]`](properties.md) | Gradients, NMR, export, and property requests. |
 | [`[hess]`](hess.md) | Hessian, frequency, and thermochemistry controls. |
 | [`[nac]`](nac.md) | NAC and NACME state-pair controls. |

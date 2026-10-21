@@ -169,3 +169,8 @@ SOC, scalar relativistic correction, PCM/ddX, or related workflows.
   used by [`[qmmm] frontier_scheme`](keywords/qmmm.md#frontier_scheme) at a
   covalent boundary.
   [doi:10.1021/jp0446332](https://doi.org/10.1021/jp0446332)
+- Shen Z and Glover WJ. "Flexible boundary layer using exchange for embedding
+  theories. I. Theory and implementation." Journal of Chemical Physics 155,
+  224112 (2021) — the FlexiBLE solvent boundary of
+  [`[flexible]`](keywords/flexible.md).
+  [doi:10.1063/5.0067855](https://doi.org/10.1063/5.0067855)
