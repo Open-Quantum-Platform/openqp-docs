@@ -2,10 +2,12 @@
 
 The `[flexible]` section adds the FlexiBLE boundary potential of Shen and
 Glover ([J. Chem. Phys. 155, 224112 (2021)](../references.md#qmmm-espf-embedding))
-to QM/MM nonadiabatic dynamics. It keeps solvent molecules that start in the QM
-region closer to a boundary centre than the MM solvent molecules of the same
-kind, so a QM water cannot diffuse into the MM region and an MM water cannot
-diffuse into the QM region while the QM/MM partition of the atoms stays fixed.
+to QM/MM nonadiabatic dynamics. It is a finite bias that favours configurations
+in which the solvent molecules of the QM region are closer to a boundary centre
+than the MM solvent molecules of the same kind, while the QM/MM partition of the
+atoms stays fixed. An exchange of order between a QM and an MM molecule is
+penalized, not forbidden: for every finite `alpha` the potential stays finite,
+and the exchange becomes rarer as `alpha` grows.
 
 `[flexible]` is connected only to `runtype=namd` (`namd(...)` in `.oqp`) with
 QM/MM (`qmmm(...)`). It is rejected for every other runtype, for all-QM
@@ -14,7 +16,8 @@ conservative restraints. In `.oqp` input write it as `flexible(...)`:
 
 ```text
 mrsf(nstate=2)/bhhlyp/6-31g
-namd(S0,scheme=Overlap,nstep=2,ensemble=nvt,thermostat=langevin)
+namd(S0,scheme=Overlap)
+md(nstep=2,ensemble=nvt)
 qmmm(forcefield_files="amber14-all.xml amber14/tip3p.xml",qm_atoms="8,9,16,17,18,244,245,246",cutoff=PME)
 flexible(enabled=true,alpha=5.0,temperature=300,atoms="8,9,16,17,18")
 geom="ala_box.pdb"
@@ -39,7 +42,10 @@ V         = - k_B T ln[ h(actual partition) / sum over partitions h ]
 The sum in the denominator runs over all partitions with the same number of QM
 molecules. `V` is close to zero when every QM molecule is nearer to the centre
 than every MM molecule and rises when a QM and an MM molecule exchange their
-order. The force is the exact derivative of the evaluated sum, including the
+order; for finite `alpha` the rise is finite, so `[flexible]` is a bias, not a
+hard constraint. OpenQP stops the run when the actual partition is so far
+from the distance ordering that `h(actual partition)` falls below 1e-14.
+The force is the exact derivative of the evaluated sum, including the
 force on the atoms that define a moving centre.
 
 Only partitions near the distance-ordered one contribute. They are collected as

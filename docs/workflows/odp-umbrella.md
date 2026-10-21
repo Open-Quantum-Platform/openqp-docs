@@ -25,12 +25,16 @@ formaldehyde with three CVs:
 
 ```text
 mrsf(nstate=2)/bhhlyp/sto-3g
-namd(T0,scheme=Overlap,nstep=3,dt=0.1,substep=20,ensemble=nvt,thermostat=langevin,thermostat_friction=5.0,seed=20260803,trajectory_interval=1,restart_interval=1,decoherence=off)
+namd(T0,scheme=Overlap,substep=20,decoherence=off)
+md(nstep=3,dt=0.1,ensemble=nvt,friction=5.0,seed=20260803,trajectory_interval=1,restart_interval=1)
 odp(enabled=true,cv="distance(1,2);asymmetric_distance(1,3,1,4);angle(3,1,4)",scale="0.5,0.5,1.0",reference_r="2.10,-0.10,1.90",reference_p="2.50,0.10,2.20",center=0.5,k_parallel=0.02,k_perpendicular=0.005,window=1)
 geom="../geometries/CH2O-2bc62dda4b8a.xyz"
 ```
 
-The thermostat temperature is `thermostat_temperature` (default 300 K). Without
+`namd(...)` holds the electronic treatment and `md(...)` the nuclear
+propagation, as described under [`md`](../keywords/md.md). `ensemble=nvt`
+selects the Langevin thermostat at `temperature` (default 300 K; for example
+`md(...,ensemble=nvt,temperature=310)`) with `friction` in ps⁻¹. Without
 `ensemble=nvt` the window is an NVE run (`examples/ODP/H2CO_BHHLYP-MRSF-NAMD-ODP.oqp`);
 OpenQP accepts it and records the ensemble, and WHAM then warns that it assumes
 canonical sampling.
@@ -41,7 +45,7 @@ Copy the window input once per window and give each copy
 
 - its own `window` label and `center` in `odp(...)` (for example `center`
   from 0 to 1 in steps that let neighbouring `xi` distributions overlap), and
-- its own trajectory file, `namd(...,trajectory_file="window-07.namd.trj")`,
+- its own trajectory file, `md(...,trajectory_file="window-07.namd.trj")`,
   or its own project name.
 
 Keep `cv`, `scale`, `reference_r`, and `reference_p` identical in all windows;
@@ -64,7 +68,8 @@ periodic PME box, one QM water held by FlexiBLE, and one NVT ODP window:
 
 ```text
 mrsf(nstate=2)/bhhlyp/6-31g
-namd(S0,scheme=Overlap,nstep=2,ensemble=nvt,thermostat=langevin,restart_interval=2) scf(conv=1e-09)
+namd(S0,scheme=Overlap) scf(conv=1e-09)
+md(nstep=2,ensemble=nvt,restart_interval=2)
 qmmm(forcefield_files="amber14-all.xml amber14/tip3p.xml",qm_atoms="8,9,16,17,18,244,245,246",cutoff=PME,ewald_tol=1e-06,lj_switch=true,h_lj=true,mm_charge_width=0.7)
 flexible(enabled=true,alpha=5.0,temperature=300,atoms="8,9,16,17,18")
 odp(enabled=true,cv="distance(17,245); distance(9,245)",scale="1.0,1.0",reference_r="6.2,7.3",reference_p="5.4,5.5",center=0.1,k_parallel=0.05,k_perpendicular=0.01,window=1)
