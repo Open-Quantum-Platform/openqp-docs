@@ -18,6 +18,8 @@ workflows and keywords.
   overrides, BLAS/LAPACK choices, and external dependency cache behavior.
 - [Quickstart](quickstart.md): the shortest path from a molecule to an OpenQP
   output file.
+- [Worked Examples](worked-examples/index.md): copy-and-run `.oqp` inputs for
+  small molecules, with pictures and the reference results each run produces.
 - [OQP Studio](studio/index.md): install and use the desktop interface for
   molecular building, execution, analysis, and ray-traced rendering.
 - [`.oqp` input](oqp-input.md): the recommended input style used first
@@ -40,7 +42,6 @@ workflows and keywords.
 - [TDDFT and TDHF](workflows/tddft.md) energies and gradients
 - [SF-TDDFT](workflows/sf-tddft.md) spin-flip energies and gradients
 - [MRSF-TDDFT](workflows/mrsf-tddft.md) energies and gradients
-- [QMRSF-DK](workflows/qmrsf-dk.md) quintet-reference CAS(4,4) spectra
 - [Hessian and frequencies](workflows/hessian.md)
 - Geometry [optimization](workflows/optimization.md)
 - [Spin-orbit coupling](workflows/soc.md) and scalar relativistic DKH correction

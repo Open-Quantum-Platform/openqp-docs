@@ -4,3 +4,31 @@
   font-weight: 700;
 }
 
+
+/* Worked examples: picture grids and gallery cards */
+.oqp-figs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+.oqp-figs figure { margin: 0; text-align: center; }
+.oqp-figs img { width: 100%; border-radius: 6px; }
+.oqp-figs figcaption { font-size: 0.75rem; color: var(--md-default-fg-color--light); }
+.oqp-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.oqp-gallery a.oqp-card {
+  display: block;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  overflow: hidden;
+  color: inherit;
+}
+.oqp-gallery a.oqp-card:hover { border-color: var(--md-accent-fg-color); }
+.oqp-gallery .oqp-card img { width: 100%; display: block; }
+.oqp-gallery .oqp-card p { margin: 0.5rem 0.7rem 0.7rem; font-size: 0.75rem; }
+.oqp-gallery .oqp-card strong { display: block; font-size: 0.85rem; }

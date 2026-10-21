@@ -1,0 +1,5 @@
+caspt2/6-31g opt cas(active_electrons=2,active_orbitals=2,frozen_core=1) pt2(gradient=analytic)
+geom="""
+Li     0.000000     0.000000     0.000000
+H      0.000000     0.000000     1.600000
+"""

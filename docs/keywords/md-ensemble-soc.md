@@ -46,6 +46,9 @@ documented under [NAMD Numerical Continuity](md-continuity.md).
     approximations are ready for production scientific conclusions. Report the
     selected basis and all approximations with any result.
 
+A complete input with a reference trajectory is in the
+[formaldehyde SOC-NAMD worked example](../worked-examples/formaldehyde-soc-namd.md).
+
 ### `soc`
 
 Default: `False`. `soc=True` enables surface hopping with spin--orbit coupling

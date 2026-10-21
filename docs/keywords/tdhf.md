@@ -57,7 +57,7 @@ nstate=5
 | --- | --- |
 | Type | string |
 | Default | `rpa` |
-| Values | `rpa`, `tda`, `sf`, `mrsf`, `umrsf`, `qmrsf_dk`, `mrsf_ekt_ip`, `mrsf_ekt_ea` |
+| Values | `rpa`, `tda`, `sf`, `mrsf`, `umrsf`, `mrsf_ekt_ip`, `mrsf_ekt_ea` |
 | Used by | response model selection |
 
 Selects the response model. Use `mrsf` for production MRSF-TDDFT workflows.
@@ -65,8 +65,7 @@ Selects the response model. Use `mrsf` for production MRSF-TDDFT workflows.
 MRSF response model for energies and analytic nuclear gradients
 (`runtype=grad`, `optimize`, `meci`, `mecp`, and `tci`) with supported
 functionals. See [MRSF-TDDFT](../workflows/mrsf-tddft.md) for UMRSF gradient
-restrictions. `qmrsf_dk` selects the quintet-reference dressed-kernel
-method described in [QMRSF-DK](../workflows/qmrsf-dk.md). The legacy
+restrictions. The legacy
 `mrsf_ekt_ip` and `mrsf_ekt_ea` values are
 energy-only; the current EKT workflow should use `[input] runtype=ekt`,
 `[tdhf] type=mrsf`, and the `[ekt]` section.
@@ -76,8 +75,7 @@ accepts an ROHF or a UHF reference; the UHF path covers energies and gradient
 workflows, while numerical Hessians still require ROHF (see
 [SF-TDDFT](../workflows/sf-tddft.md)). NAC, NAMD and SOC require `type=mrsf`
 regardless of the reference.
-UMRSF-TDDFT requires a UHF reference. QMRSF-DK requires a quintet
-(`[scf] multiplicity=5`) ROHF/ROKS reference and `[input] runtype=energy`.
+UMRSF-TDDFT requires a UHF reference.
 
 ### `nstate`
 
@@ -270,12 +268,6 @@ column norm of the retained state overlap falls below 0.5.
 
 Override exact-exchange and CAM/range-separated parameters for response
 calculations. Negative values mean use the selected functional defaults.
-
-For `type=qmrsf_dk` these set the exchange carried by the dressed kernel,
-independently of the reference. With a global hybrid the kernel uses
-`hfscale`; with a range-separated reference it uses
-`cam_alpha*K + cam_beta*K(erf(cam_mu*r)/r)`, and any of the three that is left
-negative is inherited from `[dftgrid]`.
 
 ### `spc_coco`, `spc_ovov`, `spc_coov`
 

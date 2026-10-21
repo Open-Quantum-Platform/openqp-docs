@@ -1,0 +1,7 @@
+mrsf(nstate=3)/bhhlyp/6-31g* namd(S1,scheme=custom,tdc=npi,rescale=isotropic,thrshe=0.367493,frustrated=reflect,soc=true,soc_basis=mch) md(nstep=300,dt=0.5,temperature=300,seed=3)
+geom="""
+C      0.000000     0.000000    -0.526342
+O      0.000000     0.000000     0.676110
+H      0.000000     0.937620    -1.119884
+H      0.000000    -0.937620    -1.119884
+"""

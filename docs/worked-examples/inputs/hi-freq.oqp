@@ -1,0 +1,5 @@
+dft/pbe0/def2-svp hess(S0,type=analytical)
+geom="""
+I 0.000000 0.000000 -0.011754
+H 0.000000 0.000000 1.611754
+"""

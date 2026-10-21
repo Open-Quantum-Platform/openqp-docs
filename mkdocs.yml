@@ -23,6 +23,7 @@ extra_css:
 
 markdown_extensions:
   - attr_list
+  - md_in_html
   - admonition
   - tables
   - toc:
@@ -36,6 +37,40 @@ nav:
   - Installation: installation.md
   - Build Options: build-options.md
   - Quickstart: quickstart.md
+  - Worked Examples:
+      - Overview: worked-examples/index.md
+      - Water energy and orbitals: worked-examples/water-scf.md
+      - Geometry and vibrations: worked-examples/formaldehyde-opt-freq.md
+      - UV absorption (TDDFT): worked-examples/formaldehyde-uv.md
+      - Twisted ethylene (MRSF-TDDFT): worked-examples/ethylene-twist.md
+      - Spin-orbit coupling: worked-examples/formaldehyde-soc.md
+      - NMR chemical shifts: worked-examples/benzene-nmr.md
+      - Transition state and barrier: worked-examples/hcn-isomerization.md
+      - MP2 and CCSD(T) energies: worked-examples/water-correlation.md
+      - H2 dissociation, six methods: worked-examples/h2-dissociation.md
+      - Allyl radical spin density: worked-examples/allyl-radical.md
+      - Ionization energies (MRSF-EKT): worked-examples/water-ekt.md
+      - Ring current (ACID): worked-examples/benzene-acid.md
+      - Ground-state MD: worked-examples/methanol-md.md
+      - Conical intersection (MECI): worked-examples/ethylene-meci.md
+      - Nonadiabatic dynamics: worked-examples/ethylene-namd.md
+      - Intersystem crossing (SOC-NAMD): worked-examples/formaldehyde-soc-namd.md
+      - SF-TDDFT and spin contamination: worked-examples/ethylene-sf-tddft.md
+      - CASSCF and CASPT2 vs FCI: worked-examples/lih-caspt2.md
+      - QM/MM solvent shift: worked-examples/formaldehyde-qmmm.md
+      - Relativity in gold hydride: worked-examples/auh-relativity.md
+      - Effective core potentials: worked-examples/hi-ecp.md
+      - Singlet-triplet crossing (MECP): worked-examples/ethylene-mecp.md
+      - QM/MM excited-state dynamics: worked-examples/formaldehyde-qmmm-namd.md
+      - Reaction path by NEB: worked-examples/nh3-neb.md
+      - Excited-state optimization: worked-examples/formaldehyde-s1-opt.md
+      - Python API and state analysis: worked-examples/python-state-analysis.md
+      - X-ray absorption: worked-examples/formaldehyde-xas.md
+      - UMRSF-TDDFT: worked-examples/formaldehyde-umrsf.md
+      - Coupling between geometries (NACME): worked-examples/ethylene-nacme.md
+      - CASSCF and XMCQDPT2: worked-examples/ethylene-casscf.md
+      - QM/MM across a covalent bond: worked-examples/alanine-qmmm.md
+      - Molecular symmetry: worked-examples/benzene-symmetry.md
   - OQP Studio:
       - Overview: studio/index.md
       - Download: studio/download.md
@@ -68,7 +103,6 @@ nav:
       - TDDFT and TDHF: workflows/tddft.md
       - SF-TDDFT: workflows/sf-tddft.md
       - MRSF-TDDFT: workflows/mrsf-tddft.md
-      - QMRSF-DK: workflows/qmrsf-dk.md
       - MRSF Analysis and Interoperability: workflows/mrsf-analysis.md
       - Hessian and Frequencies: workflows/hessian.md
       - Orbital and Vibrational Output: workflows/orbital-vibrational-output.md
