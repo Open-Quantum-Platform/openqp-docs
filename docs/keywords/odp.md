@@ -1,13 +1,15 @@
 # `[odp]`
 
 The `[odp]` section adds one one-dimensional-projection (ODP) umbrella window to
-nonadiabatic dynamics (`runtype=namd`, `namd(...)` in `.oqp`). Several windows
+nonadiabatic dynamics (`runtype=namd`, `namd(...)` in `.oqp`) or to ground-state
+QM/MM molecular dynamics (`md(...)` with `qmmm(...)`). Several windows
 sampled this way are combined into a potential of mean force with WHAM; see the
 [ODP umbrella sampling workflow](../workflows/odp-umbrella.md).
 
-ODP runs in all-QM NAMD and in QM/MM NAMD, in the NVE ensemble or the Langevin
-NVT ensemble, and in nonperiodic or periodic (orthorhombic `cutoff=PME`) QM/MM.
-It is not available with SOC-NAMD (`soc=true`) or with other runtypes.
+ODP runs in all-QM NAMD, in QM/MM NAMD and in ground-state QM/MM MD, in the
+NVE ensemble or the Langevin NVT ensemble, and in nonperiodic or periodic
+(orthorhombic `cutoff=PME`) QM/MM. It is not available with SOC-NAMD
+(`soc=true`), with all-QM ground-state MD, or with other runtypes.
 
 ```text
 odp(enabled=true,cv="distance(1,2);asymmetric_distance(1,3,1,4);angle(3,1,4)",scale="0.5,0.5,1.0",reference_r="2.10,-0.10,1.90",reference_p="2.50,0.10,2.20",center=0.5,k_parallel=0.02,k_perpendicular=0.005,window=1)
@@ -47,7 +49,7 @@ minimum image is not unique.
 | --- | --- |
 | Type | boolean |
 | Default | `False` |
-| Used by | `runtype=namd` |
+| Used by | `runtype=namd`; `runtype=md` with QM/MM |
 
 Turns the umbrella window on.
 
@@ -128,3 +130,16 @@ in its header (`odp`) and, for every step, `odp_window`, `odp_xi`, the raw,
 scaled, and perpendicular CVs, and the parallel, perpendicular, and total bias
 (`odp_bias_hartree`). The header also records the ensemble and, for NVT, the
 thermostat temperature that WHAM checks.
+
+Ground-state QM/MM MD writes the same per-step records into its energy table
+(`total_energy.npz`), next to the unbiased potential (`E_unbiased`,
+`e_unbiased_pot_hartree`) and the `droplet` and `solute_com` restraint
+energies. The table stores the window definition, the ensemble, the thermostat
+temperature and an identity of the system as `bias_metadata_json`: topology
+and QM region; every QM option that changes the surface (method, basis with
+file-backed basis sets by content, library, `ispher`, `scf`, `dftgrid`, ...);
+the contents of the force-field files and of every file they include, with the
+QM/MM Hamiltonian options; the `ESPF_*` environment controls; the contents of
+DFTB/xTB parameter and backend files; the frozen atoms and constraints; and,
+for PME, the cell. WHAM reads these tables like packed NAMD trajectories and
+refuses to combine windows whose identities differ.
