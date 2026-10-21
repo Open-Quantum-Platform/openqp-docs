@@ -135,7 +135,11 @@ Ground-state QM/MM MD writes the same per-step records into its energy table
 (`total_energy.npz`), next to the unbiased potential (`E_unbiased`,
 `e_unbiased_pot_hartree`) and the `droplet` and `solute_com` restraint
 energies. The table stores the window definition, the ensemble, the thermostat
-temperature and an identity of the system (topology, QM region, QM method, and
-the contents of the force-field files with the QM/MM Hamiltonian options) as
-`bias_metadata_json`. WHAM reads these tables like packed NAMD trajectories and
+temperature and an identity of the system as `bias_metadata_json`: topology
+and QM region; every QM option that changes the surface (method, basis with
+file-backed basis sets by content, library, `ispher`, `scf`, `dftgrid`, ...);
+the contents of the force-field files and of every file they include, with the
+QM/MM Hamiltonian options; the `ESPF_*` environment controls; the contents of
+DFTB/xTB parameter and backend files; the frozen atoms and constraints; and,
+for PME, the cell. WHAM reads these tables like packed NAMD trajectories and
 refuses to combine windows whose identities differ.

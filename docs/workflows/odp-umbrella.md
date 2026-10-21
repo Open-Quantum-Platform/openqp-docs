@@ -117,6 +117,10 @@ result = odp_wham(["window-01/total_energy.npz", "window-02/total_energy.npz"],
                   300.0, bins=60, discard=1000)
 ```
 
+`discard=1000` drops the first 1000 recorded steps of each window as
+equilibration; it assumes production windows of several thousand steps. For
+the three-step example above use `discard=0`.
+
 `[flexible]` is connected only to NAMD. In a periodic cell the ground-state
 bias requires an orthorhombic box. A window continued with
 `md(...,restart=true)` must keep the bias, the restraints, the QM/MM
@@ -153,6 +157,9 @@ the convergence of the WHAM equations (`converged`, `residual`).
 
 ## Restart
 
-A window is continued from its checkpoint with the generated `restart=true`
-manifest. `examples/ODP/odp_restart.py` runs one step, extends the manifest to
+A NAMD window is continued from its checkpoint with the generated
+`restart=true` manifest. A ground-state QM/MM MD window has no manifest: rerun
+the same input with `md(...,restart=true)` and a larger `nstep` (the total
+length); the run continues from its checkpoint and appends to its energy
+table. `examples/ODP/odp_restart.py` runs one step, extends the manifest to
 a second step, runs it, and verifies the final checkpoint.
