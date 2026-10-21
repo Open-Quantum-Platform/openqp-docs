@@ -14,8 +14,9 @@ ODP windows run
 - in the NVE ensemble or the Langevin NVT ensemble
   (`md(...,ensemble=nvt)`),
 - in nonperiodic QM/MM and in periodic orthorhombic QM/MM (`qmmm(cutoff=PME)`),
-- together with the [FlexiBLE](../keywords/flexible.md) solvent boundary, when
-  solvent molecules belong to the QM region.
+- in QM/MM NAMD only: together with the [FlexiBLE](../keywords/flexible.md)
+  solvent boundary, when solvent molecules belong to the QM region
+  (`[flexible]` is not connected to ground-state QM/MM MD).
 
 ODP is not available with SOC-NAMD.
 
@@ -47,8 +48,11 @@ Copy the window input once per window and give each copy
 
 - its own `window` label and `center` in `odp(...)` (for example `center`
   from 0 to 1 in steps that let neighbouring `xi` distributions overlap), and
-- its own trajectory file, `md(...,trajectory_file="window-07.namd.trj")`,
-  or its own project name.
+- for NAMD, its own trajectory file,
+  `md(...,trajectory_file="window-07.namd.trj")`, or its own project name;
+- for ground-state QM/MM MD, its own directory (or its own
+  `qmmm(energy_file=...)`): the energy table that WHAM reads defaults to the
+  fixed name `total_energy.npz` and would otherwise be overwritten.
 
 Keep `cv`, `scale`, `reference_r`, and `reference_p` identical in all windows;
 WHAM refuses trajectories whose recorded coordinate definitions differ.
