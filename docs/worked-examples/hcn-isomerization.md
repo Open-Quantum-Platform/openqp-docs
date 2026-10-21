@@ -76,16 +76,17 @@ H      1.124504     0.000000     0.458585
 [Download hcn-ts-freq.oqp](inputs/hcn-ts-freq.oqp)
 
 ```text
-   Mode  Symmetry     Frequency(cm-1)      IR(km/mol)        Raman(activity)
-      1        a'          -1158.14         3.401775            59.221228
-      2        a'           2098.48         0.344450           242.971350
-      3        a'           2676.92         5.253824           491.302998
+   Mode  Symmetry     Frequency(cm-1)      IR(km/mol)      Raman(bohr^4/amu)
+      1        a'          -1158.14        78.483570            59.221228
+      2        a'           2098.48         7.946939           242.971350
+      3        a'           2676.92       121.212840           491.302998
 ```
 
 OpenQP prints imaginary frequencies as negative numbers. Mode 1, −1158 cm⁻¹,
 is the only one, and its normal mode (shown above) moves the hydrogen from
-carbon toward nitrogen. This is the reaction coordinate. (In OpenQP 1.3.1 the `IR(km/mol)`
-column is 23 times too small; this is fixed in current `main`, see the
+carbon toward nitrogen. This is the reaction coordinate. (This table is from GitHub `main`
+commit `0b75a06`. OpenQP 1.3.1 prints the same frequencies with an `IR(km/mol)`
+column 23 times too small; see the
 [frequency example](formaldehyde-opt-freq.md#ir-and-raman-spectra).)
 
 ## Step 3: the two minima

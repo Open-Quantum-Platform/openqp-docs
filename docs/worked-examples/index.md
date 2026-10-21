@@ -248,7 +248,9 @@ frequency-projection fix in
 The absolute IR intensities on the
 [frequency page](formaldehyde-opt-freq.md#ir-and-raman-spectra) come from GitHub
 `main` commit `0b75a06`, which includes the IR unit fix
-[openqp#533](https://github.com/Open-Quantum-Platform/openqp/pull/533).
+[openqp#533](https://github.com/Open-Quantum-Platform/openqp/pull/533),
+as do the frequency tables of the [HCN](hcn-isomerization.md) and
+[NH₃](nh3-neb.md) transition states.
 Molecule and orbital pictures are snapshots
 of the [OQP Studio](../studio/index.md) 3D viewer, made from the output files of
 the same runs.

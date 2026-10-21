@@ -96,11 +96,15 @@ frequency, the umbrella motion, and the degenerate pair of bending modes
 (modes 2 and 3) agrees to 0.01 cm⁻¹:
 
 ```text
-   Mode  Symmetry     Frequency(cm-1)      IR(km/mol)        Raman(activity)
-      1        b1           -890.85        25.657888             0.000000
-      2        b2           1608.52         1.918176            28.998035
-      3        a1           1608.53         1.918129            29.000777
+   Mode  Symmetry     Frequency(cm-1)      IR(km/mol)      Raman(bohr^4/amu)
+      1        b1           -890.85       591.962256             0.000000
+      2        b2           1608.52        44.254929            28.998035
+      3        a1           1608.53        44.253845            29.000777
 ```
+
+This table is from GitHub `main` commit `0b75a06`, which includes the IR unit
+fix [openqp#533](https://github.com/Open-Quantum-Platform/openqp/pull/533);
+older builds print the same frequencies with IR intensities 23 times smaller.
 
 | Quantity | Reference value |
 | --- | --- |
