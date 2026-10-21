@@ -3,12 +3,14 @@
 One-dimensional-projection (ODP) umbrella sampling computes a potential of mean
 force (PMF) along a reaction coordinate `xi` defined by one or more collective
 variables (CVs) and a reactant and a product reference. Each window is an
-ordinary NAMD run with an [`[odp]`](../keywords/odp.md) bias; the windows are
-combined afterwards with WHAM.
+ordinary NAMD run, or a ground-state QM/MM MD run, with an
+[`[odp]`](../keywords/odp.md) bias; the windows are combined afterwards with
+WHAM.
 
 ODP windows run
 
-- in all-QM NAMD and in QM/MM NAMD,
+- in all-QM NAMD, in QM/MM NAMD and in ground-state QM/MM MD
+  (`md(...) qmmm(...)`, see below),
 - in the NVE ensemble or the Langevin NVT ensemble
   (`md(...,ensemble=nvt)`),
 - in nonperiodic QM/MM and in periodic orthorhombic QM/MM (`qmmm(cutoff=PME)`),
@@ -86,6 +88,41 @@ the total energy. The ODP bias is written to `odp_bias_hartree`, the FlexiBLE
 energy to `conservative_restraint_energy_hartree`. WHAM unbiases only the ODP
 bias; FlexiBLE is part of the sampled Hamiltonian, as the QM/MM partition is.
 
+## Ground-state QM/MM MD
+
+The original ODP application (Baek and Choi, JCTC 14, 2312 (2018)) samples a
+ground-state reaction in solution. Write the window as a ground-state QM/MM MD
+run; `droplet(...)` keeps the solvent of a nonperiodic system together and
+`solute_com(...)` holds the solute in the middle of it. The example
+`examples/QMMM/H2CO-water_HF-QMMM-MD-ODP.oqp` is one such window:
+
+```text
+hf/sto-3g
+md(nstep=3,dt=0.5,ensemble=nvt,temperature=300,friction=5.0,seed=7,trajectory_interval=1,restart_interval=3)
+qmmm(pdb_file="formaldehyde_water.pdb",forcefield_files="formaldehyde.xml tip3p.xml",qm_atoms="0-3")
+droplet(enabled=true,radius=3.0,buffer=0.5,force_constant=2.0,max_penetration=5.0)
+solute_com(enabled=true,force_constant=1.0,atoms="0-3")
+odp(enabled=true,cv="distance(1,5); distance(2,5)",scale="1.0,1.0",reference_r="7.6,5.3",reference_p="5.3,6.4",center=0.2,k_parallel=0.1,k_perpendicular=0.02,window=2)
+geom="formaldehyde_water.pdb"
+```
+
+The bias energy and force are added to the QM/MM energy and force before the
+OpenMM integrator, so the dynamics samples the biased potential. Run each
+window in its own directory and pass the energy tables to WHAM:
+
+```python
+from oqp.library.odp import odp_wham
+
+result = odp_wham(["window-01/total_energy.npz", "window-02/total_energy.npz"],
+                  300.0, bins=60, discard=1000)
+```
+
+`[flexible]` is connected only to NAMD. In a periodic cell the ground-state
+bias requires an orthorhombic box. A window continued with
+`md(...,restart=true)` must keep the bias, the restraints, the QM/MM
+Hamiltonian and the temperature of the table it extends; otherwise the run
+stops before adding any row.
+
 ## WHAM
 
 Analyze all windows with the OpenQP example script:
@@ -93,6 +130,9 @@ Analyze all windows with the OpenQP example script:
 ```console
 python examples/ODP/odp_wham.py --temperature 300 --output odp-wham.npz window-*.namd.trj
 ```
+
+The same script and function accept the `total_energy.npz` tables of
+ground-state QM/MM MD windows.
 
 or from Python:
 
