@@ -321,7 +321,7 @@ surface-hopping `scheme=BaeckAn|Overlap|TDC_NAC|NAC|custom`, and—only with
 | <code>irc([STATE],maxit=...,direction=forward&#124;backward,step=...,hessian=numerical&#124;analytical,gtol=...)</code> | Native IRC with an explicit branch, step size, Hessian type, and gradient stopping threshold. |
 | `neb([STATE],maxit=...,NEB...)` | Native NEB; `product="FILE"` is required and the final band is written as a multi-frame XYZ file. |
 | <code>hess([STATE],type=numerical&#124;analytical,dx=...,nproc=...,read=...,restart=...,temperature=...,clean=...)</code> | Hessian/frequency calculation. |
-| `nac(STATE1,STATE2,type=numerical,dx=...,nproc=...,restart=...,clean=...,align=...)` | Numerical nonadiabatic-coupling vector between two states in the same spin manifold. |
+| <code>nac(STATE1,STATE2,type=numerical&#124;analytical,dx=...,nproc=...,restart=...,clean=...,align=...)</code> | Nonadiabatic-coupling vector between two states in the same spin manifold, by finite differences (default) or analytically. |
 | `bp(STATE1,STATE2,type=numerical,dx=...,nproc=...,restart=...,clean=...,align=...)` | Numerical branching-plane calculation between two states in the same spin manifold. |
 | `nacme(STATE1,STATE2,dt=...,align=...)` | Coupling matrix element; requires `geom2` or `guess(file2=...)`. |
 | `soc(soc_2e=...,ns=...,nt=...)` | Spin-orbit coupling; accepts no single target state. `ns` and `nt` must be supplied together. |
@@ -346,8 +346,11 @@ state-specific SF request must write `root=N`; do not omit the state and do not
 write `S0`, `S1`, or `T0` on an SF route.
 
 The NAC family currently requires an MRSF route and two distinct states in the
-same spin manifold. `nac` and `bp` support numerical finite differences only;
-analytical NAC is rejected. `nacme` accepts only its time-step/alignment
+same spin manifold. `nac` uses numerical finite differences by default;
+`type=analytical` selects the analytic MRSF coupling, which requires singlet
+states on an MRSF-TDDFT or MRSF-TDHF route and SCF and response convergence of
+at most `1e-8`, for example `scf(conv=1e-10) tdhf(conv=1e-10)`. `bp` supports
+numerical finite differences. `nacme` accepts only its time-step/alignment
 controls and additionally requires a previous geometry through `geom2` or
 `guess(file2=...)`. Branching-plane analysis is not available for
 The `prop` driver is currently limited to all-electron MRSF-TDDFT/MRSF-TDHF;

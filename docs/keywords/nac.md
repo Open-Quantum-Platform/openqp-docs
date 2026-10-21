@@ -13,7 +13,12 @@ currently require `[input] method=tdhf` and `[tdhf] type=mrsf`.
 | Default | `numerical` |
 | Used by | NAC dispatch |
 
-Selects the NAC implementation.
+Selects the NAC implementation: `numerical` (finite differences) or
+`analytical` (analytic MRSF singlet coupling). Analytical NAC requires an
+MRSF-TDDFT or MRSF-TDHF route with singlet states and `[scf] conv` and
+`[tdhf] conv` of at most `1e-8`; OpenQP rejects looser thresholds with an
+input error. See the
+[ethylene conical-intersection example](../worked-examples/ethylene-meci.md).
 
 ### `states`
 
