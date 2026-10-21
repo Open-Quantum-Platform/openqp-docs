@@ -171,8 +171,8 @@ on speed: `auto` takes it only when the packed store would not fit.
 
 Available memory is the tightest of physical RAM, the kernel's `MemAvailable`,
 and the cgroup limit — the last being what actually binds under SLURM or in a
-container. `OQP_MEMORY_LIMIT_GB` overrides the probe when the automatic answer
-is wrong.
+container. [`[input] max_memory`](input.md#max_memory) (MiB) overrides the probe
+when the automatic answer is wrong.
 
 ## Notes
 

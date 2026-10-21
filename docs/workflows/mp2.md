@@ -107,7 +107,7 @@ job.settings.mp2(transform="n5")
 
 In legacy input, add `[mp2] transform=n5`. Explicit `n5` can fall back from full
 to occupied-virtual storage, but stops if neither packed form succeeds. Explicit
-`direct` retains `OQP_MP2_MAX_JBUILDS` and stops when its count is exceeded.
+`direct` retains the [`max_jbuilds`](../keywords/mp2.md#max_jbuilds) guard and stops when its count is exceeded.
 Automatic selection retains the guarded direct fallback after packed failure.
 See [`transform`](../keywords/mp2.md#transform) for the complete selection and
 memory behavior. The setting does not select the analytic-gradient assembly.
@@ -199,7 +199,7 @@ size, or raise the guard only after checking runtime and memory requirements.
 
 The first analytic-gradient implementation forms dense AO and MO four-index
 quantities and therefore has fourth-power memory growth. It stops above 60
-basis functions by default. `OQP_MP2_GRAD_MAX_NBF` can raise that limit after
+basis functions by default. [`[mp2] grad_max_nbf`](../keywords/mp2.md#grad_max_nbf) can raise that limit after
 the required memory has been checked. The gradient supports Cartesian and pure
 spherical shells. MP2 Hessians, open-shell MP2 gradients, NACME, SOC, PCM, NMR,
 IR, and Raman derivatives are not implemented.

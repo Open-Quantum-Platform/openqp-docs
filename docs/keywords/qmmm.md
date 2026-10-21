@@ -488,6 +488,90 @@ image inside the real-space cutoff (half the shortest box edge) only, so the
 width must be short-ranged on that scale: `w ≤ L_min / (9 √2)` (1.26 Å for a
 16 Å box); larger values are rejected with a message giving the bound.
 
+### ESPF grid and density keywords
+
+The five keywords below require an engine build containing
+[OpenQP PR #547](https://github.com/Open-Quantum-Platform/openqp/pull/547).
+Earlier engines read the environment variables named in each entry instead;
+current engines ignore those variables and the input check warns when one is
+still set. They apply to `embedding = electrostatic`.
+
+### `espf_grid`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `smooth` |
+| Values | `smooth`, `keepall`, `pruned`, `hard` |
+| Used by | ESPF fitting grid: SCF embedding, ESP charges and the QM/MM gradient |
+
+| Value | Grid |
+| --- | --- |
+| `smooth` | Every Lebedev point is kept and carries a smooth switching weight; the energy is smooth in the nuclear positions. The production value. |
+| `keepall` | Every point is kept with unit weight (no neighbour pruning). |
+| `pruned` | Points inside neighbouring van der Waals spheres are removed (a step function of geometry). |
+| `hard` | Deterministic grid with the Emsley/Bondi radii, 146 points per shell and a fixed `r + 0.1 Å` exclusion. |
+
+The grid builder and the gradient use the same setting, so the gradient is the
+derivative of the energy on that grid. Formerly `ESPF_SMOOTH=0`,
+`ESPF_KEEPALL=1` and `ESPF_HARD_GRID=1`. Note that the former
+`ESPF_HARD_GRID=1` on its own kept the smooth-weight derivative in the
+gradient, which was not consistent with its energy; `espf_grid = hard`
+corresponds to `ESPF_HARD_GRID=1 ESPF_SMOOTH=0`.
+
+### `espf_switch_scale`
+
+| Field | Value |
+| --- | --- |
+| Type | `auto` or float |
+| Default | `auto` |
+| Used by | `espf_grid = smooth` |
+
+Scale of the van der Waals radius that defines the core of the smooth
+switching function. `auto` selects `1.5` when the QM/MM partition cuts a
+covalent bond and `1.8` otherwise; see
+[ESPF grid switching](#espf-grid-switching). Formerly `ESPF_SWSCALE`.
+
+### `espf_switch_width`
+
+| Field | Value |
+| --- | --- |
+| Type | float (bohr) |
+| Default | `0.7` |
+| Used by | `espf_grid = smooth` |
+
+Width of the smoothstep switching function. Formerly `ESPF_SWDELTA`.
+
+### `espf_density`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `relaxed` |
+| Values | `relaxed`, `reference` |
+| Used by | excited-state ESPF charges and QM/MM gradients (TDDFT, MRSF, NAMD) |
+
+`relaxed` fits the ESPF charges of an excited state to its relaxed density,
+which the excited-state QM/MM force requires. `reference` uses the SCF
+reference density for every state instead; the charges are then
+state-independent, but the excited-state MM forces are no longer the
+derivative of the excited-state energy. Intended for validation. Formerly
+`ESPF_ROHF=1`.
+
+### `qm_images`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `True` |
+| Used by | periodic full-ESPF QM/MM (`cutoff = PME` / `Ewald` / `CutoffPeriodic`) |
+
+Let the ESPF charges of the QM region interact with their own periodic images,
+made self-consistent with the charges (see [`cutoff`](#cutoff)). `False` drops
+that interaction and its energy correction, for comparison with non-periodic
+QM-image treatments. Honoured by QM/MM MD, optimisation and NAMD. Formerly
+`OQP_EWALD_NO_IMAGE=1`.
+
 ### `nonbondedmethod`
 
 | Field | Value |
@@ -847,16 +931,17 @@ with or without a link atom.
 The ESPF embedding gradient carries a small finite-difference residual (the
 grid-derivative floor, ~1e-3 a.u.). At a **covalent** boundary that residual
 does not spread over the QM region: it concentrates as an over-shoot on the MM
-host atom, and it is governed by the smooth-switching width `ESPF_SWSCALE`.
+host atom, and it is governed by the smooth-switching scale
+[`espf_switch_scale`](#espf_switch_scale).
 
-The shipped whole-molecule value, `1.8`, over-smooths at a covalent boundary,
-and the tighter `1.5` is about 20% worse without one — neither is a safe
-global default. OpenQP therefore selects it **per system**, from whether the
-QM/MM partition actually cut a bond:
+The whole-molecule value, `1.8`, over-smooths at a covalent boundary, and the
+tighter `1.5` is about 20% worse without one — neither is a safe global
+default. With the default `espf_switch_scale = auto`, OpenQP therefore selects
+it **per system**, from whether the QM/MM partition actually cut a bond:
 
-| QM/MM boundary | `ESPF_SWSCALE` |
+| QM/MM boundary | `espf_switch_scale = auto` uses |
 | --- | --- |
-| covalent (a bond is cut; link atoms present) | **1.5**, selected automatically |
+| covalent (a bond is cut; link atoms present) | **1.5** |
 | whole-molecule (no bond cut) | `1.8` |
 
 The choice is made by the QM/MM driver when it builds the partition, because
@@ -866,30 +951,35 @@ the selection:
 
 ```
 [QM/MM] 1 covalent boundary bond(s); frontier-charge embedding = ...
-[QM/MM] covalent boundary detected; ESPF_SWSCALE=1.5 (whole-molecule default
-        is 1.8). Set ESPF_SWSCALE to override.
+[QM/MM] covalent boundary detected; espf_switch_scale=1.5 (whole-molecule
+        default is 1.8). Set [qmmm] espf_switch_scale to override.
 ```
 
-Setting `ESPF_SWSCALE` yourself always wins and the automatic choice stands
-down entirely, so a parameter sweep or a reproduction is never silently
-overridden:
+An explicit number always wins and the automatic choice stands down entirely,
+so a parameter sweep or a reproduction is never silently overridden:
 
-```bash
-export ESPF_SWSCALE=1.8      # force the whole-molecule width at a boundary
+```text
+qmmm(pdb_file="ala.pdb",qm_atoms="9-12",espf_switch_scale=1.8)
 ```
 
-### ESPF environment variables
+!!! note "Engine versions"
+    Engines before [OpenQP PR #547](https://github.com/Open-Quantum-Platform/openqp/pull/547)
+    read this setting from the `ESPF_SWSCALE` environment variable, and the
+    grid and density settings from `ESPF_SMOOTH`, `ESPF_KEEPALL`,
+    `ESPF_HARD_GRID`, `ESPF_SWDELTA` and `ESPF_ROHF`. Current engines ignore
+    those variables and the input check warns when one is still set.
 
-These are runtime **environment variables**, not `[qmmm]` keywords, read by the
-native ESPF module:
+### ESPF developer switches
+
+Three environment variables remain for finite-difference calibration of the
+ESPF gradient. They make the force inconsistent with the energy and are not
+for production runs:
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `ESPF_SMOOTH` | on | enable smooth grid switching at all |
-| `ESPF_SWSCALE` | selected (1.5 / 1.8) | switching width scale, see above |
-| `ESPF_SWDELTA` | 0.7 | switching offset |
-| `ESPF_WSCALE` | 1.0 | grid weight scale; keep at 1.0 |
-| `ESPF_WDERIV` | on | include the grid weight-derivative gradient term |
+| `ESPF_WDERIV` | on | include the grid weight-derivative gradient term (`0`/`off` drops it) |
+| `ESPF_WSCALE` | 1.0 | scale of that term; keep at 1.0 |
+| `ESPF_LEGACY` | off | also add the old `espf_grad` weight term |
 
 !!! note "Applies to every electrostatically embedded QM/MM path"
     Grid switching is a property of baseline ESPF, so it affects every path
@@ -897,8 +987,8 @@ native ESPF module:
     [SOC-NAMD-QMMM](../workflows/soc-namd-qmmm.md), and it is independent of
     [`frontier_scheme`](#frontier_scheme). Under `embedding = mechanical`
     there is no electrostatic coupling into the QM Hamiltonian and therefore
-    no ESPF grid at all, so none of these variables — including the automatic
-    `ESPF_SWSCALE` selection — has any effect.
+    no ESPF grid at all, so none of these settings — including the automatic
+    `espf_switch_scale` selection — has any effect.
 
 ## Notes
 

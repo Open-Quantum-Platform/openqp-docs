@@ -66,6 +66,7 @@ md(nstep=400,dt=0.5)
 | NVE energy criteria | `nve_policy_abs_tol=5.0e-3` Ha, `nve_policy_step_tol=1.0e-3` Ha, `nve_policy_transition_tol=1.0e-6` Ha, `nve_policy_consecutive=3` |
 | Delayed hopping or trivial-crossing following | `first_hop_step=1`, `trivial=False`, `trivial_thresh=0.5` |
 | Electronic propagation resolution | `substep=50000` |
+| Analytic-NAC evaluation cost | `hop_nac_pairs=selected`, `nac_fuse_gradient=False`, `nac_zv_predictor=off`; see [Analytic-NAC Evaluation Controls](md-schemes.md#analytic-nac-evaluation-controls) |
 
 Use `nacme_policy=warn` or `nve_policy=warn` to print the corresponding
 diagnostic result without terminating the trajectory. Use `error` only after

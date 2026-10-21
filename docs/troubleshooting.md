@@ -83,7 +83,7 @@ and keep the run type at `energy` for the current production PCM path.
 ## MP2 Stops at the Build Guard
 
 The default `[mp2] transform=auto` selects a packed AO-to-MO transformation
-when the direct pair-build count exceeds `OQP_MP2_MAX_JBUILDS`. If the packed
+when the direct pair-build count exceeds [`[mp2] max_jbuilds`](keywords/mp2.md#max_jbuilds). If the packed
 transformation fails, the direct fallback is still subject to that guard.
 Explicit `transform=direct` stops when the pair-build count exceeds the guard;
 use `auto` or `n5` to select a packed transformation instead. Explicit `n5`

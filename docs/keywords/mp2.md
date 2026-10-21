@@ -119,7 +119,7 @@ numbers are not used; choose `variant=custom` instead.
 Selects the AO-to-MO transformation used for the correlation energy:
 
 - `auto` uses direct per-occupied-virtual-pair Coulomb builds when their count
-  is within `OQP_MP2_MAX_JBUILDS` and the basis has at most 120 functions.
+  is within [`max_jbuilds`](#max_jbuilds) and the basis has at most 120 functions.
   Otherwise it tries the packed transformation. If that fails, direct builds
   remain available only when their count satisfies the guard.
 - `direct` requests direct Coulomb builds and retains the same pair-count
@@ -178,6 +178,54 @@ scales.
 Scale factor for the opposite-spin MP2 contribution, `E_ab`, when
 `variant=custom`. The input checker requires finite numeric values for custom
 scales.
+
+### `max_jbuilds`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `4000` |
+| Used by | standalone MP2 correlation energy |
+
+Guard on the number of per-occupied-virtual-pair Coulomb builds of the direct
+transformation (`nocc*nvir` summed over both spins). Under `transform=auto` a
+larger count selects the packed transformation, and a failed packed attempt
+falls back to direct builds only when the count is within the guard; under
+`transform=direct` a larger count stops the calculation. `0` disables direct
+builds. Raise it only after checking the runtime and memory of the direct path.
+
+Requires an engine build containing
+[OpenQP PR #547](https://github.com/Open-Quantum-Platform/openqp/pull/547);
+earlier engines read the `OQP_MP2_MAX_JBUILDS` environment variable instead,
+which current engines ignore with an input-check warning.
+
+```text
+mp2/cc-pvtz mp2(transform=direct,max_jbuilds=8000)
+geom="h2o.xyz"
+```
+
+### `grad_max_nbf`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `60` |
+| Used by | RHF MP2 analytic gradient |
+
+Largest number of basis functions the dense analytic MP2 gradient accepts. The
+gradient stores full AO and MO four-index quantities, so memory grows as the
+fourth power of the basis size (about `8·nbf⁴` bytes per tensor). A larger
+basis stops after the MP2 energy with a message naming this keyword; raise it
+only after checking the required memory.
+
+Requires an engine build containing
+[OpenQP PR #547](https://github.com/Open-Quantum-Platform/openqp/pull/547);
+earlier engines read the `OQP_MP2_GRAD_MAX_NBF` environment variable instead.
+
+```text
+mp2/6-31g* grad(S0) mp2(grad_max_nbf=120)
+geom="benzene.xyz"
+```
 
 ## Notes
 

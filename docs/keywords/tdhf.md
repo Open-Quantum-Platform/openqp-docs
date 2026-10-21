@@ -376,6 +376,108 @@ Reuse the previous geometry step's z-vector as the CG/GMRES initial guess
 (exact; the solve still converges to the same tolerance). Most effective across
 many nearby geometries (optimization, MD).
 
+### Z-vector screening and grid
+
+The keywords below require an engine build containing
+[OpenQP PR #547](https://github.com/Open-Quantum-Platform/openqp/pull/547).
+Earlier engines read the environment variables named in each entry instead;
+current engines ignore those variables and the input check warns when one is
+still set. The z-vector tolerance is always [`zvconv`](#zvconv): the former
+`OQP_TDHF_ZV_CONV`, `OQP_SF_ZV_CONV` and `OQP_MRSF_ZV_CONV` overrides are gone.
+
+### `zv_pscreen`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | RPA/TDA, SF-TDDFT and MRSF-TDDFT gradients — z-vector solve |
+
+Progressive (iteration-dependent) two-electron screening in the z-vector CG
+solve, the counterpart of [`[scf] pscreen`](scf.md). While the residual is
+large the integral cutoff is loosened to
+`clamp(zv_pscreen_k·‖r‖, int2e_cutoff, zv_pscreen_cap)`; once
+`‖r‖² < zv_pscreen_tight` it is pinned back to the tight cutoff, so the
+converged z-vector is computed with exact integrals. The gradient changes only
+at the level of the z-vector tolerance; the early iterations become cheaper.
+Formerly `OQP_TDHF_ZV_PROG`, `OQP_SF_ZV_PROG` and `OQP_MRSF_ZV_PROG`.
+
+```text
+mrsf/bhhlyp/6-31g* grad(S2) tdhf(zv_pscreen=true)
+geom="h2o.xyz"
+```
+
+Example input: `examples/PERF/H2O_MRSF_zv_pscreen.inp` in the engine repository.
+
+### `zv_pscreen_k`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `1.0e-2` |
+| Used by | [`zv_pscreen`](#zv_pscreen) |
+
+Coupling factor `k` of the progressive cutoff `k·‖r‖`. Formerly
+`OQP_*_ZV_PROG_K`.
+
+### `zv_pscreen_cap`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `1.0e-6` |
+| Used by | [`zv_pscreen`](#zv_pscreen) |
+
+Loosest cutoff progressive screening may use. A cap much looser than the
+default can keep the z-vector from converging. Formerly `OQP_*_ZV_PROG_CAP`.
+
+### `zv_pscreen_tight`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `1.0e-6` |
+| Used by | [`zv_pscreen`](#zv_pscreen) |
+
+Squared-residual threshold below which the cutoff is pinned to
+`int2e_cutoff`. Formerly `OQP_*_ZV_PROG_PIN`.
+
+### `zv_cutoff`
+
+| Field | Value |
+| --- | --- |
+| Type | float |
+| Default | `0.0` (use the SCF integral cutoff) |
+| Used by | MRSF-TDDFT gradients — z-vector solve |
+
+Static two-electron cutoff for the whole MRSF z-vector build (right-hand side,
+every sigma build and the relaxed density): the cutoff used is the larger of
+this value and the SCF integral cutoff, which is restored afterwards. This is
+an approximation; check the gradient against a run without it before using
+values looser than about `1e-8`. Ignored when [`zv_pscreen`](#zv_pscreen) is
+on. Formerly `OQP_MRSF_ZV_CUTOFF`.
+
+### `zv_grid`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | *(empty — the SCF grid)* |
+| Values | *(empty)*, `SG0`, `SG1`, `SG2`, `SG3` |
+| Used by | MRSF-TDDFT gradients — z-vector XC response |
+
+Build the exchange-correlation response of the MRSF z-vector on this named
+pruned grid instead of the SCF grid, which cuts the cost of every z-vector
+iteration. The SCF and the gradient keep their own grid. This changes the
+gradient at the level of the grid difference (about `5e-6` Hartree/Bohr for
+water with `SG1` against the default `SG2`). Formerly
+`OQP_MRSF_ZV_COARSEGRID=1` with `OQP_MRSF_ZV_GRID`.
+
+```text
+mrsf/bhhlyp/6-31g* grad(S2) tdhf(zv_grid=SG1)
+geom="h2o.xyz"
+```
+
 ### `pair_cache`
 
 | Field | Value |
