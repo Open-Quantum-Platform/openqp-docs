@@ -386,8 +386,8 @@ should use `electrostatic`.
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `none` |
-| Values | `none`, `rcd`, `rc`, `z1` |
+| Default | `rcd` |
+| Values | `rcd`, `rc`, `z1`, `none` |
 | Used by | ESPF electrostatics at a covalent QM/MM boundary |
 
 When the QM/MM partition cuts a covalent bond, the MM host atom (`M1`, the MM end
@@ -399,12 +399,22 @@ across a covalent boundary requires a scheme without analytic NAC.
 
 | Value | Meaning |
 | --- | --- |
-| `none` | Full-field embedding: the QM density sees the complete MM charge set. This is the **default and the validated ESPF baseline**. ESPF couples the MM potential to the QM *atomic-charge operators* (`h += Σ_A φ_A Q̂_A`), not to the raw density via `1/\|r−R_M\|` integrals, which structurally suppresses the electron spill-out that motivates frontier redistribution in density-based embedding — so the ESPF method uses the full MM charges even at a covalent boundary. |
-| `rcd` | Redistributed charge and dipole: delete `M1`'s charge and place virtual point charges at the `M1–M2` bond midpoints (`2·q₁/N`) plus `−q₁/N` on each MM neighbour `M2`, conserving the **total charge and the dipole about `M1`**. The virtual charges sit at bond midpoints (linear in the real atom positions), so the analytic gradient stays exact. |
+| `rcd` | **Default.** Redistributed charge and dipole: delete `M1`'s charge and place virtual point charges at the `M1–M2` bond midpoints (`2·q₁/N`) plus `−q₁/N` on each MM neighbour `M2`, conserving the **total charge and the dipole about `M1`**. The virtual charges sit at bond midpoints (linear in the real atom positions), so the analytic gradient stays exact. |
 | `rc` | Redistributed charge: midpoint charges only (conserves the total charge, not the dipole). |
 | `z1` | Charge deletion: remove `M1`'s charge (conserves neither; provided for comparison). |
+| `none` | Full-field embedding: the QM density sees the complete MM charge set, including `M1`. Not recommended with link atoms; see the warning below. |
 
-`rcd`/`rc`/`z1` are **optional refinements**, not the ESPF default. See
+!!! warning "Default changed from `none` to `rcd`"
+    Earlier versions used `none` by default. With a hydrogen link atom, the
+    full `M1` charge sits only 0.4–0.5 Å from the link hydrogen, so the ESPF
+    energy is unbounded below: an optimization or MD can pull the QM frontier
+    atom onto `M1` (the alanine-dipeptide `ACE CH3|C` cut falls from −41.5 to
+    −249 Eh in ten RHF/6-31G steps; issue #551 reported the same collapse at
+    rhodopsin Lys296). Inputs that cut a covalent bond and did not set
+    `frontier_scheme` now use `rcd` and give a different energy. To reproduce
+    an earlier result, set `frontier_scheme = none` explicitly; the run then
+    prints a warning naming the number of boundary bonds. The setting has no
+    effect when no bond is cut. See
 [References](../references.md#qmmm-espf-embedding) for the ESPF charge-operator
 formulation and the redistribution schemes.
 
@@ -756,7 +766,7 @@ its two real host atoms, the force computed on the link atom is redistributed
 onto them by the chain rule — no extra degrees of freedom, and the analytic
 gradient stays exact. Details in [Link atoms](#link-atoms).
 
-### 2. The frontier MM charge → ESPF is robust; `frontier_scheme` refines it
+### 2. The frontier MM charge → redistributed by default (`frontier_scheme`)
 
 The MM host atom (`M1`, the MM end of the severed bond) sits only ~1.5 Å from the
 QM density. In a **density-based** electrostatic embedding, embedding `M1`'s full
@@ -768,12 +778,14 @@ potential couples to the QM *atomic-charge operators*, `h += Σ_A φ_A Q̂_A`
 (Huix-Rotllant & Ferré; see [Background](#background)), **not** to the raw density
 via `1/|r−R_M|` integrals. Because the coupling runs through bounded atomic-charge
 operators evaluated at the QM nuclei, the spill-out that plagues density-based
-embedding is suppressed — so the full MM charges can be used "with no scaling"
-even at a covalent boundary. That is the default,
-[`frontier_scheme = none`](#frontier_scheme).
+embedding is suppressed, so the MM charges beyond the boundary can be used
+"with no scaling".
 
-For a still-more-faithful boundary field, the optional redistributions delete the
-raw `M1` charge and spread it over **virtual point charges** at the `M1–M2` bond
+`M1` itself is different: with a hydrogen link atom, its full charge sits only
+0.4–0.5 Å from the link hydrogen, which makes the ESPF energy unbounded below
+and lets an optimization or MD collapse the QM frontier atom onto `M1`. The
+default [`frontier_scheme = rcd`](#frontier_scheme) therefore deletes the raw
+`M1` charge and spreads it over **virtual point charges** at the `M1–M2` bond
 midpoints (`M2` = the MM neighbours of `M1`):
 
 - **`rcd`** — `2·q₁/N` at each of the `N` midpoints plus `−q₁/N` on each `M2`,
@@ -827,7 +839,7 @@ link-atom energy gradient is redistributed onto its two real host atoms by the
 chain rule of this scaled position, so no extra degrees of freedom are added.
 
 Across a covalent boundary the MM frontier-host charge is treated per
-[`frontier_scheme`](#frontier_scheme) (default `none` = full-field ESPF), and
+[`frontier_scheme`](#frontier_scheme) (default `rcd`, redistributed charge and dipole), and
 the ESPF grid switching width is selected automatically — see
 [ESPF grid switching](#espf-grid-switching) below.
 
