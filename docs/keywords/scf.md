@@ -254,14 +254,21 @@ Controls the smearing width/count used by the pFON method.
 | --- | --- |
 | Type | string |
 | Default | `diis` |
-| Values | `diis`, `soscf`, `trah`, `auto`, `ml` |
+| Values | `diis`, `soscf`, `trah`, `arh`, `auto`, `ml` |
 | Used by | SCF convergence manager |
 
 Selects the main SCF convergence strategy. `auto` and `ml` are Python-side
 manager modes that choose a concrete native converger before dispatch.
 
-`trah` is rejected together with `mom=true` or `rstctmo=true`. When `ml`
-would choose TRAH for such a calculation, DIIS is used instead.
+`arh` runs the augmented Roothaan-Hall (ARH) trust-region method alone: every
+macro-iteration uses the ARH model Hessian (see [`trh_arh`](#trh_arh)), so no
+exact response Fock matrix is built. Each step costs about two Fock builds,
+and convergence near the solution is linear, so a tight `conv` needs more
+iterations than `trah`. Like DIIS, `arh` does no stability check of its own;
+add `stability=true` for the TRAH stability pass after convergence.
+
+`trah` and `arh` are rejected together with `mom=true` or `rstctmo=true`. When
+`ml` would choose TRAH for such a calculation, DIIS is used instead.
 
 ### `init_converger`
 
@@ -293,16 +300,30 @@ Fallback converger after repeated SCF difficulty.
 | --- | --- |
 | Type | comma-separated string |
 | Default | empty |
-| Values | `diis`, `soscf`, `trah` stages |
+| Values | `diis`, `soscf`, `arh`, `trah` stages |
 | Used by | custom fallback ladder |
 
-Overrides the default escalation ladder. With `mom=true` or `rstctmo=true`
-the TRAH stage is dropped from any ladder, because TRAH cannot keep the
-selected occupation. Example:
+When the primary converger does not converge, OpenQP tries further convergers
+in turn, each starting from the orbitals of the previous one. The default
+ladder is SOSCF, then ARH, then `alternative_scf` (TRAH). The primary converger
+is removed from the ladder.
+
+- The ARH stage runs at least 100 iterations, even when `maxit` is smaller,
+  because ARH converges linearly; `maxit` is restored afterwards.
+- A TRAH stage that follows ARH (as a ladder stage or as the primary
+  converger) uses the exact Hessian, unless `trh_arh` is set explicitly.
+
+`escalation` replaces this ladder. With `mom=true` or `rstctmo=true`
+the TRAH and ARH stages are dropped from any ladder, because they cannot keep
+the selected occupation. In an `.oqp` input, a list value must be quoted:
 
 ```ini
 [scf]
 escalation=soscf,trah
+```
+
+```text
+scf(escalation="soscf,trah")
 ```
 
 ### `forced_attempt`
@@ -467,8 +488,10 @@ reproduce earlier results and for comparison.
 | Default | `False` |
 | Used by | SCF stability analysis |
 
-Requests stability analysis where wired. The analysis uses TRAH and is
-skipped for `mom=true` and `rstctmo=true` calculations.
+Requests stability analysis where wired. The analysis uses TRAH with the exact
+Hessian and is skipped for `mom=true` and `rstctmo=true` calculations. It runs
+after a DIIS, SOSCF or `arh` primary converger; a `trah` primary converger
+checks stability itself, so the extra pass is skipped there.
 
 ### `soscf_lvl_shift`
 
@@ -535,6 +558,37 @@ trust-region augmented-Hessian solver, which is the only implementation.
 accepted**: the backend was removed and an input requesting it now fails with a
 `ValueError` naming the accepted values, rather than silently running the native
 solver instead.
+
+### `trh_arh`
+
+| Field | Value |
+| --- | --- |
+| Type | integer |
+| Default | `-1` |
+| Values | `-1`, `0`, positive integer |
+| Used by | TRAH and ARH Hessian |
+
+Selects the Hessian of the TRAH micro-iterations.
+
+- `0` uses the exact response Hessian.
+- A positive `n` uses the augmented Roothaan-Hall (ARH) model, built from the
+  last `n` density and Fock matrices (Host et al., J. Chem. Phys. 129, 124106
+  (2008)). TRAH then uses the model while the RMS orbital gradient is
+  above `1e-4` and the exact Hessian from there on, including the stability check
+  at convergence.
+- `-1` (default) depends on the reference: `20` for ROHF/ROKS and UHF/UKS, and
+  `0` for RHF/RKS. On closed-shell systems the model saved no Fock builds.
+
+The model changes only the path to the solution: the orbital gradient is
+exact, so the converged energy is the same as with the exact Hessian. Set
+`trh_arh=0` to reproduce the exact-Hessian TRAH of earlier versions.
+
+With `converger_type=arh`, the model is used in every step, and a positive
+`trh_arh` sets its memory (default `20`).
+
+```text
+rohf/6-31g* mult=2 scf(converger_type=trah,trh_arh=0)
+```
 
 ### `trh_stab`
 
