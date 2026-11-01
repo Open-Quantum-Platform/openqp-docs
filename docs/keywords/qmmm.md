@@ -25,7 +25,7 @@ MM residues within `opt(qmmm_radius=...)` Å of the QM region (see
 standalone `grad`, are rejected with `qmmm(...)`.
 
 ```text
-dft/pbe0/def2-svp qmmm()
+dft/pbe0/def2-svp qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml")
 geom="ala.pdb 9 10 17 18 19"
 ```
 
@@ -209,11 +209,12 @@ full nonadiabatic QM/MM setup.
 | Used by | standalone HF/DFT energy, optimization, QM/MM MD and NAMD |
 
 Path to the PDB file that defines the full QM+MM system (coordinates and
-topology) for ground-state `runtype=md`, nonadiabatic `runtype=namd` and
-QM/MM geometry optimisation (`runtype=optimize`, see
-[the optimize page](optimize.md#qmmm-geometry-optimisation)).
-Single-point QM/MM energy instead takes its PDB path and QM indices together
-from `[input] system = file.pdb <indices>`.
+topology) for standalone HF/DFT energy, ground-state `runtype=md`,
+nonadiabatic `runtype=namd` and QM/MM geometry optimization (`runtype=optimize`,
+see [the optimize page](optimize.md#qmmm-geometry-optimisation)). Energy also
+accepts `geom="file.pdb"` with `qmmm(qm_atoms="0-2",...)`, or the PDB path and
+1-based QM indices together in `[input] system = file.pdb <indices>`;
+the input conversion derives the corresponding `[qmmm]` settings.
 
 ### `forcefield_files`
 
@@ -357,38 +358,14 @@ charges and their images, and the interaction of the QM charges with their own
 periodic images, which is made self-consistent with the ESPF charges outside
 the SCF — in NAMD with the relaxed charges of the propagated state — (the run
 stops with an error if that loop does not converge). The periodic branch is
-available to `runtype = md`, to the QM/MM `runtype = optimize`, and to
-same-spin FSSH (`runtype = namd`, `[md] soc = false`); SOC-NAMD requires
+available to standalone HF/DFT `runtype = energy`, to `runtype = md`,
+to the QM/MM `runtype = optimize`, and to same-spin FSSH (`runtype = namd`, `[md] soc = false`); SOC-NAMD requires
 `NoCutoff`. See
 [`ewald_tol`](#ewald_tol), [`lj_switch`](#lj_switch), [`h_lj`](#h_lj) and
 [`mm_charge_width`](#mm_charge_width) for the related controls. These
-controls belong to the drivers built on the ESPF QM/MM force (`runtype = md`,
-`namd` and the QM/MM `optimize`); a single-point QM/MM energy uses the
-non-periodic point-charge path and the input checker rejects them there rather
-than ignoring them.
-
-### `mm_charge_width`
-
-Gaussian width of MM charges, in Å. Unset or zero selects point charges.
-A finite positive value smooths QM–MM electrostatic coupling; MM–MM
-interactions are unchanged. Standalone HF/DFT energy, optimization and dynamics
-pass this value to the same embedded evaluator.
-
-### `h_lj`
-
-Boolean, default `false`. Assign the driver's CHARMM TIP3P hydrogen
-Lennard-Jones parameters to MM hydrogens whose force field has zero LJ
-well depth. QM hydrogen parameters are unchanged.
-
-### `lj_switch`
-
-Boolean, default `false`. Enable switching of the classical Lennard-Jones
-interaction when using a cutoff. It has no effect with `NoCutoff`.
-
-### `ewald_tol`
-
-Positive OpenMM Ewald/PME error tolerance. Unset uses OpenMM's default.
-It affects periodic Ewald/PME calculations and has no effect with `NoCutoff`.
+controls are passed to the shared embedded evaluator by standalone HF/DFT
+energy, QM/MM optimization, MD and NAMD. A standalone gradient is not connected
+to this evaluator and still rejects these driver controls.
 
 ### `embedding`
 
@@ -465,7 +442,7 @@ loop always constrains MM rigid water; QM atoms move under the QM forces.
 | --- | --- |
 | Type | float |
 | Default | unset (OpenMM default, `5e-4`) |
-| Used by | periodic QM/MM MD, NAMD-QMMM and QM/MM optimisation (`cutoff = PME` / `Ewald`) |
+| Used by | periodic standalone HF/DFT energy, QM/MM MD, NAMD-QMMM and QM/MM optimisation (`cutoff = PME` / `Ewald`) |
 
 Error tolerance of the OpenMM PME/Ewald evaluation of the MM-MM electrostatics.
 OpenMM's default gives a force error of about 0.5 kJ/mol/nm, which is the floor
@@ -479,7 +456,7 @@ cutoffs. Must be a positive number.
 | --- | --- |
 | Type | boolean |
 | Default | `False` |
-| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation with a finite cutoff |
+| Used by | standalone HF/DFT energy, QM/MM MD, NAMD-QMMM and QM/MM optimisation with a finite cutoff |
 
 Switch the MM Lennard-Jones interactions smoothly to zero over the last 15 % of
 the nonbonded cutoff (OpenMM `setUseSwitchingFunction`). A plain truncation makes
@@ -493,7 +470,7 @@ dipeptide with the OpenMM defaults). No effect under `NoCutoff`.
 | --- | --- |
 | Type | boolean |
 | Default | `False` |
-| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
+| Used by | standalone HF/DFT energy, QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
 
 Give Lennard-Jones parameters to MM hydrogens that have none in the force field
 (TIP3P water hydrogens), using the CHARMM TIP3P values (R_min/2 = 0.2245 Å,
@@ -508,7 +485,7 @@ Pauli wall. QM atoms are never modified. On its own this is a weak barrier; see
 | --- | --- |
 | Type | float (Å) |
 | Default | unset (point charges) |
-| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
+| Used by | standalone HF/DFT energy, QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
 
 Represent the MM charges as Gaussians of this width in the QM/MM electrostatics
 (full-ESPF `embedding = electrostatic` only; other embeddings reject it).
