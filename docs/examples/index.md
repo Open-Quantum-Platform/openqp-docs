@@ -79,6 +79,51 @@ which demonstrates a frozen C-N distance. The optional geomeTRIC adapter is
 retained for external compatibility but is not required by the standard
 example suite.
 
+## Dispersion examples
+
+Use a checkout and OpenQP installation that include the native
+[D3(BJ)](../keywords/input.md#d3) and [D4](../keywords/input.md#d4) evaluators.
+The two H₂O inputs use the same geometry, PBE functional, 6-31G basis, and
+unpruned DFT grid. Each requests an energy and nuclear gradient with the
+selected dispersion correction. Run from the root of the OpenQP source checkout
+and keep the shared `examples/geometries` directory in place.
+
+```bash
+openqp examples/DFT/H2O_RKS-PBE_D3BJ_GRADIENT.oqp
+openqp examples/DFT/H2O_RKS-PBE_D4_GRADIENT.oqp
+openqp examples/DFT/Ne3_RKS-PBE_D4_ATM_CUTOFF.oqp
+```
+
+The first line of each H₂O input shows the model selection:
+
+```text
+rks/pbe/6-31g grad d3 dftgrid(pruned=none)
+rks/pbe/6-31g grad d4 dftgrid(pruned=none)
+```
+
+The Ne₃ energy input illustrates explicit D4 parameters. It sets
+`s6=0,s8=0` and `s9=1` to isolate
+the ATM correction at a geometry close to the three-body cutoff. The electronic
+energy is still included in the total energy. All three inputs have matching
+JSON regression references. To compare a run with its reference:
+
+```bash
+openqp --run_tests examples/DFT/H2O_RKS-PBE_D3BJ_GRADIENT.oqp
+openqp --run_tests examples/DFT/H2O_RKS-PBE_D4_GRADIENT.oqp
+openqp --run_tests examples/DFT/Ne3_RKS-PBE_D4_ATM_CUTOFF.oqp
+```
+
+The standalone Python examples evaluate just the dispersion correction for
+H₂O. Coordinates are in bohr, energies are in hartree, and gradients are in
+hartree per bohr. The D3(BJ) script enables ATM explicitly, and the D4 script
+passes a total charge of zero. Each script checks its energy against an
+independent reference.
+
+```bash
+python examples/DFT/D3BJ_NATIVE_API.py
+python examples/DFT/D4_NATIVE_API.py
+```
+
 ## QM/MM examples
 
 The `examples/QMMM` decks exercise ESPF electrostatic QM/MM (a QM region embedded
