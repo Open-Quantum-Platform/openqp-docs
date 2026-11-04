@@ -7,6 +7,7 @@ workflow:
 
 stages:
   - test
+  - deploy
 
 docs-build:
   stage: test
@@ -20,3 +21,18 @@ docs-build:
     paths:
       - site/
     expire_in: 1 week
+
+private-docs-pages:
+  stage: deploy
+  image: alpine:3.20
+  tags:
+    - small-linux
+  needs:
+    - job: docs-build
+      artifacts: true
+  script:
+    - test -f site/index.html
+  pages:
+    publish: site
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
