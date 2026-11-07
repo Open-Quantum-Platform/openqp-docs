@@ -152,7 +152,16 @@ Maximum number of response-solver iterations.
 | Default | `1.0e-6` |
 | Used by | response convergence |
 
-Convergence threshold for the response solver.
+Convergence threshold for the response (Davidson) solver. Like `zvconv`, it
+bounds the **squared** Euclidean norm of each root's residual: the default
+`1.0e-6` stops when the residual norm is below `1.0e-3`. Excitation energies
+are then accurate to about `1e-7` Eh (MRSF-TDHF S1 of thymine/cc-pVDZ:
+`4.5e-7` Eh), which is enough for spectra and analytic gradients but not for
+finite differences of state energies: the error changes with the iteration
+count from one geometry to the next, and a central difference divides it by
+the step. Use `conv=1e-14` and `zvconv=1e-14` when excited-state energies are
+differentiated numerically (thymine/cc-pVDZ, step `1e-3` Å: default `conv`
+gave an O z gradient error of `3.2e-4` Eh/bohr, `1e-14` gave `1.9e-6`).
 
 ### `nvdav`
 
