@@ -69,12 +69,33 @@ Maximum number of SCF iterations before failure or fallback handling.
 
 | Field | Value |
 | --- | --- |
-| Type | float |
-| Default | `1.0e-6` |
+| Type | float or `auto` |
+| Default | `auto` |
 | Used by | SCF convergence test |
 
-Energy/density convergence threshold for the SCF cycle. Tighten this for
-high-precision properties or difficult state comparisons.
+Convergence threshold for the SCF cycle, applied to the largest element of the
+orbital gradient `FDS - SDF`. A number is used as given. `auto` (the default)
+selects the threshold from the job:
+
+| Job | `auto` resolves to |
+| --- | --- |
+| HF or DFT (`method=hf`) with `runtype` `energy`, `grad` or `optimize` | `1.0e-6` |
+| Every other job: TDDFT/MRSF (`method=tdhf`) energies and gradients, NACs, MP2, CC, CASSCF and other correlated methods; Hessians and frequencies (`hess`, `thermo`, analytic or finite difference); dynamics (`md`, `namd`); path and saddle searches (`ts`, `irc`, `mep`, `neb`); `prop` and `data` | `1.0e-8` |
+
+The energy error of a variational SCF is second order in the density error and
+its nuclear gradient is first order, so `1.0e-6` keeps the HF/DFT gradient error
+near `1e-6` Hartree/Bohr. This is far below the optimizer's `max_grad` of
+`3e-4`. For thymine/cc-pVTZ the largest gradient change against `conv=1e-10` was
+`5.2e-7` (RHF) and `8.9e-7` (B3LYP), with 20-25 % fewer SCF iterations.
+
+Response, correlated and finite-difference jobs use the SCF solution beyond its
+first derivative and keep `1.0e-8`. The log reports the resolved value as
+`PyOQP scf convergence:`.
+
+Set the value explicitly to override `auto`. For example, `scf(conv=1e-8)` in
+`.oqp`, or `conv = 1e-8` under `[scf]`, restores the tighter threshold for an
+HF/DFT gradient or optimization. Do this when gradients must agree beyond
+`1e-6`, for example as the reference for your own finite differences.
 
 ### `maxdiis`
 
