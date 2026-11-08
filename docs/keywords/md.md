@@ -45,9 +45,11 @@ are errors; keep nuclear propagation in `md(...)`. Older inputs that place
 `nstep`, `dt`, and the other common controls inside `namd(...)`, or `n_steps`
 and `timestep` inside `qmmm(...)` without `md(...)`, are still read.
 
-`namd(...)` tightens the SCF and response convergence to `1e-8` unless
-`scf(conv=...)` or `tdhf(conv=...,zvconv=...)` is given, because analytic
-coupling vectors require converged states.
+`namd(...)` sets `scf(conv=...)`, `tdhf(conv=...)` and `tdhf(zvconv=...)` to
+`1e-8` unless they are given, because analytic coupling vectors require
+converged states. For `zvconv` this is looser than the general default
+(`1.0e-10`, see [tdhf](tdhf.md#zvconv)); give `tdhf(zvconv=1e-10)` to use
+the tighter value in dynamics.
 
 ## Minimal Inputs
 

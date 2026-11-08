@@ -180,13 +180,44 @@ Maximum number of Z-vector iterations for gradient/property workflows.
 | Field | Value |
 | --- | --- |
 | Type | float |
-| Default | `1.0e-6` |
+| Default | `1.0e-10` |
 | Used by | Z-vector convergence |
 
-Convergence threshold for Z-vector equations. The TDDFT, SF-TDDFT, MRSF-TDDFT and
-UMRSF-TDDFT solvers stop when the Euclidean norm of the Z-vector residual is below
-`sqrt(zvconv)`, so the default `1.0e-6` bounds the residual by `1.0e-3`. Lower it
-(for example `1.0e-10`) when gradients are compared with finite differences.
+Convergence threshold for the Z-vector equations of TDDFT, SF-TDDFT, MRSF-TDDFT
+and UMRSF-TDDFT gradients and relaxed properties. The value bounds the squared
+residual norm: the solver stops when the Euclidean norm of the residual is below
+`sqrt(zvconv)`, so the default `1.0e-10` bounds the residual by `1.0e-5`.
+
+The default was `1.0e-8` before OpenQP internal MR !154. For thymine
+MRSF/BHHLYP S1 in cc-pVDZ (CG solver), the largest gradient deviation from a
+`zvconv = 1.0e-14` reference is:
+
+| `zvconv` | Z-vector iterations | max \|dG\| (a.u.) |
+| --- | --- | --- |
+| `1.0e-8` | 12 | 5.9e-6 |
+| `1.0e-10` (default) | 15 | 2.5e-7 |
+| `1.0e-12` | 17 | 2.8e-8 |
+
+`1.0e-10` is the loosest value that keeps gradients within `1e-6` a.u. In that
+measurement the Z-vector time grew by about 19 % (4.86 to 5.79 s), and the total
+gradient time did not change significantly.
+
+To keep the previous behaviour, for example to reproduce older results or to save
+Z-vector iterations in long dynamics, set the value explicitly:
+
+```text
+tdhf(zvconv=1e-8)
+```
+
+or, in the sectioned format,
+
+```text
+[tdhf]
+zvconv=1.0e-8
+```
+
+Lower it further (for example `1.0e-12`) when gradients are compared with finite
+differences.
 
 ### `z_solver`
 
