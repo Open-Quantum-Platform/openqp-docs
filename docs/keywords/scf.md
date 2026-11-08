@@ -169,6 +169,35 @@ not exceed 13.
 
 Enables incremental Fock builds where supported.
 
+### `fock_reproducible`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | every two-electron Fock build (SCF, TDHF/TDDFT/MRSF response, z-vector) |
+
+By default the two-electron Fock build hands shell pairs to OpenMP threads
+dynamically, so the order in which contributions are summed, and hence the
+last bits of the Fock matrix, changes from run to run. Two calculations of the
+same input then stop at SCF points that differ slightly (orbitals by about
+1e-9 at `conv=1e-8`). Energies are unaffected at any meaningful precision,
+but quantities that are not stationary in the orbitals, and nearly degenerate
+SCF solutions, can differ in the last digits between runs.
+
+With `fock_reproducible=true` each shell pair is assigned to a fixed thread,
+every thread accumulates its own Fock copy, and the copies are summed in
+thread order. Repeated runs with the same `OMP_NUM_THREADS` and the same MPI
+rank count then give bitwise identical energies and orbitals; the XC build is
+always reproducible in this sense. Different thread counts still differ in
+the last bits. The option costs about 2-4 % of the two-electron Fock time and
+always keeps one Fock copy per thread (the low-memory shared atomic Fock is
+not used).
+
+```text
+rks/b3lypv5/6-31g* scf(fock_reproducible=true)
+```
+
 ### `mom`
 
 | Field | Value |
