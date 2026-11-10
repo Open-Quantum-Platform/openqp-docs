@@ -43,7 +43,7 @@ see [Python Package Build Defaults](#python-package-build-defaults).
 | `CMAKE_BUILD_TYPE` | `Release` | `Release` | `Release`, `Debug`, `RelWithDebInfo` | Select optimization and debug flags for single-configuration generators such as Ninja. |
 | `CMAKE_INSTALL_PREFIX` | CMake default | `.` | Path | Install root for `lib`, `include`, and `share` runtime files. Package builds install into the wheel layout. |
 | `CMAKE_C_COMPILER` | Auto | Auto | Compiler path | C compiler. Set with matching C++, Fortran compilers for reproducible builds. |
-| `CMAKE_CXX_COMPILER` | Auto | Auto | Compiler path | C++ compiler, required for C++ wrappers and Libint verification. |
+| `CMAKE_CXX_COMPILER` | Auto | Auto | Compiler path | C++ compiler for C++ components. |
 | `CMAKE_Fortran_COMPILER` | Auto | Auto | Compiler path | Fortran compiler. Use an MPI wrapper when building with MPI. |
 | `BUILD_SHARED_LIBS` | `ON` | `ON` | `ON`, `OFF` | Build shared libraries when `ON`; `OFF` forces static-library lookup and static executable link flags for GNU. |
 | `BUILD_TESTING` | `ON` | `ON` | `ON`, `OFF` | Enable CTest targets and optional smoke tests. |
@@ -55,9 +55,12 @@ see [Python Package Build Defaults](#python-package-build-defaults).
 
 | Option | Direct CMake default | Python package default | Values | Use |
 | --- | --- | --- | --- | --- |
-| `USE_LIBINT` | `ON` | `OFF` | `ON`, `OFF` | Build and use the external Libint two-electron integral path. `OFF` uses OpenQP's native Rys path. |
 | `ENABLE_DDX` | `OFF` | `OFF` | `ON`, `OFF` | Enable the optional ddX continuum-solvation backend. |
 | `DDX_ROOT` | Unset | Unset | Path or environment variable | When `ENABLE_DDX=ON`, use a prebuilt ddX install. If unset, OpenQP builds ddX v0.8.0 with matching BLAS integer width. |
+
+Two-electron integrals use OpenQP's native HGP and Rys engines. Libint support
+was removed. Older build scripts may still pass `-DUSE_LIBINT=OFF`; passing
+`-DUSE_LIBINT=ON` stops configuration with an error.
 
 ## BLAS and LAPACK
 
@@ -82,7 +85,7 @@ Use ILP64 OpenBLAS or MKL on Linux, MKL ILP64 on Windows, and Accelerate's
 ## External Dependency Cache
 
 OpenQP builds several bundled external dependencies when needed, including
-Libint, Libxc, tagarray, NetLib LAPACK/BLAS, the DFT-D4 stack (dftd4, mctc-lib,
+Libxc, tagarray, NetLib LAPACK/BLAS, the DFT-D4 stack (dftd4, mctc-lib,
 multicharge), fprettify, and ddX.
 
 | Option | Default | Values | Use |
@@ -141,7 +144,6 @@ The top-level `pip install .` build uses these CMake overrides from
 
 | CMake define | Package value | Reason |
 | --- | --- | --- |
-| `USE_LIBINT` | `OFF` | Prefer the native Rys path for package builds. |
 | `ENABLE_OPENMP` | `ON` | Enable parallel production kernels by default. |
 | `CMAKE_INSTALL_PREFIX` | `.` | Keep native runtime files package-local. |
 
@@ -160,7 +162,6 @@ Linux development build:
 cmake -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_INSTALL_PREFIX=. \
-  -DUSE_LIBINT=OFF \
   -DENABLE_OPENMP=ON \
 ninja -C build install
 ```
