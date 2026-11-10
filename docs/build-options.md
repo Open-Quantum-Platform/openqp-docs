@@ -62,6 +62,11 @@ Two-electron integrals use OpenQP's native HGP and Rys engines. Libint support
 was removed. Older build scripts may still pass `-DUSE_LIBINT=OFF`; passing
 `-DUSE_LIBINT=ON` stops configuration with an error.
 
+The SCF Fock build uses HGP for supported shell quartets through h functions
+(`l = 5`) when the four angular momenta sum to at most 16. Rys evaluates
+quartets outside the generated HGP range, including `(hh|hh)`.
+Set `[scf] eri_hgp=off` to use Rys for quartets that would otherwise use HGP.
+
 ## BLAS and LAPACK
 
 | Option | Default | Values | Use |
