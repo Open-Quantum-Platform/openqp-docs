@@ -1,0 +1,5 @@
+rhf/6-31g* opt(S0,hessian=cheap,hessian_basis=3-21g,maxit=10)
+geom="""
+H 0.000000 0.000000 0.000000
+H 0.000000 0.000000 0.800000
+"""
