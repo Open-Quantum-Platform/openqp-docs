@@ -74,10 +74,19 @@ state-specific Dyson data for visualization. See
 For a full restart bundle, keep the current same-stem `.json` and `.npz` files
 together. Repeated saves update that one `.npz` file and the checksum in the
 JSON. A copy of only the JSON is not a preserved snapshot: after a later save,
-its old checksum may no longer match the current NPZ. Copy both files to a new
-location before another save when a historical restart is needed. Existing
+its old checksum may no longer match the current NPZ. Pause saves, then copy
+both files to a new location when a historical restart is needed. Existing
 JSON files that reference hash-suffixed NPZ files remain readable; OpenQP does
 not automatically delete those older sidecars.
+
+Current writable result pairs also use an adjacent `<stem>.json.lock` file to
+coordinate readers and writers. A copied `.json`/`.npz` pair without this lock
+remains readable as a snapshot. Before overwriting such a copied **same-stem**
+pair, stop all readers and writers and have the result-directory owner create
+the empty `<stem>.json.lock` file with read access for readers and write access
+for writers. OpenQP refuses the first overwrite until that lock exists. Keep
+the lock file with any copy that will be updated. Legacy hash-suffixed NPZ
+files remain immutable during migration to the same-stem format.
 
 ### `continue_geom`
 
