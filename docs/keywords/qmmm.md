@@ -3,7 +3,7 @@
 The `[qmmm]` section configures hybrid quantum-mechanics/molecular-mechanics
 (QM/MM) calculations. A quantum region described by an OpenQP method is
 embedded in a classical force-field environment handled by
-[OpenMM](https://openmm.org). The established `.inp` surface includes
+[OpenMM](https://openmm.org). The canonical `.oqp` input supports
 single-point QM/MM energy and ground-state QM/MM molecular dynamics, while
 NAMD uses the separate embedded surface-hopping driver.
 
@@ -25,7 +25,7 @@ MM residues within `opt(qmmm_radius=...)` Å of the QM region (see
 standalone `grad`, are rejected with `qmmm(...)`.
 
 ```text
-dft/pbe0/def2-svp qmmm()
+dft/pbe0/def2-svp qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml")
 geom="ala.pdb 9 10 17 18 19"
 ```
 
@@ -62,38 +62,42 @@ otherwise the input is rejected. `qm_atoms="0-2"` corresponds to
 
 ## Minimal QM/MM Example
 
-Single-point QM/MM energy in `.oqp`:
+Single-point HF/STO-3G QM/MM energy with Gaussian-smeared MM charges:
 
 ```text
-dft/bhhlyp/6-31g* qmmm()
-geom="ala.pdb 9 10 17 18 19"
+hf/sto-3g qmmm(forcefield_files="tip3p.xml",qm_atoms="0-2",cutoff=PME,mm_charge_width=0.7,h_lj=true,lj_switch=true,ewald_tol=1e-6)
+geom="water_dimer.pdb"
 ```
 
-Python:
+Run from `examples/QMMM`, which supplies the PDB and force-field XML. The
+run-only example is `water-dimer_RHF-QMMM-ENERGY-PME.oqp`; OpenMM is required.
+The first water is QM and the second is MM. The small periodic cell illustrates
+input usage; it is not a converged model of bulk water.
+
+Standalone HF/DFT energy uses the same embedded energy evaluator as QM/MM
+optimization and dynamics. Its reported energy is the **total QM/MM energy**,
+including the classical environment, in Hartree. It reads the current PDB on
+each molecule initialization. Set `pdb_file` (or `geom`), `forcefield_files` and
+`qm_atoms` explicitly; an inline 1-based QM selection can also supply
+`qm_atoms` through the existing input conversion.
+
+The standalone evaluator requires serial MPI execution. It rejects D4,
+nondefault `scf.init_scf`, orbital swapping and geometry continuation, and the
+MD-only coordinate overrides `qm_atoms_xyz` and `qm_list`. Standalone `grad`
+is not connected to this evaluator. Periodic `embedding=split` is rejected;
+use electrostatic embedding for periodic energy.
+
+Python, using the same files and settings:
 
 ```python
 from oqp.openqp import OpenQP
 
-job = OpenQP("ala_qmmm", silent=1)
-job.molecule("ala.pdb 9 10 17 18 19", basis="6-31g*")
-job.theory("hf", functional="bhhlyp")
-job.qmmm(embedding="electrostatic")
+job = OpenQP("water_qmmm", silent=1)
+job.molecule("water_dimer.pdb", basis="sto-3g")
+job.theory("hf")
+job.qmmm(forcefield_files="tip3p.xml", qm_atoms="0-2", cutoff="PME",
+         mm_charge_width=0.7, h_lj=True, lj_switch=True, ewald_tol=1e-6)
 mol = job.run()
-```
-
-Legacy `.inp` (QM selection inline in `[input] system`):
-
-```ini
-[input]
-qmmm_flag  = true
-runtype    = energy
-method     = hf
-functional = bhhlyp
-basis      = 6-31g*
-system     = ala.pdb 9 10 17 18 19
-
-[scf]
-type = rhf
 ```
 
 Embedded nonadiabatic molecular dynamics in `.oqp`:
@@ -165,7 +169,8 @@ from oqp.openqp import OpenQP
 job = OpenQP("ala_qmmm", silent=1)
 job.molecule("ala.pdb 9 10 17 18 19", basis="6-31g*", charge=0)
 job.theory("hf", functional="bhhlyp")
-job.qmmm(embedding="electrostatic")
+job.qmmm(forcefield_files="amber14-all.xml,amber14/tip3p.xml",
+         embedding="electrostatic")
 mol = job.run()
 ```
 
@@ -201,14 +206,15 @@ full nonadiabatic QM/MM setup.
 | --- | --- |
 | Type | string (path) |
 | Default | *(empty)* |
-| Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
+| Used by | standalone HF/DFT energy, optimization, QM/MM MD and NAMD |
 
 Path to the PDB file that defines the full QM+MM system (coordinates and
-topology) for ground-state `runtype=md`, nonadiabatic `runtype=namd` and
-QM/MM geometry optimisation (`runtype=optimize`, see
-[the optimize page](optimize.md#qmmm-geometry-optimisation)).
-Single-point QM/MM energy instead takes its PDB path and QM indices together
-from `[input] system = file.pdb <indices>`.
+topology) for standalone HF/DFT energy, ground-state `runtype=md`,
+nonadiabatic `runtype=namd` and QM/MM geometry optimization (`runtype=optimize`,
+see [the optimize page](optimize.md#qmmm-geometry-optimisation)). Energy also
+accepts `geom="file.pdb"` with `qmmm(qm_atoms="0-2",...)`, or the PDB path and
+1-based QM indices together in `[input] system = file.pdb <indices>`;
+the input conversion derives the corresponding `[qmmm]` settings.
 
 ### `forcefield_files`
 
@@ -216,7 +222,7 @@ from `[input] system = file.pdb <indices>`.
 | --- | --- |
 | Type | string (comma- or space-separated list) |
 | Default | *(empty)* |
-| Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
+| Used by | standalone HF/DFT energy, optimization, QM/MM MD and NAMD |
 
 OpenMM force-field XML files applied to the MM region, e.g.
 `amber14-all.xml,amber14/tip3p.xml` for a protein/water system or `tip3p.xml`
@@ -240,7 +246,7 @@ explicit `forcefield_files` value. New QM/MM-MD decks should set
 | --- | --- |
 | Type | string (index list) |
 | Default | *(empty)* |
-| Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
+| Used by | standalone HF/DFT energy, optimization, QM/MM MD and NAMD |
 
 Zero-based indices of the atoms placed in the QM region, as individual indices
 and/or ranges, e.g. `0 1 2` or `0-2` or `0-8 12 15`. Either `qm_atoms` or the
@@ -339,7 +345,7 @@ A runnable deck is
 | Type | string |
 | Default | `NoCutoff` |
 | Values | `NoCutoff`, `PME`, `Ewald`, `CutoffNonPeriodic`, `CutoffPeriodic` |
-| Used by | QM/MM molecular dynamics and SOC-NAMD-QMMM |
+| Used by | standalone HF/DFT energy, optimization, QM/MM MD and NAMD |
 
 OpenMM nonbonded method for the MM region. `NoCutoff` (and `CutoffNonPeriodic`)
 treat the system as an isolated cluster with a direct Coulomb sum, even when the
@@ -352,15 +358,14 @@ charges and their images, and the interaction of the QM charges with their own
 periodic images, which is made self-consistent with the ESPF charges outside
 the SCF — in NAMD with the relaxed charges of the propagated state — (the run
 stops with an error if that loop does not converge). The periodic branch is
-available to `runtype = md`, to the QM/MM `runtype = optimize`, and to
-same-spin FSSH (`runtype = namd`, `[md] soc = false`); SOC-NAMD requires
+available to standalone HF/DFT `runtype = energy`, to `runtype = md`,
+to the QM/MM `runtype = optimize`, and to same-spin FSSH (`runtype = namd`, `[md] soc = false`); SOC-NAMD requires
 `NoCutoff`. See
 [`ewald_tol`](#ewald_tol), [`lj_switch`](#lj_switch), [`h_lj`](#h_lj) and
 [`mm_charge_width`](#mm_charge_width) for the related controls. These
-controls belong to the drivers built on the ESPF QM/MM force (`runtype = md`,
-`namd` and the QM/MM `optimize`); a single-point QM/MM energy uses the
-non-periodic point-charge path and the input checker rejects them there rather
-than ignoring them.
+controls are passed to the shared embedded evaluator by standalone HF/DFT
+energy, QM/MM optimization, MD and NAMD. A standalone gradient is not connected
+to this evaluator and still rejects these driver controls.
 
 ### `embedding`
 
@@ -437,7 +442,7 @@ loop always constrains MM rigid water; QM atoms move under the QM forces.
 | --- | --- |
 | Type | float |
 | Default | unset (OpenMM default, `5e-4`) |
-| Used by | periodic QM/MM MD, NAMD-QMMM and QM/MM optimisation (`cutoff = PME` / `Ewald`) |
+| Used by | periodic standalone HF/DFT energy, QM/MM MD, NAMD-QMMM and QM/MM optimisation (`cutoff = PME` / `Ewald`) |
 
 Error tolerance of the OpenMM PME/Ewald evaluation of the MM-MM electrostatics.
 OpenMM's default gives a force error of about 0.5 kJ/mol/nm, which is the floor
@@ -451,7 +456,7 @@ cutoffs. Must be a positive number.
 | --- | --- |
 | Type | boolean |
 | Default | `False` |
-| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation with a finite cutoff |
+| Used by | standalone HF/DFT energy, QM/MM MD, NAMD-QMMM and QM/MM optimisation with a finite cutoff |
 
 Switch the MM Lennard-Jones interactions smoothly to zero over the last 15 % of
 the nonbonded cutoff (OpenMM `setUseSwitchingFunction`). A plain truncation makes
@@ -465,7 +470,7 @@ dipeptide with the OpenMM defaults). No effect under `NoCutoff`.
 | --- | --- |
 | Type | boolean |
 | Default | `False` |
-| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
+| Used by | standalone HF/DFT energy, QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
 
 Give Lennard-Jones parameters to MM hydrogens that have none in the force field
 (TIP3P water hydrogens), using the CHARMM TIP3P values (R_min/2 = 0.2245 Å,
@@ -480,7 +485,7 @@ Pauli wall. QM atoms are never modified. On its own this is a weak barrier; see
 | --- | --- |
 | Type | float (Å) |
 | Default | unset (point charges) |
-| Used by | QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
+| Used by | standalone HF/DFT energy, QM/MM MD, NAMD-QMMM and QM/MM optimisation (`electrostatic` embedding) |
 
 Represent the MM charges as Gaussians of this width in the QM/MM electrostatics
 (full-ESPF `embedding = electrostatic` only; other embeddings reject it).
