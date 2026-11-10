@@ -60,6 +60,22 @@ whichever one is missing. When both are given they must select the same atoms;
 otherwise the input is rejected. `qm_atoms="0-2"` corresponds to
 `system = file.pdb 1 2 3`.
 
+### Ground-state embedded SCF
+
+Ground-state QM/MM MD and QM/MM optimization use the same SCF convergence
+stages as a gas-phase calculation. The MM electrostatic field is added after
+each rebuild of the one-electron integrals, including an optional initial SCF
+in a smaller basis. `scf(init_scf=..., init_basis=...)` therefore applies to
+these embedded calculations. A requested `scf(save_molden=true)` writes the
+converged QM orbitals; the output follows the calculation's normal Molden
+naming rule. Reused orbitals at a later geometry retain their occupation
+instead of applying `swapmo` a second time.
+
+For a one-step example, see
+`examples/QMMM/water-dimer_RHF-QMMM-MD-EMBEDDED-SCF.oqp`. This MD/optimization
+path is distinct from standalone QM/MM `energy`, which has the input limits
+listed below.
+
 ## Minimal QM/MM Example
 
 Single-point HF/STO-3G QM/MM energy with Gaussian-smeared MM charges:
