@@ -33,11 +33,16 @@ is identified separately; relative energies use the first physical state
 (`S0` for a singlet target), never that internal reference. An unavailable or
 imaginary-energy root is not assigned a numeric relative energy.
 
-For `runtype=grad`, a state table shows each recorded gradient's corresponding
-state energy, RMS Cartesian component, and largest absolute Cartesian component
-in Hartree/Bohr. For `runtype=optimize`, the block reports the optimizer's
+For `runtype=grad`, a table shows each recorded gradient's corresponding
+energy when its identity is known, RMS Cartesian component, and largest absolute
+Cartesian component in Hartree/Bohr. SA-CASSCF's weighted-objective gradient
+uses the weighted energy rather than the energy of root zero. A gradient whose
+state is not recorded is labelled `unlabelled gradient` without an assigned
+state energy. For `runtype=optimize`, the block reports the optimizer's
 convergence decision, final energy when identified, recorded final criteria,
-and final Cartesian geometry in Å. The Mulliken charges and electric dipole
+and final Cartesian geometry in Å. A QM/MM run instead labels its tabulated
+coordinates as the QM fragment and names the full-system output structure.
+The Mulliken charges and electric dipole
 are labelled as SCF-reference properties when that density was produced in
 the run; they are not presented as excited-state properties. Missing values
 are omitted. The JSON result remains the source for programmatic use.
