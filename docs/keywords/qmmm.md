@@ -17,6 +17,24 @@ model and constraints, while OpenQP continues to perform electronic
 propagation, surface-hop decisions, and hop momentum adjustment. See
 [Dynamics Backend Selection](md.md#dynamics-backend-selection).
 
+The command line, `Runner`, and the `OpenQP` Python API use the same validated
+QM/MM MD input. A legacy `.inp` file is read once; the parser records which
+`[md]` and `[qmmm]` options were written before filling schema defaults.
+Canonical `.oqp` is preferred for new inputs. The QM molecule is retained
+through the MD trajectory, including its converged orbital state. If
+`rigidwater` is omitted, ground-state QM/MM MD constrains water bonds and
+angles; set `qmmm(rigidwater=false)` explicitly to integrate flexible water.
+The schema default shown for this keyword also serves other QM/MM workflows,
+so an omitted value is distinct from an explicit `false` in this driver.
+
+`QMMM_MD(oqp_cfg=...)` accepts a legacy input path or a flat
+`{"section.key": value}` dictionary. This constructor always requests a
+ground-state QM/MM MD job, even if the supplied legacy deck omits `runtype`
+or `qmmm_flag`. For ordinary standalone QM/MM energy, use `OpenQP`, `Runner`,
+or `openqp` with `energy qmmm(...)`. The calculation log must have a different
+path from the input, PDB, restart, velocity, trajectory, energy, and QM/MM log
+files; OpenQP checks file aliases before opening the calculation log.
+
 In `.oqp`, `qmmm(...)` is accepted with `energy`, `opt`, ground-state `md`,
 and embedded `namd`; writing it also enables `qmmm_flag`. A QM/MM `opt(...)`
 minimizes the QM/MM energy with respect to the QM atoms and, optionally, the
