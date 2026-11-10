@@ -540,6 +540,63 @@ image inside the real-space cutoff (half the shortest box edge) only, so the
 width must be short-ranged on that scale: `w ≤ L_min / (9 √2)` (1.26 Å for a
 16 Å box); larger values are rejected with a message giving the bound.
 
+### `espf_near_exact`
+
+| Field | Value |
+| --- | --- |
+| Type | bool |
+| Default | `false` |
+| Used by | QM/MM optimisation (`runtype = optimize`; `electrostatic` embedding, `cutoff = NoCutoff`) |
+
+Treat the MM point charges that come close to a QM atom with exact
+one-electron point-charge integrals instead of the ESPF fit. The ESPF fit has
+no regularisation, so an MM charge inside its grid shell (1.4–2.0 × the QM-atom
+vdW radius) gives a potential the fit cannot represent: the fitted QM charges
+grow without bound and the energy falls to unphysical values (a water H moved
+onto a QM nitrogen reaches −941 Ha where the exact value is +25.8 Ha). With this
+option each MM charge `q_s` is split by a smooth switch `f_s` (see
+[`espf_near_window`](#espf_near_window)):
+
+- the near part `f_s q_s` enters the core Hamiltonian through exact
+  point-charge integrals, and its nuclear term `Σ_A Z_A f_s q_s / r_As` is
+  exact as well;
+- the far part `(1 − f_s) q_s` stays in the ESPF potential as before.
+
+Analytic forces include the basis-centre derivative of the near operator, the
+exact nuclear and site terms and the derivative of the switch, for the SCF
+density and for the relaxed TDHF/MRSF density of each differentiated root.
+
+Absolute energies change even at ordinary geometries, because MM sites at a
+normal hydrogen-bond distance already lie inside the window; do not mix total
+energies from runs with the option on and off.
+
+Rejected with a clear error (not implemented): `mm_charge_width`, periodic
+electrostatics (`cutoff` PME/Ewald/CutoffPeriodic), embeddings other than
+`electrostatic`, the tight-binding methods (`method = dftb/xtb`), a
+core-removing ECP on any QM atom, and QM/MM MD/NAMD.
+
+### `espf_near_window`
+
+| Field | Value |
+| --- | --- |
+| Type | two floats `a1,a2` (multiples of the QM-atom vdW radius) |
+| Default | `1.2,4.0` |
+| Used by | [`espf_near_exact`](#espf_near_exact) |
+
+Switching window of `espf_near_exact`. For an MM charge at distance `r_As`
+from QM atom `A` with vdW radius `r_vdW(A)`, `R1 = a1 r_vdW(A)` and
+`R2 = a2 r_vdW(A)`, and
+
+```text
+f_s = 1 − Π_A [1 − S((R2 − r_As)/(R2 − R1))]
+```
+
+with `S` the smoothstep: `f_s = 1` within `R1` of any QM atom (fully exact) and
+`f_s = 0` beyond `R2` of all of them (fully ESPF). Requires `0 ≤ a1 < a2`. A
+narrow window (e.g. `1.2,2.0`) makes the switch change too fast at hydrogen-bond
+distances and gave unphysical out-of-plane Hessian modes for thymine in water;
+the default `1.2,4.0` gave normal frequencies there.
+
 ### `nonbondedmethod`
 
 | Field | Value |
