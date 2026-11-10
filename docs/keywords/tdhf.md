@@ -318,7 +318,7 @@ SCF integral cutoff. See [Performance](../performance.md).
 | Field | Value |
 | --- | --- |
 | Type | boolean |
-| Default | `False` |
+| Default | `True` in current internal development builds; `False` in earlier releases |
 | Used by | MRSF-TDDFT and UMRSF-TDDFT excitation-energy response |
 
 Requires an engine build containing [OpenQP PR #484](https://github.com/Open-Quantum-Platform/openqp/pull/484).
@@ -397,19 +397,19 @@ one matrix multiplication, so each iteration builds only the exchange term that
 depends on the trial vector. UMRSF builds the matrix from the α and β singly
 occupied orbitals separately.
 
-MRSF excitation energies agree with the default path to about `1e-11` Eh. On
-naphthalene/6-31G\* the response stage took 0.41–0.50 of the default time with 1
+MRSF excitation energies agree with the explicit `pair_cache=false` path to about `1e-11` Eh. On
+naphthalene/6-31G\* the response stage took 0.41–0.50 of the explicit-off time with 1
 or 28 OpenMP threads and with 1–4 MPI processes.
 
-UMRSF excitation energies agree with the default path to `1e-9` Eh or better.
+UMRSF excitation energies agree with the explicit `pair_cache=false` path to `1e-9` Eh or better.
 On naphthalene/6-31G\* with 9 singlet states, the UMRSF energy stage took
-0.15–0.17 of the default time with 1, 8 or 28 OpenMP threads and with 1–4 MPI
+0.15–0.17 of the explicit-off time with 1, 8 or 28 OpenMP threads and with 1–4 MPI
 processes, and the whole run took about a third of the time. Peak memory was
 also lower, because each thread accumulates one exchange channel instead of
 eleven: 324 to 270 MiB with 1 thread and 1617 to 694 MiB with 28.
 
 The cache applies to the excitation-energy solve of any run type. Z-vector and
-gradient contractions are unchanged. The calculation falls back to the default
+gradient contractions are unchanged. The calculation falls back to the standard
 contraction, and the log says
 `MRSF pair cache: not applicable to this calculation; standard contraction`
 (`UMRSF pair cache: ...` for `type=umrsf`), for:
@@ -428,6 +428,12 @@ With an active external sigma device route (`OQP_ROUTEC_SIG`, MRSF only), the
 device builds the response instead, and the log says
 `MRSF pair cache: not used with the device sigma route`.
 
+In builds where the cache is enabled by default, use `tdhf(pair_cache=false)`
+in a `.oqp` file or `[tdhf] pair_cache=false` in a sectioned `.inp` file to
+reproduce the standard contraction. The short
+`examples/MRSF-TDDFT/H2O_STO3G_PAIR_CACHE_SMOKE.oqp` example runs the default
+path and provides a reference result.
+
 The setup pass chooses which integrals to skip from the fixed open-shell
 densities rather than from the trial vectors. At the default `resp_cutoff` this
 changed MRSF excitation energies by less than `6e-12` Eh in tests. For UMRSF
@@ -435,21 +441,21 @@ the largest change was `1.2e-9` Eh, in the highest roots of C4H6/6-31G\* with
 10 states. That is smaller than the `6e-9` Eh the default cutoff itself moves
 those roots, and with `resp_cutoff=1e-14` the two paths agree to `5e-13` Eh.
 With a loose `resp_cutoff` such as `1e-6`, the Davidson residual can stall above
-the level the default path reaches, so keep `conv` at its default or looser
+the level the explicit-off path reaches, so keep `conv` at its default or looser
 there.
 
 ```text
-mrsf(nstate=3)/bhhlyp/6-31g* tdhf(pair_cache=true)
+mrsf(nstate=3)/bhhlyp/6-31g* energy(S0)
 geom="h2o.xyz"
 ```
 
 ```text
-umrsf(nstate=3)/bhhlyp/6-31g* tdhf(pair_cache=true)
+umrsf(nstate=3)/bhhlyp/6-31g* energy(S0)
 geom="h2o.xyz"
 ```
 
 ```python
-job.settings.tdhf(pair_cache=True)
+job.settings.tdhf(pair_cache=False)
 ```
 
 Example inputs: `examples/MRSF-TDDFT/H2O_MRSF_PAIR_CACHE.inp` and

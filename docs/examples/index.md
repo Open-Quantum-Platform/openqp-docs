@@ -44,6 +44,9 @@ Run a single example:
 openqp examples/HF/H2O_RHF-HF_ENERGY.oqp
 ```
 
+The `H2O_STO3G_PAIR_CACHE_SMOKE.oqp` MRSF example is a short default-cache
+check. Its reference result is committed alongside the input.
+
 For the standalone MP2 example:
 
 ```bash
@@ -126,6 +129,8 @@ editing legacy examples with `python tools/convert_legacy_examples.py --write`.
 Running the command without `--write` performs a dry-run audit. The
 converter refuses a file when an explicitly written legacy setting cannot be
 represented faithfully; it does not silently create a reduced calculation.
+The repository test checks that every new `.inp` example also has a same-stem
+`.oqp` file, and compares converter-owned companions with their generated text.
 
 See the [`[qmmm]`](../keywords/qmmm.md) keyword page for the input contract and
 [covalent QM/MM boundaries](../keywords/qmmm.md#covalent-qmmm-boundaries), and the
