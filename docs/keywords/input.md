@@ -216,6 +216,33 @@ Controls pure spherical harmonic versus Cartesian AO shells.
 Use this explicitly when reproducing a calculation from another program or when
 a workflow is validated for one convention.
 
+### `d3`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+| Used by | DFT-D3 with Becke–Johnson damping, D3(BJ) |
+
+Use `d3` on the first line of a concise `.oqp` input or set
+`[input] d3=true` in a sectioned input. The default parameter set is looked up
+for the selected functional, or for HF when no functional is set. Supply an
+explicit parameter set when the lookup has no entry. Select at most one
+dispersion model per calculation.
+
+For explicit BJ damping, supply `s6`, `s8`, `a1`, and `a2` together in
+`[d3]`. In concise input, use the same names as arguments to `d3(...)`.
+All supplied parameters must be finite. The length offset `a2` is in bohr
+and must be nonnegative. At least one of `a1` and `a2` must be nonzero.
+
+The Axilrod–Teller–Muto (ATM) three-body term is controlled by `s9` (default
+`0`) and its positive damping exponent by `alp3` (default `16`). These two
+values can also be set with the tabulated BJ parameters. For example,
+`d3(s9=1)` enables ATM with the tabulated two-body parameters.
+
+See the [dispersion examples](../examples/index.md#dispersion-examples) for
+complete input files and Python calls.
+
 ### `d4`
 
 | Field | Value |
@@ -224,9 +251,11 @@ a workflow is validated for one convention.
 | Default | `False` |
 | Used by | DFT-D4 dispersion correction |
 
-Enables the DFT-D4 dispersion correction where supported. The input checker
-requires a DFT functional when `d4=true`. By default, DFT-D4 loads the published
-rational-damping parameters for that functional.
+Use `d4` in concise `.oqp` input or set `[input] d4=true` in a sectioned
+input. This option requires a DFT functional and is mutually exclusive with
+`d3`. With no explicit parameters, OpenQP loads the published rational-damping
+parameters for that functional. D4 uses electronegativity equilibration (EEQ)
+charges constrained to the molecular charge.
 
 To supply an explicit rational-damping parameter set, provide all six values in
 a `[d4]` section:
@@ -247,13 +276,17 @@ alp=16.0
 
 | `[d4]` keyword | Meaning |
 | --- | --- |
-| `s6`, `s8`, `s9` | two-body and three-body dispersion scale factors |
-| `a1`, `a2` | rational-damping length parameters |
+| `s6`, `s8` | two-body dispersion scale factors |
+| `s9` | ATM three-body scale factor; `0` disables ATM |
+| `a1`, `a2` | dimensionless scale and length offset in bohr for rational damping |
 | `alp` | three-body damping exponent |
 
 The six values form one parameterization: specifying only a subset is an input
 error. All values must be finite. In concise `.oqp` input the equivalent form is
 `d4(s6=1.0,s8=0.95948085,s9=1.0,a1=0.38574991,a2=4.80688534,alp=16.0)`.
+
+See the [dispersion examples](../examples/index.md#dispersion-examples) for
+the default PBE parameter lookup and a calculation that isolates ATM.
 
 ### `soc_2e`
 
