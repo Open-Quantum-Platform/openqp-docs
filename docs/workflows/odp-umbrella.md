@@ -59,6 +59,11 @@ WHAM refuses trajectories whose recorded coordinate definitions differ.
 `k_parallel` and `k_perpendicular` may differ between windows, and WHAM reads
 them from each trajectory.
 
+For QM/MM NAMD windows that hold environment atoms, keep the same resolved
+held-atom set and fixed held coordinates in every window. WHAM treats a change
+to either as a different molecular system. Mobile atoms may have different
+starting coordinates. See [Active atoms](../keywords/qmmm.md#active-atoms-what-moves).
+
 ## Periodic QM/MM
 
 In a periodic cell each CV is measured at its own minimum image: every atom

@@ -742,6 +742,14 @@ NAMD restart is bound to the selection so a restart cannot silently change what
 moves, but only once a selection is actually requested — checkpoints written
 before these keys existed keep validating.
 
+For QM/MM NAMD umbrella sampling, WHAM also records the resolved held-atom
+set and each held atom's fixed coordinates in the molecular-system identity.
+This includes atoms held after the rigid-water constraint boundary is resolved.
+Different initial coordinates of atoms that move do not change that identity,
+so windows can start from different mobile configurations. Windows with a
+different held set or different fixed coordinates must be analyzed as different
+systems. An all-moving run keeps the previous identity format.
+
 The optimiser also accepts the `[optimize]` spellings
 [`qmmm_radius`](optimize.md#qmmm_radius) — the released name of the movable
 shell — together with `qmmm_active` and `qmmm_freeze`, as aliases of
