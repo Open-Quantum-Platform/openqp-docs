@@ -15,6 +15,33 @@ print(mol.get_system())
 
 ## Runner Summary
 
+### Final log Summary
+
+The calculation log ends with a `Summary` block. `Status: Success` means the
+requested workflow completed; `Status: Failure` means it stopped without
+completing. A `KeyboardInterrupt` handled by the runner is labelled
+`Status: Interrupted`; a forced process kill cannot write a final block. Failure and
+interruption summaries give the reason when available and do not present
+partially computed values as final results. Earlier diagnostic sections remain
+in the log.
+
+The block identifies the requested run type and method, then includes only
+results available for that run. A single-point calculation shows its final
+energy. A multistate calculation shows total state energies in Hartree and
+relative energies in eV. For MRSF/UMRSF, the internal high-spin SCF reference
+is identified separately; relative energies use the first physical state
+(`S0` for a singlet target), never that internal reference. An unavailable or
+imaginary-energy root is not assigned a numeric relative energy.
+
+For `runtype=grad`, a state table shows each recorded gradient's corresponding
+state energy, RMS Cartesian component, and largest absolute Cartesian component
+in Hartree/Bohr. For `runtype=optimize`, the block reports the optimizer's
+convergence decision, final energy when identified, recorded final criteria,
+and final Cartesian geometry in Å. The Mulliken charges and electric dipole
+are labelled as SCF-reference properties when that density was produced in
+the run; they are not presented as excited-state properties. Missing values
+are omitted. The JSON result remains the source for programmatic use.
+
 `runner.results()` returns a compact dictionary for Python-to-Python
 communication:
 
