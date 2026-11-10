@@ -176,13 +176,16 @@ machine.
 | --- | --- | --- |
 | `-DENABLE_MPI=ON` | `OFF` | Enable MPI support. Use an MPI Fortran compiler wrapper such as `mpif90`. |
 | `-DENABLE_OPENMP=ON` | `OFF` in CMake, `ON` for Python package builds | Enable OpenMP parallel sections. |
-| `-DUSE_LIBINT=ON` | `ON` in CMake, `OFF` for Python package builds | Use Libint for ERIs instead of the native Rys path. |
 | `-DLINALG_LIB=<vendor>` | `auto` | Select BLAS/LAPACK provider. |
 | `-DOQP_REUSE_EXTERNALS=OFF` | `ON` | Disable reusable bundled-external build caches. |
 
 For the complete list, including `ENABLE_DDX`, `BUILD_SHARED_LIBS`,
 `ENABLE_PYTHON`, sanitizer flags, and external dependency cache paths, see
 [Build Options](build-options.md).
+
+Libint support was removed. OpenQP uses its native HGP and Rys engines for
+two-electron integrals. Existing build scripts may pass `-DUSE_LIBINT=OFF`,
+but `-DUSE_LIBINT=ON` is rejected during configuration.
 
 ILP64 BLAS/LAPACK is the only build mode. LP64 support was removed: OpenQP uses
 one 8-byte integer model on every platform, with macOS reaching it through
