@@ -86,6 +86,9 @@ nondefault `scf.init_scf`, orbital swapping and geometry continuation, and the
 MD-only coordinate overrides `qm_atoms_xyz` and `qm_list`. Standalone `grad`
 is not connected to this evaluator. Periodic `embedding=split` is rejected;
 use electrostatic embedding for periodic energy.
+Set `scf.scal_rel=0`: the shared QM/MM evaluator also computes an analytic
+gradient, which is unavailable for scalar-relativistic Hamiltonians even when
+the requested result is energy only.
 
 Python, using the same files and settings:
 
