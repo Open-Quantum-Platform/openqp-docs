@@ -15,6 +15,49 @@ print(mol.get_system())
 
 ## Runner Summary
 
+### Final log Summary
+
+The calculation log ends with a `Summary` block. `Status: Success` means the
+requested workflow completed; `Status: Failure` means it stopped without
+completing. A `KeyboardInterrupt` handled by the runner is labelled
+`Status: Interrupted`; a forced process kill cannot write a final block. Failure and
+interruption summaries give the reason when available and do not present
+partially computed values as final results. Earlier diagnostic sections remain
+in the log.
+
+The block identifies the requested run type and method, then includes only
+results available for that run. A single-point calculation shows its final
+energy. A multistate calculation shows total state energies in Hartree and
+relative energies in eV. For MRSF/UMRSF, the internal high-spin SCF reference
+is identified separately; relative energies use the first physical state
+(`S0` for a singlet target), never that internal reference. An unavailable or
+imaginary-energy root is not assigned a numeric relative energy.
+
+For `runtype=grad`, a table shows each recorded gradient's corresponding
+energy when its identity is known, RMS Cartesian component, and largest absolute
+Cartesian component in Hartree/Bohr. SA-CASSCF's weighted-objective gradient
+uses the weighted energy rather than the energy of root zero. A gradient whose
+state is not recorded is labelled `unlabelled gradient` without an assigned
+state energy. The legacy `method=casscf` plus `[state_average] enabled=true`
+numerical gradient uses the selected-root list, so its row labels use the
+published root index. For `runtype=optimize`, the block reports the optimizer's
+convergence decision, final energy when identified, recorded final criteria,
+and final Cartesian geometry in Å. A QM/MM run instead labels its tabulated
+coordinates as the QM fragment and names the full-system output structure.
+The Mulliken charges and electric dipole
+are labelled as SCF-reference properties when that density was produced in
+the run; they are not presented as excited-state properties. Missing values
+are omitted. The JSON result remains the source for programmatic use.
+
+A separator closes the result section. The final `Timing and hardware` lines
+give elapsed wall time, execution host and architecture, and known OpenMP/MPI
+counts. They appear for successful and failed runs when the runner can write
+its footer. Parallel efficiency means the speedup against a matching
+one-thread, one-rank run divided by the total worker count. A single run
+does not supply that baseline, so a multiworker footer reports `N/A` rather
+than estimating efficiency from CPU use. A one-worker run reports `100.0%`
+by definition. The earlier per-module timing table remains available above.
+
 `runner.results()` returns a compact dictionary for Python-to-Python
 communication:
 
