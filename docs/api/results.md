@@ -52,7 +52,11 @@ are omitted. The JSON result remains the source for programmatic use.
 A separator closes the result section. The final `Timing and hardware` lines
 give elapsed wall time, execution host and architecture, and known OpenMP/MPI
 counts. They appear for successful and failed runs when the runner can write
-its footer. The earlier per-module timing table remains available above.
+its footer. Parallel efficiency means the speedup against a matching
+one-thread, one-rank run divided by the total worker count. A single run
+does not supply that baseline, so a multiworker footer reports `N/A` rather
+than estimating efficiency from CPU use. A one-worker run reports `100.0%`
+by definition. The earlier per-module timing table remains available above.
 
 `runner.results()` returns a compact dictionary for Python-to-Python
 communication:
