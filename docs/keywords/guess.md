@@ -71,6 +71,14 @@ bases also add portable AO basis, molecular-orbital, vibrational, and
 state-specific Dyson data for visualization. See
 [Orbital and Vibrational Output](../workflows/orbital-vibrational-output.md).
 
+For a full restart bundle, keep the current same-stem `.json` and `.npz` files
+together. Repeated saves update that one `.npz` file and the checksum in the
+JSON. A copy of only the JSON is not a preserved snapshot: after a later save,
+its old checksum may no longer match the current NPZ. Copy both files to a new
+location before another save when a historical restart is needed. Existing
+JSON files that reference hash-suffixed NPZ files remain readable; OpenQP does
+not automatically delete those older sidecars.
+
 ### `continue_geom`
 
 | Field | Value |
