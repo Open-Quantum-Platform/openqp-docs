@@ -80,6 +80,11 @@ mrsf(nstate=3)/bhhlyp/6-31g* grad(S1)
 geom="h2o.xyz"
 ```
 
+To request gradients for two states of the same response spin manifold in one
+calculation, write `grad(S1,S2)`. The states must be distinct; a mixed
+singlet/triplet list is rejected. For QM/MM MECI, `meci(S0,S1)` selects exactly
+two adjacent response roots. Multistate QM/MM MECI requests are not supported.
+
 ```text
 mrsf(nstate=3)/bhhlyp/6-31g* opt(T0)
 geom="h2o.xyz"
@@ -311,7 +316,7 @@ surface-hopping `scheme=BaeckAn|Overlap|TDC_NAC|NAC|custom`, and—only with
 | Driver signature | Lowered option family |
 | --- | --- |
 | <code>energy([S0&#124;T0&#124;Q0])</code> | Single-point energy. On a response route, the optional zero-state label selects a spin manifold; no other state or options are accepted. MRSF defaults to singlet; on conventional TDDFT/TDHF, `T0` selects the closed-shell triplet manifold. |
-| `grad([STATE],td_prop=...,export=...,title=...)` | Gradient target plus concise `[properties]` controls. Default target is `S0`, except that SF routes require `root=N`. |
+| `grad([STATE[,STATE...]],td_prop=...,export=...,title=...)` | One or more gradient targets from one response spin manifold, plus concise `[properties]` controls. Default target is `S0`, except that SF routes require `root=N`. |
 | `opt([STATE],OPT...,ENGINE...,freeze="distance(i,j)")` | Native minimum optimization. Default target is `S0`, except that SF routes require `root=N`. `freeze` holds one or more semicolon-separated atom-pair distances at their initial values. |
 | <code>meci(STATE1,STATE2,[algorithm=auglag&#124;penalty&#124;ubp&#124;hybrid],[gap_sigma=...],OPT...,ENGINE...)</code><br><code>meci(STATE1,STATE2[,STATE3...],algorithm=baeka,BAEKA_OPT...,BAEKA...,ENGINE...)</code> | Native intersection search for states of the same multiplicity. A two-state call defaults to `auglag`, the augmented Lagrangian, whose gap term is scaled by `gap_sigma` (default `10.0`); a call with three or more states selects `baeka`, the only N-state algorithm. Write `algorithm=baeka` explicitly only to select BaekA for two states; with three or more states it is implied and the canonical rendering omits it. State order is normalized. Use public `gap` rather than the internal `energy_gap` spelling in a BaekA call, and do not supply both. See [BaekA Multistate MECI](workflows/baeka-multistate-meci.md). |
 | `tci(STATE1,STATE2,STATE3,OPT...,TCI...,ENGINE...)` | Backward-compatible three-state adaptive-penalty driver. It preserves the established `pen_sigma`/`pen_alpha`/multiplicative `pen_incre` behavior and is not an alias for BaekA. New work should select the intended MECI algorithm explicitly. |
