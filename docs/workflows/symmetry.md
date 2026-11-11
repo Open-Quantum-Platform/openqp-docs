@@ -11,18 +11,30 @@ Detection is **on by default** (`[symmetry] enabled`). The reductions are not.
 
 | | Default | Changes the numbers? |
 | --- | --- | --- |
-| `enabled` — detection and labeling | `true` | Excited-state results only, see below |
+| `enabled` — detection and labeling | `true` | Excited-state results and minimum-energy geometries, see below |
 | `use_integral_symmetry` — petite-list reduction | `False` | Yes, and reorients the molecule |
 | `use_response_symmetry` — residual projection | `False` | Yes (experimental) |
 
-With only the default in force, the geometry is untouched, the full integral
-list is used, and reference-SCF or ordinary HF/DFT ground-state energies are
-identical to a run with symmetry switched off. An MRSF physical `S0` is a
+At a fixed geometry, the full integral list is used by default, and
+reference-SCF or ordinary HF/DFT ground-state energies are identical to a run
+with symmetry switched off. An MRSF physical `S0` is a
 response root, not the reference-SCF energy, and can change when symmetry
 information repairs response-block coverage.
 
-Excited-state runs are the exception, and the difference is a **correction** —
-this is the reason detection is on by default.
+## Preserving symmetry during geometry optimization
+
+For a minimum-energy optimization of an isolated molecule with the default
+OpenQP optimizer, the point group detected at the starting geometry is
+preserved automatically. For example, a C3 structure can relax through all
+displacements that preserve its threefold rotation. The optimizer projects
+the gradient for step selection and convergence. The result file stores the
+original Cartesian gradient, and the optimization settings in the log show
+the preserved group and the number of allowed displacements.
+
+No extra keyword is needed. Set `symmetry(enabled=false)` in a `.oqp` input to
+allow symmetry breaking. This also disables symmetry detection and labeling.
+The geometry constraint applies to native minimum-energy optimizations of
+isolated molecules.
 
 ## Why detection changes excited-state results
 
