@@ -16,9 +16,9 @@ and other multi-frame results expose a frame or optimization-step control.
 **Edit in Builder** sends the selected structure back to Builder for a new
 calculation.
 
-When importing OpenQP result files, include the matching NPZ if the JSON
-references one. In Studio versions that support schema 2.1, selecting the
-JSON loads the saved orbital and normal mode arrays from the NPZ.
+When importing into a Studio version that expects JSON, select
+`input(result_format=json)` for the engine run. When importing an older
+JSON that references an NPZ, include its matching sidecar.
 
 ## Results summary
 

@@ -188,8 +188,8 @@ The absolute values are in the log:
 
 ## Look at the vibrations
 
-Open `formaldehyde-freq.hess.json` in [OQP Studio Analysis](../studio/analysis.md)
-and include `formaldehyde-freq.hess.npz` if the run produced it. The C=O
+Use `input(result_format=json)` for this frequency run to open
+`formaldehyde-freq.json` in [OQP Studio Analysis](../studio/analysis.md). The C=O
 stretching mode is shown above. To export `formaldehyde-freq.freq.molden`,
 add `scf(save_molden=true)` to the frequency input.
 

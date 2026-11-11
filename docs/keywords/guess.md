@@ -28,7 +28,7 @@ Selects the initial guess mode.
 | `huckel` | Native extended-Huckel style guess. |
 | `modhuckel` | Modified Huckel guess. |
 | `hcore` | Core-Hamiltonian guess. |
-| `json` | Read orbitals and molecular data from a JSON restart file. |
+| `json` | Read orbitals and molecular data from an NPZ or JSON restart file. |
 | `auto` | Reuse available restart orbitals or compute a fresh guess. |
 | `sap` | Superposition-of-atomic-potentials guess. |
 | `minao` | Projected minimal-basis density guess. |
@@ -44,15 +44,14 @@ a previous restart file.
 | Default | empty |
 | Used by | `type=json`, `type=auto` |
 
-Path to a JSON restart file. With `type=json`, the file must exist. With
+Path to an NPZ or JSON restart file. With `type=json`, the file must exist. With
 `type=auto`, OpenQP uses it when present and otherwise computes a fresh guess.
 
-When no file is specified, the default `auto` guess checks for a same-named
-JSON and NPZ beside the input. For example, `water.oqp` looks for
-`water.json` and `water.npz`. OpenQP loads a pair with a converged SCF and
-compatible atoms, method, basis, charge, and spin. The input geometry remains
-authoritative by default. Use an explicit guess such as `guess(type=minao)`
-to start from fresh orbitals.
+When no file is specified, the default `auto` guess looks for the result
+beside the input, such as `water.npz` or `water.json` for `water.oqp`.
+OpenQP checks SCF convergence and compatibility before restoring orbitals.
+The input geometry remains authoritative by default. An explicit fresh
+guess such as `guess(type=minao)` bypasses restart discovery.
 
 ### `file2`
 
@@ -62,7 +61,7 @@ to start from fresh orbitals.
 | Default | empty |
 | Used by | NACME and previous-step workflows |
 
-Path to a second JSON restart file. NACME can use `file2` for previous-step
+Path to a second NPZ or JSON restart file. NACME can use `file2` for previous-step
 information. If it is omitted, NACME can instead use `[input] system2`.
 
 ### `save_mol`
@@ -78,22 +77,10 @@ bases also add portable AO basis, molecular-orbital, vibrational, and
 state-specific Dyson data for visualization. See
 [Orbital and Vibrational Output](../workflows/orbital-vibrational-output.md).
 
-For a full restart bundle, keep the current same-stem `.json` and `.npz` files
-together. Repeated saves update that one `.npz` file and the checksum in the
-JSON. A copy of only the JSON is not a preserved snapshot: after a later save,
-its old checksum may no longer match the current NPZ. Pause saves, then copy
-both files to a new location when a historical restart is needed. Existing
-JSON files that reference hash-suffixed NPZ files remain readable; OpenQP does
-not automatically delete those older sidecars.
-
-Current writable result pairs also use an adjacent `<stem>.json.lock` file to
-coordinate readers and writers. A copied `.json`/`.npz` pair without this lock
-remains readable as a snapshot. Before overwriting such a copied **same-stem**
-pair, stop all readers and writers and have the result-directory owner create
-the empty `<stem>.json.lock` file with read access for readers and write access
-for writers. OpenQP refuses the first overwrite until that lock exists. Keep
-the lock file with any copy that will be updated. Legacy hash-suffixed NPZ
-files remain immutable during migration to the same-stem format.
+A full restart is contained in the selected result file. Keep the
+same-stem `.npz` by default, or the `.json` if the input selected JSON.
+Repeated saves update that file. Older JSON/NPZ pairs remain readable and
+still need both files. See [Reading saved results](../api/results.md#reading-saved-results).
 
 ### `continue_geom`
 

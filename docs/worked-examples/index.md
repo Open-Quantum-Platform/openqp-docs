@@ -271,8 +271,7 @@ OpenQP writes output beside the input. The files depend on the requested workflo
 | File | Contents |
 | --- | --- |
 | `<name>.log` | The full text output, including SCF iterations, orbital energies, and all requested properties. Each page quotes the relevant part. |
-| `<name>.json`, `<name>.npz` | JSON holds settings, convergence, and small results. NPZ holds large arrays when present, including portable MO coefficients and saved restart arrays. Keep the pair together. |
-| `<name>.hess.json`, `<name>.hess.npz` | Hessian and frequency results. Large Hessian, mode, and orbital arrays are in the NPZ when present. |
+| `<name>.npz` | Default result containing settings, convergence, available numerical results, and any saved restart arrays. `input(result_format=json)` writes only `<name>.json` instead. |
 | `<name>_scf_*.molden`, `<name>.freq.molden` | Optional orbital and frequency files. Request them with `scf(save_molden=true)`. |
 | `opt.xyz`, `opt_status.txt` | Written by geometry optimizations and transition-state searches: the final geometry and a table of the optimization steps. |
 

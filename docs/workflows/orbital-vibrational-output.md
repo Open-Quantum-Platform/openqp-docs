@@ -1,7 +1,7 @@
 # Orbital and Vibrational Output
 
 OpenQP can write molecular orbitals, vibrational normal modes, and
-state-specific MRSF-EKT Dyson orbitals in portable JSON and Molden formats.
+state-specific MRSF-EKT Dyson orbitals in OpenQP result files and optional Molden exports.
 These files can be opened together in
 [OpenqpView](https://open-quantum-platform.github.io/OpenqpView/) so the same
 calculation can display both MO surfaces and animated normal modes. Files are
@@ -17,11 +17,12 @@ processed locally by the browser.
     table; set `verbose = 2` to get it back.  The machine-readable orbitals
     described on this page are unaffected.
 
-## Portable JSON
+## Saved orbital and vibrational data
 
-Set [`[guess] save_mol=True`](../keywords/guess.md#save_mol) to retain the full
-same-stem `.json` calculation file. When the AO basis uses an ordering supported
-by Molden, the JSON includes:
+The calculation result is `<project>.npz` by default. Select standalone JSON
+with `input(result_format=json)` for a viewer that imports JSON.
+Set [`[guess] save_mol=True`](../keywords/guess.md#save_mol) to retain full
+restart data. With supported AO ordering, the result includes:
 
 - `basis_set`: contracted shells, Molden-normalized primitive coefficients,
   spherical/Cartesian convention, and AO ordering;
@@ -32,14 +33,9 @@ by Molden, the JSON includes:
 - `frequency_modes`: frequencies in cm⁻¹ and mass-unweighted Cartesian normal
   mode displacements when a frequency calculation has completed.
 
-Keep each result JSON with its matching NPZ when moving or importing files.
-The JSON records settings, convergence, small results, and the location and
-checksum of the NPZ. Large numeric arrays, including portable MO coefficients,
-Dyson coefficients, and normal modes, are stored in the NPZ.
-
-Hessian workflows also write `<project>.hess.json` and place large Hessian and
-mode arrays in `<project>.hess.npz`. The pair also provides portable basis and
-MO data when available.
+Hessian data and the versioned frequency cache are in the same result file.
+See [Reading saved results](../api/results.md#reading-saved-results) for
+the NPZ layout and Python examples.
 
 High angular-momentum H/I shells and mixed Cartesian/spherical bases remain
 valid OpenQP calculations, but their optional portable viewer blocks are
@@ -70,7 +66,7 @@ Each orbital is labeled by channel and root, for example
 and its occupancy records the pole strength. OpenqpView exposes these labels as
 individually selectable Dyson orbitals.
 
-The H₂O IP example enables both JSON and Molden exports and includes generated
+The H₂O IP example enables both result and Molden exports and includes generated
 SCF and Dyson Molden results:
 
 [`examples/other/h2o_rohf_mrsf_ekt_ip_6-31g_bhhlyp.oqp`](https://github.com/Open-Quantum-Platform/openqp/blob/main/examples/other/h2o_rohf_mrsf_ekt_ip_6-31g_bhhlyp.oqp)

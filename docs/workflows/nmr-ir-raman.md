@@ -82,7 +82,7 @@ intensities are analytic and need no extra calculations:
 - **Numerical Hessian.** Intensities still come from finite differences:
   6N displaced SCF + CPHF calculations.
 - **Log.** The log states which backend produced the intensities, and the
-  `.hess.json` sidecar records it in `vibrational_intensity_metadata`.
+  result records it in `vibrational_intensity_metadata`.
 
 `.oqp`:
 

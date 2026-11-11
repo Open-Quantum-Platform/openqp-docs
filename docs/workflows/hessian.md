@@ -9,8 +9,8 @@ numerical one otherwise; see [`[hess]`](../keywords/hess.md#type).
 Frequency, IR, Raman, and thermochemistry analysis are built from Hessian data
 when the selected workflow produces the required derivatives.
 
-The `.hess.json` file and its matching `.hess.npz`, when present, hold the
-normal modes and portable SCF orbitals for supported bases. Set
+The result file holds the Hessian, normal modes, and portable SCF orbitals
+for supported bases. Set
 `scf(save_molden=true)` to also write a `.freq.molden` file. See
 [Orbital and Vibrational Output](orbital-vibrational-output.md).
 
@@ -175,9 +175,9 @@ The same-stem `.inp` file is retained for legacy use.
   state `1` is the lowest target state.
 - `[hess] restart=True` can continue a numerical Hessian workflow where the
   corresponding temporary files are available.
-- `[hess] read=True` accepts only a current versioned `.hess.json` whose
+- `[hess] read=True` accepts a versioned Hessian cache whose
   electronic-model configuration, state, atoms, geometry, and isotopic masses
   match the present job. Referenced file contents and the OpenQP binary are not
-  content-fingerprinted, so regenerate the sidecar after changing either one.
+  content-fingerprinted, so regenerate the cache after changing either one.
   Unsigned legacy sidecars must be regenerated with `read=False`.
 - `[hess] clean=True` removes temporary Hessian files where supported.
