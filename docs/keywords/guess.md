@@ -1,13 +1,13 @@
 # `[guess]`
 
 The `[guess]` section controls initial orbitals, JSON restart files, and manual
-MO swaps. Most users can start with the default Huckel guess.
+MO swaps. Omit it to let OpenQP choose the initial guess automatically.
 
 ## Minimal Example
 
-```ini
-[guess]
-type=huckel
+```text
+rhf/def2-svp
+geom="water.xyz"
 ```
 
 ## Keywords
@@ -17,8 +17,8 @@ type=huckel
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `huckel` |
-| Values | `huckel`, `modhuckel`, `hcore`, `json`, `auto`, `sap`, `minao` |
+| Default | `auto` |
+| Values | `auto`, `huckel`, `modhuckel`, `hcore`, `json`, `previous`, `sap`, `minao`, `sad` |
 | Used by | initial density/orbital construction |
 
 Selects the initial guess mode.
@@ -29,12 +29,33 @@ Selects the initial guess mode.
 | `modhuckel` | Modified Huckel guess. |
 | `hcore` | Core-Hamiltonian guess. |
 | `json` | Read orbitals and molecular data from a JSON restart file. |
-| `auto` | Read `file` if it exists; otherwise fall back to Huckel. |
+| `auto` | Use compatible supplied orbitals when available. For a fresh guess, use SAD for open-shell lanthanide systems, MINAO for elements covered by its table, and SAP otherwise. |
 | `sap` | Superposition-of-atomic-potentials guess. |
 | `minao` | Projected minimal-basis density guess. |
+| `sad` | Superposition of atomic densities. |
+| `previous` | Reuse the previous orbitals when available. |
 
 Use `json` for exact restarts and `auto` for workflows that may or may not have
 a previous restart file.
+
+### `occupation_trials`
+
+| Field | Value |
+| --- | --- |
+| Type | boolean |
+| Default | `False` |
+
+Use `guess(occupation_trials=true)` to compare candidate occupations when an
+initial guess has a degenerate orbital level at an occupation boundary that
+splits into different symmetry components. Each candidate gets up to five SCF
+iterations. The main SCF starts from the orbitals and density of the candidate
+with the lowest trial energy. This short comparison does not establish the
+lowest fully converged SCF state.
+
+OpenQP skips the trials when the occupation is selected by MO swaps, MOM, or
+restricted orbital rotation, when the candidate count exceeds the internal
+limit, or when the calculation uses QM/MM embedding. By default the orbital
+symmetry adaptation uses the symmetry table order without running trials.
 
 ### `file`
 
