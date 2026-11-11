@@ -48,7 +48,8 @@ Path to an NPZ or JSON restart file. With `type=json`, the file must exist. With
 `type=auto`, OpenQP uses it when present and otherwise computes a fresh guess.
 
 When no file is specified, the default `auto` guess looks for the result
-beside the input, such as `water.npz` or `water.json` for `water.oqp`.
+beside the input, such as `water.npz` or `water.json` for `water.oqp`. If both exist, automatic
+discovery selects a standalone NPZ and records that choice in the log.
 OpenQP checks SCF convergence and compatibility before restoring orbitals.
 The input geometry remains authoritative by default. An explicit fresh
 guess such as `guess(type=minao)` bypasses restart discovery.
