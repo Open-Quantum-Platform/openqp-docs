@@ -36,6 +36,21 @@ allow symmetry breaking. This also disables symmetry detection and labeling.
 The geometry constraint applies to native minimum-energy optimizations of
 isolated molecules.
 
+## C3 ROHF and ROKS reference orbitals
+
+For an isolated C3 molecule, OpenQP preserves the closed and singly occupied orbital
+spaces in ROHF and ROKS energy, gradient and native minimum-energy
+optimization calculations. Each space can contain A orbitals and complete
+real E pairs. If a restart or a fresh guess splits an E pair, OpenQP selects
+complete symmetry subspaces close to the guess while retaining the alpha and
+beta electron counts. The log reports the C3-constrained TRAH solver and the
+remaining occupied-space symmetry residual.
+
+The resulting energy is stationary within the selected C3 occupation.
+Different C3 occupations can give different stationary solutions. For an
+unrestricted search over spatial symmetry or to follow a user-selected
+orbital occupation, set `symmetry(enabled=false)`.
+
 ## Why detection changes excited-state results
 
 The Davidson solver starts from trial vectors that are single excitations
