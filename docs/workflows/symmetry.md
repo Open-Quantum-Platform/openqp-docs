@@ -43,8 +43,11 @@ spaces in ROHF and ROKS energy, gradient and native minimum-energy
 optimization calculations. Each space can contain A orbitals and complete
 real E pairs. If a restart or a fresh guess splits an E pair, OpenQP selects
 complete symmetry subspaces close to the guess while retaining the alpha and
-beta electron counts. The log reports the C3-constrained TRAH solver and the
-remaining occupied-space symmetry residual.
+beta electron counts. DIIS diagonalizes the effective Fock matrix in the
+A and E spaces and preserves their occupation counts. SOSCF and TRAH
+restrict their orbital rotations to the C3-invariant subspace. The default
+SCF escalation still tries DIIS, SOSCF and then TRAH as needed. The log
+reports the solver and the final occupied-space symmetry residual.
 
 The resulting energy is stationary within the selected C3 occupation.
 Different C3 occupations can give different stationary solutions. For an
