@@ -27,8 +27,9 @@ Download the input and the three structure and force-field files of the
 [tip3p.xml](inputs/tip3p.xml). OpenMM is required (`pip install openmm`).
 
 ```text title="formaldehyde-qmmm-namd.oqp"
-mrsf(nstate=3)/bhhlyp/6-31g* namd(S1,scheme=BaeckAn) md(nstep=200,dt=0.5,temperature=300,seed=5)
-qmmm(forcefield_files="formaldehyde.xml tip3p.xml",qm_atoms="0-3",cutoff=NoCutoff)
+mrsf(nstate=3)/bhhlyp/6-31g* namd(S1,scheme=BaeckAn)
+qmmm(forcefield_files="formaldehyde.xml tip3p.xml",qm_atoms="0-3")
+md(nstep=200,dt=0.5,temperature=300,seed=5)
 geom="formaldehyde_2water.pdb"
 ```
 
