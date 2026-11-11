@@ -188,10 +188,10 @@ The absolute values are in the log:
 
 ## Look at the vibrations
 
-The run writes `formaldehyde-freq.freq.molden` and
-`formaldehyde-freq.hess.json`. Open either file in [OQP Studio](../studio/analysis.md)
-Analysis or [OpenqpView](https://open-quantum-platform.github.io/OpenqpView/)
-to animate each normal mode; the C=O stretching mode is shown above.
+Open `formaldehyde-freq.hess.json` in [OQP Studio Analysis](../studio/analysis.md)
+and include `formaldehyde-freq.hess.npz` if the run produced it. The C=O
+stretching mode is shown above. To export `formaldehyde-freq.freq.molden`,
+add `scf(save_molden=true)` to the frequency input.
 
 ## Cross-check
 

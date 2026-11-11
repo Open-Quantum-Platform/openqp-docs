@@ -136,6 +136,26 @@ When the corresponding property is requested via `[properties] scf_prop`,
 `nac` is populated with the NACME derivative-coupling matrix for `runtype=nacme`
 and is empty otherwise.
 
+## Reading saved results
+
+Result schema 2.1 stores calculation settings, convergence, atomic numbers, and
+small results such as total energy in `<name>.json`. Numerical arrays with
+256 or more elements go into `<name>.npz` in normal result output. Examples
+include MO coefficients, density matrices, Dyson coefficients, Hessians, and
+normal mode eigenvectors. The JSON `arrays` block records the NPZ filename,
+its SHA-256 checksum, and each array's location in the result. For Hessian
+output, the corresponding filenames are `<name>.hess.json` and `<name>.hess.npz`.
+
+Use `load_result_json` to verify the pair and restore the arrays into the
+result dictionary. The same function also reads older inline JSON results.
+
+```python
+from oqp.utils.json_utils import load_result_json
+
+result = load_result_json("water.json")
+print(result["energy"])
+```
+
 ## Common Molecule Methods
 
 | Method | Returns |

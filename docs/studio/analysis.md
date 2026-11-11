@@ -16,6 +16,10 @@ and other multi-frame results expose a frame or optimization-step control.
 **Edit in Builder** sends the selected structure back to Builder for a new
 calculation.
 
+When importing OpenQP result files, include the matching NPZ if the JSON
+references one. In Studio versions that support schema 2.1, selecting the
+JSON loads the saved orbital and normal mode arrays from the NPZ.
+
 ## Results summary
 
 The summary distinguishes the reference SCF energy from correlated or
@@ -66,7 +70,8 @@ export the sticks and curve as CSV.
 
 ## Orbitals and volumetric maps
 
-**SCF molecular orbital** lists orbitals from the normal SCF Molden output.
+**SCF molecular orbital** lists the portable orbitals saved with the OpenQP
+result pair. It also supports an explicitly exported SCF Molden file.
 Selecting an orbital generates its surface; no orbital is shown until one is
 selected. **Reset map** returns to the molecule.
 
@@ -77,7 +82,7 @@ three-dimensional positive and negative phases. The isovalue, color pair,
 surface style, sign, and opacity controls change the visualization without
 changing the calculated orbital.*
 
-For an IP/EA job with a Dyson Molden file, **Dyson orbital** appears as a
+For an IP/EA job with saved Dyson orbitals, **Dyson orbital** appears as a
 separate Show choice. Dyson orbitals are state specific and are labeled by IP
 or EA root and source state where available. OpenQP's Dyson `STRENGTH` is shown
 as strength; the corresponding occupation contribution is twice that value.

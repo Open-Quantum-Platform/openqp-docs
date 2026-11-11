@@ -266,13 +266,14 @@ values were checked.
 
 ## Reading an OpenQP run
 
-Every run writes these files beside the input:
+OpenQP writes output beside the input. The files depend on the requested workflow.
 
 | File | Contents |
 | --- | --- |
 | `<name>.log` | The full text output, including SCF iterations, orbital energies, and all requested properties. Each page quotes the relevant part. |
-| `<name>_scf_*.molden` | Molecular orbitals in Molden format. Open it in OQP Studio Analysis, [OpenqpView](https://open-quantum-platform.github.io/OpenqpView/), Molden, or Avogadro to display orbitals. |
-| `<name>.hess.json`, `<name>.freq.molden` | Written by Hessian runs: frequencies, normal modes, and thermochemistry data. Open the `.freq.molden` file to animate the vibrations. |
+| `<name>.json`, `<name>.npz` | JSON holds settings, convergence, and small results. NPZ holds large arrays when present, including portable MO coefficients and saved restart arrays. Keep the pair together. |
+| `<name>.hess.json`, `<name>.hess.npz` | Hessian and frequency results. Large Hessian, mode, and orbital arrays are in the NPZ when present. |
+| `<name>_scf_*.molden`, `<name>.freq.molden` | Optional orbital and frequency files. Request them with `scf(save_molden=true)`. |
 | `opt.xyz`, `opt_status.txt` | Written by geometry optimizations and transition-state searches: the final geometry and a table of the optimization steps. |
 
 The end of every log has an `ENERGIES AND STATES` block, which is the quickest
