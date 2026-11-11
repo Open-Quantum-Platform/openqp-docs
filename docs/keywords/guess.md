@@ -1,7 +1,7 @@
 # `[guess]`
 
-The `[guess]` section controls initial orbitals, JSON restart files, and manual
-MO swaps. Most users can start with the default Huckel guess.
+The `[guess]` section controls initial orbitals, restart files, and manual MO
+swaps. The default `auto` selects an initial guess for the calculation.
 
 ## Minimal Example
 
@@ -17,7 +17,7 @@ type=huckel
 | Field | Value |
 | --- | --- |
 | Type | string |
-| Default | `huckel` |
+| Default | `auto` |
 | Values | `huckel`, `modhuckel`, `hcore`, `json`, `auto`, `sap`, `minao` |
 | Used by | initial density/orbital construction |
 
@@ -29,7 +29,7 @@ Selects the initial guess mode.
 | `modhuckel` | Modified Huckel guess. |
 | `hcore` | Core-Hamiltonian guess. |
 | `json` | Read orbitals and molecular data from a JSON restart file. |
-| `auto` | Read `file` if it exists; otherwise fall back to Huckel. |
+| `auto` | Reuse available restart orbitals or compute a fresh guess. |
 | `sap` | Superposition-of-atomic-potentials guess. |
 | `minao` | Projected minimal-basis density guess. |
 
@@ -46,6 +46,13 @@ a previous restart file.
 
 Path to a JSON restart file. With `type=json`, the file must exist. With
 `type=auto`, OpenQP uses it when present and otherwise computes a fresh guess.
+
+When no file is specified, the default `auto` guess checks for a same-named
+JSON and NPZ beside the input. For example, `water.oqp` looks for
+`water.json` and `water.npz`. OpenQP loads a pair with a converged SCF and
+compatible atoms, method, basis, charge, and spin. The input geometry remains
+authoritative by default. Use an explicit guess such as `guess(type=minao)`
+to start from fresh orbitals.
 
 ### `file2`
 

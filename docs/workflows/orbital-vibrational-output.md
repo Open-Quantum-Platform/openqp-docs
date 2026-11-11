@@ -32,11 +32,14 @@ by Molden, the JSON includes:
 - `frequency_modes`: frequencies in cm⁻¹ and mass-unweighted Cartesian normal
   mode displacements when a frequency calculation has completed.
 
-Hessian workflows also write `<project>.hess.json`. It contains the Hessian,
-frequencies, normal modes, IR intensities, Raman activities, atoms, geometry,
-and—when available—the same portable basis and MO blocks. Consequently, either
-the full `.json` or `.hess.json` can provide both the molecular orbitals and the
-vibrational view.
+Keep each result JSON with its matching NPZ when moving or importing files.
+The JSON records settings, convergence, small results, and the location and
+checksum of the NPZ. Large numeric arrays, including portable MO coefficients,
+Dyson coefficients, and normal modes, are stored in the NPZ.
+
+Hessian workflows also write `<project>.hess.json` and place large Hessian and
+mode arrays in `<project>.hess.npz`. The pair also provides portable basis and
+MO data when available.
 
 High angular-momentum H/I shells and mixed Cartesian/spherical bases remain
 valid OpenQP calculations, but their optional portable viewer blocks are
@@ -44,7 +47,8 @@ omitted when no unambiguous Molden AO ordering is available.
 
 ## Combined Molden MO and frequency file
 
-A completed Hessian workflow writes `<project>.freq.molden`. When the basis and
+With `scf(save_molden=true)`, a completed Hessian workflow writes
+`<project>.freq.molden`. When the basis and
 SCF orbitals support Molden ordering, this is a combined file with:
 
 - `[Atoms]`, `[GTO]`, spherical-harmonic markers, and `[MO]`;
