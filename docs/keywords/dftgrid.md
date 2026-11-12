@@ -137,7 +137,9 @@ adaptive allocation before converging on the resulting grid. Subsequent
 response and gradient calculations reuse the allocation. During a geometry
 sequence, moving an atom more than 0.2 Å from the allocation geometry
 triggers a new allocation. A grid change can introduce a small discontinuity
-in the energy and gradient.
+in the energy and gradient. Numerical Hessian calculations reuse the
+reference geometry’s radial and angular orders for all displacements,
+while rebuilding the point positions and weights at each displaced geometry.
 The output reports the estimated radial and angular XC integration errors,
 the number of grid points, and the number of points evaluated during
 estimation. The budgets are estimates for XC quadrature. Other observables,
