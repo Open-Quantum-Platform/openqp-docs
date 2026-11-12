@@ -96,6 +96,7 @@ Selects the atomic quadrature grid. Accepted values:
 | --- | --- |
 | `auto` (default) | `SG2` while `rad_npts` and `ang_npts` keep their defaults (`96` and `302`); the unpruned `rad_npts` × `ang_npts` grid as soon as either is changed. |
 | `SG0`, `SG1`, `SG2`, `SG3` | The named pruned preset. |
+| `AG1`, `AG2`, `AG3`, `AG4` | Choose the radial and angular quadrature from the molecular XC integrand. |
 | `none` | The unpruned `rad_npts` × `ang_npts` grid at every radius. `off`, `false`, `no` and an empty value (`pruned=` in `.inp` input) mean the same. |
 
 A pruned preset defines its own radial and angular grids, so `rad_npts` and
@@ -118,6 +119,27 @@ Before this default was introduced, `pruned` defaulted to `SG2`, and an input
 that set only `rad_npts` and `ang_npts` ran on the `SG2` grid. To reproduce
 such a result, add `pruned=SG2`. Some regression examples set `pruned=none`
 so that their reference numbers do not depend on a pruning scheme.
+
+#### Adaptive grids
+
+Select an adaptive grid explicitly, for example with `dftgrid(pruned=AG3)`.
+The estimated XC integration budgets per atom are:
+
+| Preset | Budget (Eh per atom) |
+|---|---:|
+| `AG1` | 1 × 10⁻⁵ |
+| `AG2` | 3 × 10⁻⁶ |
+| `AG3` | 1 × 10⁻⁶ |
+| `AG4` | 3 × 10⁻⁷ |
+
+The SCF starts on a coarse grid. It uses the SCF density to estimate an
+adaptive allocation before converging on the resulting grid. Subsequent
+response and gradient calculations on that calculation reuse the allocation.
+The output reports the estimated radial and angular XC integration errors,
+the number of grid points, and the number of points evaluated during
+estimation. The budgets are estimates for XC quadrature. Other observables,
+including nuclear gradients and excitation energies, require their own
+grid convergence checks.
 
 ### `grid_ao_pruned`
 
