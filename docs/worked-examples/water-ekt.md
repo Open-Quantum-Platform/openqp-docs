@@ -23,7 +23,7 @@ spectroscopy measures. OpenQP computes them from the MRSF-TDDFT ground state.
 ## Copy and run
 
 ```text title="water-ekt.oqp"
-mrsf(nstate=10)/bhhlyp/6-31g* ekt
+mrsf(nstate=10)/bhhlyp/6-31g* ekt scf(save_molden=true)
 geom="""
 O      0.000000     0.000000     0.122745
 H      0.000000     0.759541    -0.471922
