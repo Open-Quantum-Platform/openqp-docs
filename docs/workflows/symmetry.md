@@ -50,9 +50,13 @@ SCF escalation still tries DIIS, SOSCF and then TRAH as needed. The log
 reports the solver and the final occupied-space symmetry residual.
 
 The resulting energy is stationary within the selected C3 occupation.
-Different C3 occupations can give different stationary solutions. For an
-unrestricted search over spatial symmetry or to follow a user-selected
-orbital occupation, set `symmetry(enabled=false)`.
+Different C3 occupations can give different stationary solutions. With
+automatic symmetry detection, an explicit orbital occupation, fractional
+occupations, or symmetry-breaking stability following takes precedence.
+OpenQP logs why it ran the ordinary ROHF solver, and point-group detection
+still supplies orbital labels where they can be assigned. An explicit C3
+request or strict symmetry rejects these combinations. Set
+`symmetry(enabled=false)` to disable point-group detection as well.
 
 ## Why detection changes excited-state results
 
