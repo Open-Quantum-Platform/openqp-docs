@@ -59,7 +59,7 @@ openqp nh3-neb.oqp
 - `neb(S0,product=...,images=9)` relaxes a band of nine images, including the
   two fixed end points, on the ground-state surface. Both end points should be
   minima of the same method, basis set and integration grid.
-- `dftgrid(rad_npts=150,ang_npts=974)` replaces the default SG2 grid with a
+- `dftgrid(rad_npts=150,ang_npts=974)` replaces the default AG3 grid with a
   denser 150 × 974-point grid; every input on this page uses it. The default
   grid is not symmetric under the three-fold rotation of NH₃, so it moves the
   energy by about 1e-5 hartree when the molecule is rotated and splits the

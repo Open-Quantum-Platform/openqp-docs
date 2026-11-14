@@ -1,4 +1,4 @@
-hf/6-31g* nmr(gauge=giao,acid=true)
+hf/6-31g* nmr(acid=true)
 geom="""
 C      1.392883     0.000000     0.000000
 C      0.696465     1.206259     0.000000

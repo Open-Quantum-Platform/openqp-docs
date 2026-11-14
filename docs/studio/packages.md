@@ -123,9 +123,10 @@ $env:OMP_NUM_THREADS = "4"
 & "$HOME\OpenQP\1.3.1\openqp.exe" .\calculation.oqp
 ```
 
-The calculation writes its `.log`, `.json`, `.molden`, trajectory, and other
-requested output files beside the input unless the input or caller specifies a
-different working directory.
+The calculation writes its log and requested output files beside the input
+unless the caller specifies a different output location. Keep the result
+`.json` with its matching `.npz` when both are present. The engine writes a
+Molden file when the input requests it with `scf(save_molden=true)`.
 
 ## Use the integrated package
 

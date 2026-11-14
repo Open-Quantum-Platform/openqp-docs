@@ -386,6 +386,19 @@ accuracy↔speed dial: `0` strict reference, `1` recommended production (exact),
 `2` faster (tiny degradation), `3` aggressive (small degradation allowed).
 Explicit performance input keys override the preset. `perf=-1` disables the preset.
 
+### `result_format`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Default | `npz` |
+| Values | `npz`, `json` |
+
+Choose the single machine-readable result file. NPZ stores compressed
+numerical arrays and metadata in one file. Use `input(result_format=json)`
+in `.oqp` syntax to write standalone JSON instead.
+See [Reading saved results](../api/results.md#reading-saved-results).
+
 ### `verbose`
 
 | Field | Value |

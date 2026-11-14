@@ -70,7 +70,7 @@ Worker count for numerical Hessian calculations. Must be at least `1`.
 | Default | `False` |
 | Used by | Hessian restart/input |
 
-Reads an existing `.hess.json` sidecar where the workflow supports it. Current
+Reads the versioned Hessian cache in a saved result, or a legacy `.hess.json` sidecar. Current
 sidecars carry a versioned state/model-configuration signature and the atom,
 geometry, and isotopic-mass identity. OpenQP rejects unsigned older files or mismatches rather
 than silently reusing a Hessian or vibrational data from another calculation;

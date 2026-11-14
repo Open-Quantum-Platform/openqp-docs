@@ -38,8 +38,8 @@ four files into one folder:
 - [tip3p.xml](inputs/tip3p.xml), the TIP3P water model
 
 ```text title="formaldehyde-qmmm.oqp"
-mrsf(nstate=3)/bhhlyp/6-31g* namd(S1,scheme=BaeckAn) md(nstep=1,dt=0.5,velocity=zero)
-qmmm(forcefield_files="formaldehyde.xml tip3p.xml",qm_atoms="0-3",cutoff=NoCutoff)
+mrsf(nstate=3)/bhhlyp/6-31g* namd(S1,scheme=BaeckAn)
+qmmm(forcefield_files="formaldehyde.xml tip3p.xml",qm_atoms="0-3") md(nstep=1,dt=0.5,velocity=zero)
 geom="formaldehyde_2water.pdb"
 ```
 

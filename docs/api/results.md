@@ -136,6 +136,51 @@ When the corresponding property is requested via `[properties] scf_prop`,
 `nac` is populated with the NACME derivative-coupling matrix for `runtype=nacme`
 and is empty otherwise.
 
+## Reading saved results
+
+OpenQP writes one machine-readable result per calculation. The default
+`<name>.npz` contains settings, provenance, units, atomic numbers,
+coordinates, symmetry, convergence, and available calculation results.
+The log provides the human-readable calculation record. To select a
+self-contained `<name>.json` instead, add `input(result_format=json)` to
+an `.oqp` input or set `result_format=json` in the `[input]` section.
+
+| Content | NPZ representation |
+| --- | --- |
+| Settings, units, provenance, convergence, energies, and small results | A UTF-8 JSON document in the one-dimensional `uint8` member `__oqp_metadata__`. |
+| Numeric arrays of at least 256 elements | Compressed NumPy members. `metadata["arrays"]["names"]` maps each member to its original result key or nested path and records its shape and dtype. |
+| MO data and densities | Native MO coefficients, orbital energies, and density/overlap arrays when saved for restart. Portable AO/MO and visualization blocks are included when available. |
+| State and derivative data | Available excitation energies, transition properties and densities, gradients, Hessian, and normal modes. The Hessian cache and its compatibility metadata are under `hessian_cache`. |
+
+The NPZ uses ordinary ZIP and NumPy array representations. It can be read on
+Windows, macOS, and Linux without loading Python objects or enabling pickle.
+For example, with NumPy alone:
+
+```python
+import json
+import numpy as np
+
+with np.load("water.npz", allow_pickle=False) as archive:
+    metadata = json.loads(archive["__oqp_metadata__"].tobytes().decode("utf-8"))
+    print(metadata["energy"], metadata["schema"]["units"])
+    for member, description in metadata["arrays"]["names"].items():
+        print(member, description, archive[member].shape)
+```
+
+OpenQP can reconstruct the result dictionary, including nested arrays:
+
+```python
+from oqp.utils.json_utils import load_result
+
+result = load_result("water.npz")
+print(result["energy"])
+```
+
+The same reader accepts standalone JSON and older JSON files with a separate
+NPZ. Keep both files when reading or moving an older pair. For a new result,
+copy the single selected file. Include `guess(save_mol=true)` if it should
+also retain the molecular data needed for SCF restart.
+
 ## Common Molecule Methods
 
 | Method | Returns |

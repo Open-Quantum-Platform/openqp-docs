@@ -94,8 +94,9 @@ Selects the atomic quadrature grid. Accepted values:
 
 | Value | Grid |
 | --- | --- |
-| `auto` (default) | `SG2` while `rad_npts` and `ang_npts` keep their defaults (`96` and `302`); the unpruned `rad_npts` × `ang_npts` grid as soon as either is changed. |
+| `auto` (default) | `AG3` while `rad_npts` and `ang_npts` keep their defaults (`96` and `302`); the unpruned `rad_npts` × `ang_npts` grid as soon as either is changed. |
 | `SG0`, `SG1`, `SG2`, `SG3` | The named pruned preset. |
+| `AG1`, `AG2`, `AG3`, `AG4` | Choose the radial and angular quadrature from the molecular XC integrand. |
 | `none` | The unpruned `rad_npts` × `ang_npts` grid at every radius. `off`, `false`, `no` and an empty value (`pruned=` in `.inp` input) mean the same. |
 
 A pruned preset defines its own radial and angular grids, so `rad_npts` and
@@ -107,17 +108,43 @@ rks/bhhlyp/6-31g* dftgrid(rad_npts=128,ang_npts=590)
 ```
 
 runs the unpruned 128 × 590 grid, and an input without grid keywords runs
-`SG2`. An explicit preset together with a non-default `rad_npts` or
+`AG3` for both GGA and meta-GGA functionals. An explicit preset together with a non-default `rad_npts` or
 `ang_npts` runs the preset; for a DFT input the input checker then issues a warning that names
 the values that are not used. An unknown `pruned` value is an input error.
-The resolved value (`SG2`, another preset, or `none`) is written back into the
+The resolved value (`AG3`, another preset, or `none`) is written back into the
 configuration, so the printed and saved configuration state the grid that was
 used.
 
-Before this default was introduced, `pruned` defaulted to `SG2`, and an input
-that set only `rad_npts` and `ang_npts` ran on the `SG2` grid. To reproduce
-such a result, add `pruned=SG2`. Some regression examples set `pruned=none`
-so that their reference numbers do not depend on a pruning scheme.
+To reproduce an earlier calculation, use the grid recorded in its log,
+for example `dftgrid(pruned=SG2)` or `dftgrid(pruned=SG3)`. To request an
+unpruned grid with the schema point counts, use `pruned=none`.
+
+#### Adaptive grids
+
+AG3 is the automatic choice. Use `dftgrid(pruned=AG1)`,
+`dftgrid(pruned=AG2)`, or `dftgrid(pruned=AG4)` to request a different budget.
+The estimated XC integration budgets per atom are:
+
+| Preset | Budget (Eh per atom) |
+|---|---:|
+| `AG1` | 1 × 10⁻⁵ |
+| `AG2` | 3 × 10⁻⁶ |
+| `AG3` | 1 × 10⁻⁶ |
+| `AG4` | 3 × 10⁻⁷ |
+
+The SCF starts on a coarse grid. It uses the SCF density to estimate an
+adaptive allocation before converging on the resulting grid. Subsequent
+response and gradient calculations reuse the allocation. During a geometry
+sequence, moving an atom more than 0.2 Å from the allocation geometry
+triggers a new allocation. A grid change can introduce a small discontinuity
+in the energy and gradient. Numerical Hessian calculations reuse the
+reference geometry’s radial and angular orders for all displacements,
+while rebuilding the point positions and weights at each displaced geometry.
+The output reports the estimated radial and angular XC integration errors,
+the number of grid points, and the number of points evaluated during
+estimation. The budgets are estimates for XC quadrature. Other observables,
+including nuclear gradients and excitation energies, require their own
+grid convergence checks.
 
 ### `grid_ao_pruned`
 

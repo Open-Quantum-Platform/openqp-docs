@@ -11,18 +11,52 @@ Detection is **on by default** (`[symmetry] enabled`). The reductions are not.
 
 | | Default | Changes the numbers? |
 | --- | --- | --- |
-| `enabled` — detection and labeling | `true` | Excited-state results only, see below |
+| `enabled` — detection and labeling | `true` | Excited-state results and minimum-energy geometries, see below |
 | `use_integral_symmetry` — petite-list reduction | `False` | Yes, and reorients the molecule |
 | `use_response_symmetry` — residual projection | `False` | Yes (experimental) |
 
-With only the default in force, the geometry is untouched, the full integral
-list is used, and reference-SCF or ordinary HF/DFT ground-state energies are
-identical to a run with symmetry switched off. An MRSF physical `S0` is a
+At a fixed geometry, the full integral list is used by default, and
+reference-SCF or ordinary HF/DFT ground-state energies are identical to a run
+with symmetry switched off. An MRSF physical `S0` is a
 response root, not the reference-SCF energy, and can change when symmetry
 information repairs response-block coverage.
 
-Excited-state runs are the exception, and the difference is a **correction** —
-this is the reason detection is on by default.
+## Preserving symmetry during geometry optimization
+
+For a minimum-energy optimization of an isolated molecule with the default
+OpenQP optimizer, the point group detected at the starting geometry is
+preserved automatically. For example, a C3 structure can relax through all
+displacements that preserve its threefold rotation. The optimizer projects
+the gradient for step selection and convergence. The result file stores the
+original Cartesian gradient, and the optimization settings in the log show
+the preserved group and the number of allowed displacements.
+
+No extra keyword is needed. Set `symmetry(enabled=false)` in a `.oqp` input to
+allow symmetry breaking. This also disables symmetry detection and labeling.
+The geometry constraint applies to native minimum-energy optimizations of
+isolated molecules.
+
+## C3 ROHF and ROKS reference orbitals
+
+For an isolated C3 molecule, OpenQP preserves the closed and singly occupied orbital
+spaces in ROHF and ROKS energy, gradient and native minimum-energy
+optimization calculations. Each space can contain A orbitals and complete
+real E pairs. If a restart or a fresh guess splits an E pair, OpenQP selects
+complete symmetry subspaces close to the guess while retaining the alpha and
+beta electron counts. DIIS diagonalizes the effective Fock matrix in the
+A and E spaces and preserves their occupation counts. SOSCF and TRAH
+restrict their orbital rotations to the C3-invariant subspace. The default
+SCF escalation still tries DIIS, SOSCF and then TRAH as needed. The log
+reports the solver and the final occupied-space symmetry residual.
+
+The resulting energy is stationary within the selected C3 occupation.
+Different C3 occupations can give different stationary solutions. With
+automatic symmetry detection, an explicit orbital occupation, fractional
+occupations, or symmetry-breaking stability following takes precedence.
+OpenQP logs why it ran the ordinary ROHF solver, and point-group detection
+still supplies orbital labels where they can be assigned. An explicit C3
+request or strict symmetry rejects these combinations. Set
+`symmetry(enabled=false)` to disable point-group detection as well.
 
 ## Why detection changes excited-state results
 

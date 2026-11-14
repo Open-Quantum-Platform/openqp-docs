@@ -26,7 +26,7 @@ must be installed (`pip install openmm`).
 ## Step 1: QM/MM optimization
 
 ```text title="ala-qmmm-opt.oqp"
-rhf/6-31g opt(S0) qmmm(forcefield_files="amber14-all.xml",qm_atoms="8,9,16,17,18",cutoff=NoCutoff)
+rhf/6-31g opt qmmm(forcefield_files="amber14-all.xml",qm_atoms="8,9,16,17,18")
 geom="ala.pdb"
 ```
 
@@ -55,7 +55,8 @@ The optimized full system is written as a PDB file,
 ## Step 2: QM/MM molecular dynamics
 
 ```text title="ala-qmmm-md.oqp"
-rks/bhhlyp/6-31g md(nstep=200,dt=0.5,temperature=300,seed=2) qmmm(forcefield_files="amber14-all.xml",qm_atoms="8,9,16,17,18",cutoff=NoCutoff)
+rks/bhhlyp/6-31g md(nstep=200,dt=0.5,temperature=300,seed=2)
+qmmm(forcefield_files="amber14-all.xml",qm_atoms="8,9,16,17,18")
 geom="ala.pdb"
 ```
 
