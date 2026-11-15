@@ -1,0 +1,22 @@
+# Result files and restart
+
+## `result_format`
+
+OpenQP 1.3.1 writes saved results as JSON. The 1.4 release candidate uses
+a standalone `.npz` file by default. To write standalone JSON, set
+`input(result_format=json)` to the `.oqp` input. The accepted values for
+`input.result_format` are `npz` and `json`.
+
+## Restart
+
+For a calculation that saves molecular data for restart, use
+`guess(save_mol=true)`. To use the saved state as the initial guess, supply
+the full filename in `guess(type=json,file="water.npz")`. The `json` guess
+type also accepts a standalone `.json` result. For a legacy result stored as
+a JSON manifest with a separate NPZ file, supply the manifest path and keep
+both files together.
+
+An explicitly supplied restart file must exist and contain a valid result.
+Keep the corresponding result file until the restart has been checked. See the
+[1.3 quickstart](https://www.openqp.org/manual/quickstart/) for the general
+`.oqp` calculation workflow.

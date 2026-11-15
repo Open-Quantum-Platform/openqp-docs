@@ -1,0 +1,23 @@
+site_name: OpenQP Manual 1.4 · Release preview
+site_description: Documentation for changes in OpenQP 1.4
+site_url: https://www.openqp.org/manual/1.4/
+docs_dir: release-notes/1.4
+
+theme:
+  name: material
+  features:
+    - search.suggest
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+
+nav:
+  - 1.4 changes: index.md
+  - 1.3 manual: https://www.openqp.org/manual/
+  - Result files and restart: result-files.md
+  - Calculation logs: calculation-logs.md
+  - Installation and OQP Studio: installation.md
