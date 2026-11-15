@@ -7,6 +7,22 @@ a standalone `.npz` file by default. To write standalone JSON, set
 `input(result_format=json)` to the `.oqp` input. The accepted values for
 `input.result_format` are `npz` and `json`.
 
+## Workflow status
+
+With `guess(save_mol=true)`, the release candidate records the final
+workflow status in both NPZ and JSON after the calculation driver returns.
+The saved `workflow` object contains these fields.
+
+- `workflow.completed` is `true` for a completed calculation and `false` for
+  an incomplete one.
+- `workflow.status` is `completed` or `incomplete` in the final result.
+- `workflow.reasons` lists recorded reasons for an incomplete calculation,
+  such as reaching the geometry optimization iteration limit.
+
+An older file without `workflow` metadata leaves its completion status
+undetermined. See [Calculation logs](calculation-logs.md#termination-status)
+for the corresponding log messages.
+
 ## Restart
 
 For a calculation that saves molecular data for restart, use
