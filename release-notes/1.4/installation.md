@@ -7,10 +7,9 @@ against the signed release manifest before installing. Verify the signature
 and file checksum, then check the minimum OS version listed for that artifact,
 including its bundled dependencies.
 
-The 1.4 beta is planned as an OpenMP-only distribution. The bundle will
-include only the OpenMP threading runtime for parallel execution. An MPI
-request will report an explicit unsupported-mode error. These behaviors
-remain pending engine validation.
+The planned 1.4 beta bundle will provide OpenMP parallel execution without
+an MPI runtime. An MPI request will report an explicit unsupported-mode
+error. These behaviors remain pending engine validation.
 
 The macOS arm64 feasibility bundle reports version 1.3.1 and includes
 dependencies that declare macOS 26 as their minimum. Compatibility on M3
