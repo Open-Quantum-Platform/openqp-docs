@@ -5,6 +5,10 @@ module timing records are available. The table reports call counts, elapsed
 wall time and process CPU time in seconds. The table total sums the listed
 modules. The separate elapsed wall time reports the whole calculation.
 
+**Development preview.** The candidate accepts `input(verbose=2)` in
+`.oqp` input for detailed log output, including the orbital table when
+available. Native checks on the final release build are pending.
+
 ## Termination status
 
 For an explicitly confirmed successful workflow, the log reports
