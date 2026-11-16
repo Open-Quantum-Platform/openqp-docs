@@ -237,6 +237,13 @@ confines Davidson residuals to a single irrep. The checker marks this as
 experimental and recommends validating excitation energies against an unblocked
 run.
 
+An explicit `use_response_symmetry=true` request must reach the `active` state.
+If detection or usable orbital labels are unavailable, orbitals have mixed
+irreps, or the selected response method does not support projection, the
+calculation stops with an error naming the requested option and the reason.
+It does not continue with an unprojected response calculation. Leaving the
+option `False` retains the method's ordinary response behavior.
+
 This is **separate** from the symmetry-block coverage of the initial trial
 vectors, which is not experimental and follows detection alone. The symmetry log
 block distinguishes the two:
