@@ -36,3 +36,18 @@ An explicitly supplied restart file must exist and contain a valid result.
 Keep the corresponding result file until the restart has been checked. See the
 [1.3 quickstart](https://www.openqp.org/manual/quickstart/) for the general
 `.oqp` calculation workflow.
+
+### Numerical Hessian and NAC checkpoints
+
+Numerical Hessian and nonadiabatic coupling calculations save the full molecular
+orbital data that their displaced calculations need. The child calculations
+read the actual checkpoint written by the parent, including its NPZ or JSON
+extension and any geometry index. Child inputs preserve explicit zero and
+false values from the parent configuration.
+
+### NAMD restart continuity
+
+If the electronic-state overlap used for norm-preserving interpolation (NPI)
+loses rank, propagation stops before advancing that step or replacing the
+last accepted checkpoint. The restart and trajectory schema versions remain
+8 and 7, respectively, as in 1.3.1.

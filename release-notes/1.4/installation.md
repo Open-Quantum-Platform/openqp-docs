@@ -13,8 +13,14 @@ error. These behaviors remain pending engine validation.
 
 The macOS arm64 feasibility bundle reports version 1.3.1 and includes
 dependencies that declare macOS 26 as their minimum. Compatibility on M3
-systems and the final 1.4 minimum OS are pending validation. Linux x86-64
-on AWS will be tested separately.
+systems and the final 1.4 minimum OS are pending validation. A Linux x86-64
+1.3.1 test bundle passed its signature check and ran in a fresh glibc 2.28
+container. The final Linux build, its 32 vCPU behavior, and static QM/MM
+initialization still require validation.
+
+The planned 1.4 bundle uses OpenMM's CPU platform with one thread for OpenMM
+work. A missing CPU platform raises an error before a simulation starts.
+This behavior remains pending qualification in the final bundle.
 
 ## Concurrent compute budget
 
@@ -23,6 +29,10 @@ OpenMP thread count within its allocation. The AWS contract has a separate
 aggregate limit of 32 vCPU across concurrently running independent jobs.
 Two concurrent jobs allocated 16 vCPU each use the full aggregate budget.
 Enforcement of the per-calculation ceiling is pending engine validation.
+
+Set `omp_threads` to zero in an `.oqp` input with `input(omp_threads=0)`
+to inherit the validated OpenMP environment. The command-line option
+`--omp` requires a positive integer.
 
 For OQP Studio, use the engine version and platform artifact listed for the
 corresponding Studio release. Studio's integration and the supported artifact
