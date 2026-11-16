@@ -7,20 +7,27 @@ against the signed release manifest before installing. Verify the signature
 and file checksum, then check the minimum OS version listed for that artifact,
 including its bundled dependencies.
 
-The planned 1.4 beta bundle will provide OpenMP parallel execution without
-an MPI runtime. An MPI request will report an explicit unsupported-mode
-error. These behaviors remain pending engine validation.
+The planned 1.4 beta bundle provides OpenMP parallel execution without an MPI
+runtime. The Linux beta executable used 16 OpenMP threads and one BLAS thread
+in testing. It rejected an MPI request and a 33-thread request.
 
 The earlier macOS arm64 feasibility bundle used version 1.3.1. Some of
 its dependencies declare macOS 26 as their minimum. Compatibility on M3
 systems and the final 1.4 minimum OS are pending validation. A Linux x86-64
-1.3.1 test bundle passed its signature check and ran in a fresh glibc 2.28
-container. The final Linux build, its 32 vCPU behavior, and static QM/MM
-initialization still require validation.
+1.4.0b1 standalone test bundle ran from a new location in a fresh glibc 2.28
+container. The separate Linux native tests at one and 16 OpenMP threads
+covered MRSF gradients, analytic NAC for all pairs and three selected pairs,
+and static HF/PBE QM/MM energies and NPZ restarts with the 6-31G basis.
+The NAMD test passed its comparison of an uninterrupted 40-step (8 fs)
+trajectory with a 20-step run resumed from its checkpoint through step 40.
+
+Linux wheel packaging, an actual 32 vCPU run and validation on AWS remain
+pending before production distribution.
 
 The planned 1.4 bundle uses OpenMM's CPU platform with one thread for OpenMM
 work. A missing CPU platform raises an error before a simulation starts.
-This behavior remains pending qualification in the final bundle.
+The Linux standalone test observed a one-thread CPU context. Final bundle
+qualification remains pending.
 
 ## Concurrent compute budget
 
@@ -28,7 +35,8 @@ The planned default ceiling for a single calculation is 32 vCPU. Set its
 OpenMP thread count within its allocation. The AWS contract has a separate
 aggregate limit of 32 vCPU across concurrently running independent jobs.
 Two concurrent jobs allocated 16 vCPU each use the full aggregate budget.
-Enforcement of the per-calculation ceiling is pending engine validation.
+The Linux beta test exercised rejection above the ceiling. A run at the
+ceiling remains pending.
 
 Set `omp_threads` to zero in an `.oqp` input with `input(omp_threads=0)`
 to inherit the validated OpenMP environment. The command-line option
