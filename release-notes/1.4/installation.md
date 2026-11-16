@@ -7,22 +7,23 @@ against the signed release manifest before installing. Verify the signature
 and file checksum, then check the minimum OS version listed for that artifact,
 including its bundled dependencies.
 
-The planned 1.4 beta bundle provides OpenMP parallel execution without an MPI
-runtime. The Linux beta executable used 16 OpenMP threads and one BLAS thread
-in testing. It rejected an MPI request and a 33-thread request.
+The 1.4 beta bundle provides OpenMP parallel execution without an MPI
+runtime. The relocated Linux beta executable used eight OpenMP threads
+and one BLAS thread. It rejected an MPI request and a 33-thread request.
 
 The earlier macOS arm64 feasibility bundle used version 1.3.1. Some of
 its dependencies declare macOS 26 as their minimum. Compatibility on M3
 systems and the final 1.4 minimum OS are pending validation. A Linux x86-64
 1.4.0b1 standalone test bundle ran from a new location in a fresh glibc 2.28
-container. The separate Linux native tests at one and 16 OpenMP threads
-covered MRSF gradients, analytic NAC for all pairs and three selected pairs,
+container and completed initial energy and NPZ restart calculations through
+both tested engine entry modes. Separate Linux native tests at one and 16
+OpenMP threads covered MRSF gradients, analytic NAC for all pairs and three selected pairs,
 and static HF/PBE QM/MM energies and NPZ restarts with the 6-31G basis.
 The NAMD test passed its comparison of an uninterrupted 40-step (8 fs)
 trajectory with a 20-step run resumed from its checkpoint through step 40.
 
-Linux wheel packaging, an actual 32 vCPU run and validation on AWS remain
-pending before production distribution.
+The rebuilt Linux wheel passed the runtime library path audit. Actual
+32 vCPU execution and AWS testing remain pending before production distribution.
 
 The planned 1.4 bundle uses OpenMM's CPU platform with one thread for OpenMM
 work. A missing CPU platform raises an error before a simulation starts.
@@ -43,10 +44,11 @@ to inherit the validated OpenMP environment. The command-line option
 `--omp` requires a positive integer.
 
 For OQP Studio, use the engine version and platform artifact listed for the
-corresponding Studio release. On macOS, Studio staged a test-signed 1.4.0b1
-bundle and completed both an initial energy calculation and an NPZ restart
-with identical energies. Production distribution and the supported artifact
-list are pending qualification. See the
+corresponding Studio release. With test-signed 1.4.0b1 bundles on macOS and
+Linux, Studio API tests completed initial energy calculations and NPZ
+restarts with identical energies on each platform. The macOS Studio UI
+also showed the completed restart. Production distribution and the
+supported artifact list are pending qualification. See the
 [OQP Studio manual](https://www.openqp.org/manual/studio/) for general Studio
 usage.
 
