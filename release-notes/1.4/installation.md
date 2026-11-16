@@ -22,8 +22,10 @@ and static HF/PBE QM/MM energies and NPZ restarts with the 6-31G basis.
 The NAMD test passed its comparison of an uninterrupted 40-step (8 fs)
 trajectory with a 20-step run resumed from its checkpoint through step 40.
 
-The rebuilt Linux wheel passed the runtime library path audit. Actual
-32 vCPU execution and AWS testing remain pending before production distribution.
+The rebuilt Linux wheel passed the runtime library path audit. Scientific
+outputs from the native wheel at 32 OpenMP threads passed independent
+checks. The compiled standalone at 32 threads and AWS execution are
+pending validation.
 
 The planned 1.4 bundle uses OpenMM's CPU platform with one thread for OpenMM
 work. A missing CPU platform raises an error before a simulation starts.
@@ -36,8 +38,10 @@ The planned default ceiling for a single calculation is 32 vCPU. Set its
 OpenMP thread count within its allocation. The AWS contract has a separate
 aggregate limit of 32 vCPU across concurrently running independent jobs.
 Two concurrent jobs allocated 16 vCPU each use the full aggregate budget.
-The Linux beta test exercised rejection above the ceiling. A run at the
-ceiling remains pending.
+Linux native-wheel tests sampled a peak of 32 runnable threads for both
+a single 32-thread job and two concurrent 16-thread jobs. Sampling can
+miss brief overshoots. Studio enforcement of the shared budget across
+independent jobs remains pending.
 
 Set `omp_threads` to zero in an `.oqp` input with `input(omp_threads=0)`
 to inherit the validated OpenMP environment. The command-line option
