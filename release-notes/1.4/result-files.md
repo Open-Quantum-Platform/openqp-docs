@@ -49,5 +49,12 @@ false values from the parent configuration.
 
 If the electronic-state overlap used for norm-preserving interpolation (NPI)
 loses rank, propagation stops before advancing that step or replacing the
-last accepted checkpoint. The restart and trajectory schema versions remain
-8 and 7, respectively, as in 1.3.1.
+last accepted checkpoint.
+
+**Development preview.** The analytic NAMD candidate uses checkpoint schema 9
+and trajectory schema 8 to retain the electronic continuation state,
+including analytic coupling history and warm-start data. An explicit restart
+from an older checkpoint schema stops with an incompatibility error and
+preserves the old checkpoint and trajectory files. Use a separate output
+name for a fresh trajectory so the original files remain available.
+Native continuation checks and the final release format are pending.
