@@ -11,9 +11,9 @@ The 1.4 beta bundle provides OpenMP parallel execution without an MPI
 runtime. The relocated Linux beta executable used eight OpenMP threads
 and one BLAS thread. It rejected an MPI request and a 33-thread request.
 
-The earlier macOS arm64 feasibility bundle used version 1.3.1. Some of
-its dependencies declare macOS 26 as their minimum. Compatibility on M3
-systems and the final 1.4 minimum OS are pending validation. A Linux x86-64
+The signed manifest for the current macOS arm64 1.4.0b1 test bundle declares
+macOS 26.0 as the minimum for the bundle. The final minimum OS and M3
+compatibility are pending validation. A Linux x86-64
 1.4.0b1 standalone test bundle ran from a new location in a fresh glibc 2.28
 container and completed initial energy and NPZ restart calculations through
 both tested engine entry modes. Separate Linux native tests at one and 16
