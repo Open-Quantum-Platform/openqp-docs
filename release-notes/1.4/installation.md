@@ -11,8 +11,8 @@ The planned 1.4 beta bundle will provide OpenMP parallel execution without
 an MPI runtime. An MPI request will report an explicit unsupported-mode
 error. These behaviors remain pending engine validation.
 
-The macOS arm64 feasibility bundle reports version 1.3.1 and includes
-dependencies that declare macOS 26 as their minimum. Compatibility on M3
+The earlier macOS arm64 feasibility bundle used version 1.3.1. Some of
+its dependencies declare macOS 26 as their minimum. Compatibility on M3
 systems and the final 1.4 minimum OS are pending validation. A Linux x86-64
 1.3.1 test bundle passed its signature check and ran in a fresh glibc 2.28
 container. The final Linux build, its 32 vCPU behavior, and static QM/MM
@@ -35,7 +35,9 @@ to inherit the validated OpenMP environment. The command-line option
 `--omp` requires a positive integer.
 
 For OQP Studio, use the engine version and platform artifact listed for the
-corresponding Studio release. Studio's integration and the supported artifact
+corresponding Studio release. On macOS, Studio staged a test-signed 1.4.0b1
+bundle and completed both an initial energy calculation and an NPZ restart
+with identical energies. Production distribution and the supported artifact
 list are pending qualification. See the
 [OQP Studio manual](https://www.openqp.org/manual/studio/) for general Studio
 usage.
