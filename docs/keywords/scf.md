@@ -784,6 +784,22 @@ descent it may use looser integral and XC-grid thresholds; once the DIIS error
 falls below `pscreen_tight`, it returns to the normal converged thresholds. No
 performance preset enables it automatically.
 
+Set the screening controls in the calculation input. If a legacy screening
+environment variable is set, OpenQP stops and reports its corresponding input
+keyword. For an existing shell script, move the old value to the keyword shown
+below and unset the environment variable before starting OpenQP.
+
+| Legacy environment variable | `[scf]` keyword |
+| --- | --- |
+| `OQP_PSCREEN` | `pscreen` |
+| `OQP_PSCREEN_K` | `pscreen_k` |
+| `OQP_PSCREEN_CAP` | `pscreen_cap` |
+| `OQP_PSCREEN_TIGHT` | `pscreen_tight` |
+| `OQP_PSCREEN_XC_DCUT` | `pscreen_xc_dcut` |
+| `OQP_PSCREEN_XC_AOCUT` | `pscreen_xc_aocut` |
+| `OQP_PSCREEN_GRID_RAD` | `pscreen_grid_rad` |
+| `OQP_PSCREEN_GRID_ANG` | `pscreen_grid_ang` |
+
 ### `pscreen`, `pscreen_k`, `pscreen_cap`, `pscreen_tight`
 
 | Keyword | Type | Default | Meaning |
@@ -804,3 +820,7 @@ performance preset enables it automatically.
 
 Keep `pscreen_tight` safely above the final SCF convergence threshold so the
 calculation reaches the normal integral and grid accuracy before convergence.
+When an error-budget adaptive grid builds its descent grid, that grid supplies
+the coarse sizes. To specify the descent sizes with
+`pscreen_grid_rad` and `pscreen_grid_ang`, choose a fixed production grid
+with `dftgrid(rad_npts=50,ang_npts=230)` or another supported fixed size.
