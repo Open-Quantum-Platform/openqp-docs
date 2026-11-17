@@ -148,20 +148,31 @@ Maximum number of response-solver iterations.
 
 | Field | Value |
 | --- | --- |
-| Type | float |
-| Default | `1.0e-6` |
+| Type | float or `auto` |
+| Default | `auto` |
 | Used by | response convergence |
 
 Convergence threshold for the response (Davidson) solver. Like `zvconv`, it
-bounds the **squared** Euclidean norm of each root's residual: the default
-`1.0e-6` stops when the residual norm is below `1.0e-3`. Excitation energies
-are then accurate to about `1e-7` Eh (MRSF-TDHF S1 of thymine/cc-pVDZ:
-`4.5e-7` Eh), which is enough for spectra and analytic gradients but not for
-finite differences of state energies: the error changes with the iteration
-count from one geometry to the next, and a central difference divides it by
-the step. Use `conv=1e-14` and `zvconv=1e-14` when excited-state energies are
-differentiated numerically (thymine/cc-pVDZ, step `1e-3` Å: default `conv`
-gave an O z gradient error of `3.2e-4` Eh/bohr, `1e-14` gave `1.9e-6`).
+bounds the **squared** Euclidean norm of each root's residual. With `auto`,
+OpenQP uses `1.0e-6` for `runtype=energy` and `1.0e-7` for other run types,
+including gradients and state properties. The energy run type keeps `1.0e-6`
+when `[properties] td_prop=true` also requests relaxed state properties.
+In canonical `.oqp` input, `namd(...)` uses `1.0e-8` when `conv` is omitted
+or set to `auto`. An explicit numeric value takes precedence over these
+defaults. The Davidson log reports the threshold and its origin.
+
+Standalone [analytical NAC](nac.md#type) requires an explicit positive,
+finite TDHF threshold of `1.0e-8` or tighter. Its automatic threshold of
+`1.0e-7` fails input validation.
+
+A threshold of `1.0e-6` corresponds to a residual norm of `1.0e-3`. In the
+MRSF-TDHF S1 calculation for thymine/cc-pVDZ, it gave an excitation-energy
+error of `4.5e-7` Eh. Finite differences can amplify these errors because the
+Davidson iteration count can change between geometries and the central
+difference divides the energy difference by the displacement. Use
+`conv=1e-14` and `zvconv=1e-14` when differentiating excited-state energies
+numerically. For thymine/cc-pVDZ at a step of `1e-3` Å, the O z gradient error
+was `3.2e-4` Eh/bohr at `conv=1e-6` and `1.9e-6` Eh/bohr at `conv=1e-14`.
 
 ### `nvdav`
 
