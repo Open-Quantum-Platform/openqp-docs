@@ -26,6 +26,21 @@ result with `workflow.completed=false` and `workflow.status=incomplete`. Check
 A TD response or TD Z-vector convergence failure stops the calculation with
 a nonzero exit status. The failure message identifies which solve failed.
 
+## Non-finite CPU exchange-correlation output
+
+The collinear CPU evaluator stops with a nonzero exit status when libxc
+returns a non-finite exchange-correlation energy or derivative with respect to
+the density, density-gradient invariants or kinetic energy density. The
+diagnostic begins with `libxc returned a non-finite energy or derivative` and
+reports the highest requested derivative order, both spin densities at the
+first affected point in the grid block, and the functional composition.
+
+The bundled libxc 7.0.0 can return a non-finite third density derivative from
+r2SCAN correlation at very low density. OpenQP sets a total-density cutoff of
+`1e-13` electrons per bohr cubed for that libxc component, which r2SCAN and
+r4SCAN share. This cutoff applies automatically, including in TDDFT and TDA
+gradient calculations.
+
 ## MRSF response residuals
 
 The MRSF Davidson log prints each residual as the squared Euclidean norm
