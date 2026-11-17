@@ -15,9 +15,11 @@ currently require `[input] method=tdhf` and `[tdhf] type=mrsf`.
 
 Selects the NAC implementation: `numerical` (finite differences) or
 `analytical` (analytic MRSF singlet coupling). Analytical NAC requires an
-MRSF-TDDFT or MRSF-TDHF route with singlet states and `[scf] conv` and
-`[tdhf] conv` of at most `1e-8`; OpenQP rejects looser thresholds with an
-input error. See the
+MRSF-TDDFT or MRSF-TDHF route with singlet states. Both `[scf] conv` and
+`[tdhf] conv` must be finite, positive, and at most `1e-8`. The SCF automatic
+threshold meets this requirement. The TDHF automatic threshold is `1e-7` for
+this run type, so set an explicit value, for example `tdhf(conv=1e-10)` in
+canonical `.oqp` input. See the
 [ethylene conical-intersection example](../worked-examples/ethylene-meci.md).
 
 ### `states`
