@@ -12,4 +12,4 @@ Download the [ethylene analytical MECI input](ethylene-meci-analytic.oqp) and ru
 openqp --nompi ethylene-meci-analytic.oqp
 ```
 
-The log identifies the `S0, S1` analytical NAC calculation and reports whether geometry optimization converged. Inspect `opt_status.txt` for the energy gap and convergence criteria at each evaluation and `opt_geom.xyz` for the final geometry. The [ethylene MECI worked example](https://www.openqp.org/manual/worked-examples/ethylene-meci/) explains the branching vectors and how to examine the final crossing.
+The log identifies the `S0, S1` analytical NAC calculation and reports whether geometry optimization converged. Inspect `opt_status.txt` for the energy gap and convergence criteria at each evaluation and `opt_geom.xyz` for the final geometry. The [ethylene MECI worked example](worked-examples/ethylene-meci.md) explains the branching vectors and how to examine the final crossing.

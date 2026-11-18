@@ -32,6 +32,23 @@ mkdocs serve
 mkdocs build --strict
 ```
 
+## Build the full 1.4 manual locally
+
+```bash
+mkdocs build --strict
+CI_PAGES_URL=http://localhost:8000 OQP_MANUAL_RELEASE_REF=release/1.4 \
+  python tools/build_private_manual.py
+python -m http.server --bind 127.0.0.1 --directory site 8000
+```
+
+Open `/manual/` to select a version. The 1.4 build stages the complete
+`docs/` tree and applies only the changes in `release-notes/1.4/`.
+`overlay.json` defines exact replacements in shared pages, appended content,
+and the extra release navigation. Edit common material in `docs/`; use the
+overlay for changes that apply only to 1.4. A stale or ambiguous replacement
+fails the build so updates to common pages cannot silently leave old wording
+in the versioned manual.
+
 ## Maintenance
 
 Development is maintained in the Open Quantum Platform group's GitLab project.

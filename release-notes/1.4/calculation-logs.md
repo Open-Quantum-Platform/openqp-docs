@@ -1,6 +1,6 @@
 # Calculation logs
 
-The release candidate adds a timing table to the termination section when
+An earlier beta added a timing table to the termination section when
 module timing records are available. The table reports call counts, elapsed
 wall time and process CPU time in seconds. The table total sums the listed
 modules. The separate elapsed wall time reports the whole calculation.
@@ -11,12 +11,12 @@ available. Native checks on the final release build are pending.
 
 ## Termination status
 
-For an explicitly confirmed successful workflow, the log reports
+In the earlier beta workflow-status format, the log reports
 `OpenQP terminated normally.` An incomplete workflow can list its recorded
 failures on lines beginning with `Incomplete:`. The presence of a termination
 section or timing table alone does not confirm success.
 
-When molecular data is saved, the final
+For saved results from that beta, the final
 [workflow status](result-files.md#workflow-status) in the NPZ or JSON result
 uses the same completion decision as the log. For example, a geometry
 optimization that reaches its iteration limit without converging can save a
@@ -49,6 +49,6 @@ tracked by the solver. The tracked-root maximum is diagnostic. The convergence
 check uses the reported roots and any additional tracked roots that could
 enter the reported set.
 
-The [`tdhf.conv` reference](https://www.openqp.org/manual/keywords/tdhf/#conv)
+The [`tdhf.conv` reference](keywords/tdhf.md#conv)
 defines the tolerance for ‖r‖². For example, a tolerance of `1e-6` corresponds
 to a residual norm of `1e-3`.
