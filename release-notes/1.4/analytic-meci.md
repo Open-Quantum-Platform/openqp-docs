@@ -13,3 +13,17 @@ openqp --nompi ethylene-meci-analytic.oqp
 ```
 
 The log identifies the `S0, S1` analytical NAC calculation and reports whether geometry optimization converged. Inspect `opt_status.txt` for the energy gap and convergence criteria at each evaluation and `opt_geom.xyz` for the final geometry. The [ethylene MECI worked example](worked-examples/ethylene-meci.md) explains the branching vectors and how to examine the final crossing.
+
+The MECI status table separates the physical mean energy
+`(E_i + E_j) / 2` from the search objective. `Energy` contains this mean,
+and `Objective` contains the function used to determine the optimization
+step. Away from the crossing these values can differ because UBP, penalty,
+and augmented-Lagrangian searches include an energy-gap contribution.
+The XYZ comments in `opt.xyz` and `opt_geom.xyz` use the physical mean
+energy. The saved calculation result retains the individual state energies.
+
+`Obj Shift` is the objective change between evaluations. `RMSD Obj G` and
+`Max Obj G` describe the objective gradient for the conventional searches,
+while `RMSD Gap G` and `Max Gap G` describe its gap contribution.
+Analytical MECI retains its projected-gradient convergence criteria and
+reports the objective-gradient diagnostics separately in the log.
