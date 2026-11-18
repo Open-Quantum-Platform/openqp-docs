@@ -329,3 +329,25 @@ initial model. Their historical counterparts explicitly use
 optimizer-dependent intermediate coordinates (the HCN TS examples stop after
 two steps). These short execution examples do not establish Lindh speedup or
 certify convergence to a stationary point.
+
+## Completion status
+
+`OpenQP terminated normally.` appears only when the requested calculation
+completes. A geometry search that reaches its iteration or path-length limit,
+returns early without satisfying its convergence criteria, or leaves a crossing
+gap open is reported as `OpenQP workflow incomplete` with a reason. A finished
+electronic energy or gradient calculation alone does not establish geometry
+convergence. For geomeTRIC NEB, both final maximum and average band-force limits
+must be satisfied.
+
+The saved geometry result contains `workflow.completed` and `workflow.reasons`
+in JSON and NPZ output. Python callers can read the same fields from
+`Runner.results()["workflow"]`. Reusing a Runner clears the preceding run's
+completion status before evaluating the next calculation. A recovery or
+escalation that finally converges removes the provisional failure reasons of
+the stage it replaced.
+
+An unconverged SciPy search may return without a Python exception, so check the
+completion field as well as the process exit code. Exceptions remain failures;
+the incomplete status does not suppress them. The last geometry and its
+computed data are retained for inspection or restart.
