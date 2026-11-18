@@ -190,6 +190,38 @@ not exceed 13.
 
 Enables incremental Fock builds where supported.
 
+### `incremental_reset`
+
+| Field | Value |
+| --- | --- |
+| Type | string |
+| Values | `error`, `period` |
+| Default | `error` |
+| Used by | incremental two-electron Fock construction |
+
+Each SCF stage begins with a full Fock build. With `error`, DIIS and SOSCF
+rebuild when the estimated accumulated integral-screening error exceeds
+0.1 times the preceding SCF residual. The SOSCF residual is the RMS orbital
+gradient. The estimate adds 1600 times the difference-density screening
+threshold used in each incremental build since the last full build. Both
+coefficients are empirical. The estimate supplies a rebuild criterion.
+
+`period` retains the previous schedule: rebuild every tenth iteration and at
+entry to the convergence tail (residual below 1e-4). In that tail SOSCF and
+TRAH use full builds under `period`. TRAH uses this schedule under both
+values. For `error` the DIIS or SOSCF convergence decision is confirmed
+with a full build. When progressive screening pins its final thresholds
+or grid, the next build is full.
+
+Set `incremental=false` to build the full two-electron Fock matrix at every
+iteration. The `incremental_reset` choice only applies to incremental Fock
+builds.
+
+```text
+rks/bhhlyp/cc-pvdz grad scf(conv=1e-8,incremental_reset=error)
+geom="molecule.xyz"
+```
+
 ### `fock_reproducible`
 
 | Field | Value |
