@@ -1,21 +1,21 @@
 """Assemble the private GitLab Pages site from versioned MkDocs manuals."""
 
+import argparse
 import html
 import os
 import re
-import subprocess
 from pathlib import Path
 
-from mkdocs.commands.build import build
-from mkdocs.config import load_config
+from build_versioned_manual import VERSION, build_version
+from check_preview_links import check
+from stage_manual_version_switch import VERSION_ROW
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = r"[0-9]+\.[0-9]+(?:\.[0-9]+)?"
 
 
-def main():
-    site = ROOT / "site"
+def main(site):
+    site = site.resolve()
     if not (site / "index.html").is_file():
         raise SystemExit("Shared manual was not built at site/index.html")
 
@@ -41,22 +41,16 @@ def main():
     versions = sorted(manuals, key=lambda value: tuple(map(int, value.split("."))), reverse=True)
     for version in versions:
         destination = public_path / version
-        config = load_config(
-            config_file=str(manuals[version]),
-            site_dir=str(destination),
-            site_url=f"{pages_url}/manual/{version}/" if pages_url else None,
-            strict=True,
-        )
-        expected = ROOT / "release-notes" / version
-        if Path(config.docs_dir).resolve() != expected:
-            raise SystemExit(f"Manual {version} must read {expected.relative_to(ROOT)}")
-        build(config)
-        if not (destination / "index.html").is_file():
-            raise SystemExit(f"Manual {version} did not produce index.html")
-        subprocess.run(
-            ["python3", str(ROOT / "tools/check_preview_links.py"), str(destination), str(site)],
-            check=True,
-        )
+        site_url = f"{pages_url or 'http://localhost:8000'}/manual/{version}/"
+        build_version(version, destination, site_url)
+        check(destination, site, site_url)
+
+    home = site / "index.html"
+    data = home.read_bytes()
+    switch = b'<p><a href="manual/">Switch manual version</a></p>'
+    if data.count(VERSION_ROW) != 1 or switch in data:
+        raise SystemExit("Expected the original shared manual home")
+    home.write_bytes(data.replace(VERSION_ROW, VERSION_ROW + b"\n" + switch, 1))
 
     links = "\n".join(
         f'<li><a href="{html.escape(version)}/">OpenQP {html.escape(version)}</a></li>'
@@ -65,11 +59,13 @@ def main():
     (public_path / "index.html").write_text(
         '<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n'
         '<title>OpenQP manuals</title>\n<h1>OpenQP manuals</h1>\n'
-        '<p><a href="../">Shared manual</a></p>\n<ul>\n'
+        '<ul><li><a href="../">OpenQP 1.3</a></li>\n'
         f"{links}\n</ul>\n</html>\n",
         encoding="utf-8",
     )
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("site", type=Path, nargs="?", default=ROOT / "site")
+    main(parser.parse_args().site)

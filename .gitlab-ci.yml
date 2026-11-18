@@ -38,8 +38,8 @@ docs-14-build:
       artifacts: true
   script:
     - python -m pip install -r docs/requirements.txt
-    - mkdocs build --strict -f mkdocs-1.4.yml -d site-1.4
-    - python tools/check_preview_links.py site-1.4 site
+    - python tools/build_versioned_manual.py 1.4 site-1.4 --site-url "${CI_PAGES_URL%/}/manual/1.4/"
+    - python tools/check_preview_links.py site-1.4 site "${CI_PAGES_URL%/}/manual/1.4/"
   artifacts:
     paths:
       - site-1.4/
@@ -53,8 +53,10 @@ docs-14-search:
   needs:
     - job: docs-14-build
       artifacts: true
+    - job: docs-build
+      artifacts: true
   script:
-    - node tools/check_preview_search.cjs site-1.4
+    - node tools/check_preview_search.cjs site-1.4 site
 
 private-manual-assembly:
   stage: test

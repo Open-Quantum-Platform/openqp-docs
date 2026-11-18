@@ -2,16 +2,17 @@
 
 ## `result_format`
 
-OpenQP 1.3.1 writes saved results as JSON. The 1.4 release candidate uses
-a standalone `.npz` file by default. To write standalone JSON, set
-`input(result_format=json)` to the `.oqp` input. The accepted values for
-`input.result_format` are `npz` and `json`.
+The current 1.4 candidate writes JSON by default. Set
+`input(result_format=npz)` in the `.oqp` input to select standalone NPZ.
+Accepted values are `json` and `npz`. Earlier beta builds used NPZ by default.
+Use the [saved-result reader](api/results.md#reading-saved-results) for both formats.
 
 ## Workflow status
 
-With `guess(save_mol=true)`, the release candidate records the final
-workflow status in both NPZ and JSON after the calculation driver returns.
-The saved `workflow` object contains these fields.
+The earlier beta added workflow metadata to saved results after the calculation
+driver returned. The current 1.4 branch does not provide that saved-status
+contract. When reading a beta result with a `workflow` object, interpret these
+fields as follows.
 
 - `workflow.completed` is `true` for a completed calculation and `false` for
   an incomplete one.
@@ -34,7 +35,7 @@ both files together.
 
 An explicitly supplied restart file must exist and contain a valid result.
 Keep the corresponding result file until the restart has been checked. See the
-[1.3 quickstart](https://www.openqp.org/manual/quickstart/) for the general
+[Quickstart](quickstart.md) for the general
 `.oqp` calculation workflow.
 
 ### Numerical Hessian and NAC checkpoints

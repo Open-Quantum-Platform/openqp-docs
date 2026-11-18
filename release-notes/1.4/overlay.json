@@ -1,0 +1,199 @@
+{
+  "replace": {
+    "index.md": [
+      [
+        "**Manual version:** 1.3.0; **OpenQP version:** 1.3.0",
+        "**Manual version:** 1.4; **OpenQP version:** 1.4 release candidate\n\n<p><a href=\"../\">Switch manual version</a></p>\n\nSee [the 1.4 release notes](changes.md) for changes and qualification status."
+      ]
+    ],
+    "quickstart.md": [
+      [
+        "The `.oqp` parser is included in OpenQP 1.3.0 and is the recommended input",
+        "Concise `.oqp` is the recommended input"
+      ]
+    ],
+    "installation.md": [
+      [
+        "## Recommended Install\n\nUse the Python package when possible:",
+        "## Recommended Install\n\nFor the 1.4 binary, follow [Release candidate installation](#release-candidate-installation). Platform and bundle qualification are described there. The source and Python-package instructions below describe those installation routes.\n\nFor releases available from PyPI, use:"
+      ],
+      [
+        "OpenQP 1.3.0 provides the optional `geometric` extra introduced by",
+        "The optional `geometric` extra was introduced by"
+      ],
+      [
+        "`pip install openqp` works the same as elsewhere:",
+        "For the previously published Windows wheels, install from PyPI:"
+      ],
+      [
+        "## Common CMake Options",
+        "## Common CMake Options\n\nMPI is a source build option. The 1.4 beta bundles described below use OpenMP without MPI."
+      ]
+    ],
+    "build-options.md": [
+      [
+        "Most users should install OpenQP with:\n\n```bash\npip install openqp\n```",
+        "Use the [1.4 installation instructions](installation.md#release-candidate-installation) for the candidate binary. The CMake and package-build settings on this page apply to source builds."
+      ],
+      [
+        "Set `[scf] eri_hgp=off` to use Rys for quartets that would otherwise use HGP.",
+        "See [Two-electron integrals in SCF](scf-integrals.md) for the 1.4 quartet selection rules and `scf(eri_hgp=off)`."
+      ]
+    ],
+    "keywords/input.md": [
+      [
+        "XTB, DFTB, and AFQMC are not distributed or supported as OpenQP 1.3.0 methods.",
+        "OpenQP 1.4 rejects xTB requests. DFTB requires the optional OpenQP-DFTB backend. AFQMC is outside the 1.4 distribution."
+      ],
+      [
+        "See [Reading saved results](../api/results.md#reading-saved-results).",
+        "See [Reading saved results](../api/results.md#reading-saved-results) and [1.4 result files and restart](../result-files.md)."
+      ],
+      [
+        "| Default | `npz` |",
+        "| Default | `json` |"
+      ],
+      [
+        "numerical arrays and metadata in one file. Use `input(result_format=json)`\nin `.oqp` syntax to write standalone JSON instead.",
+        "numerical arrays and metadata in one file. Set `input(result_format=npz)`\nin `.oqp` syntax to select NPZ explicitly."
+      ]
+    ],
+    "capabilities.md": [
+      [
+        "- XTB, DFTB, and AFQMC backends are not distributed or supported as OpenQP\n  1.3.0 capabilities. Their separate implementation repositories and earlier\n  documentation proposals are outside this release's public support surface.",
+        "- OpenQP 1.4 excludes xTB and rejects inputs requesting it. DFTB requires\n  the optional OpenQP-DFTB backend. AFQMC is outside the 1.4 distribution."
+      ]
+    ],
+    "keywords/optimize.md": [
+      [
+        "(TDHF/MRSF) and the tight-binding methods `dftb` and `xtb` are accepted.",
+        "(TDHF/MRSF), and DFTB with its optional backend are accepted. OpenQP 1.4 rejects xTB requests."
+      ],
+      [
+        "[`max_step`](#max_step), [`rmsd_grad`](#rmsd_grad) and\n[`max_grad`](#max_grad)",
+        "[`max_step`](#rmsd_step-max_step), [`rmsd_grad`](#rmsd_grad-max_grad) and\n[`max_grad`](#rmsd_grad-max_grad)"
+      ],
+      [
+        "[`rmsd_step`](#rmsd_step)",
+        "[`rmsd_step`](#rmsd_step-max_step)"
+      ]
+    ],
+    "keywords/qmmm.md": [
+      [
+        "the tight-binding methods (`method = dftb/xtb`), a",
+        "the optional DFTB route (`method = dftb`), a"
+      ]
+    ],
+    "workflows/soc-namd-qmmm.md": [
+      [
+        "The tight-binding (`method=dftb/xtb`) NAMD\npath supports non-periodic clusters only.",
+        "The optional DFTB NAMD path supports non-periodic clusters only. OpenQP 1.4 rejects xTB requests."
+      ]
+    ],
+    "keywords/odp.md": [
+      [
+        "QM/MM Hamiltonian options; the `ESPF_*` environment controls; the contents of\nDFTB/xTB parameter and backend files;",
+        "QM/MM Hamiltonian options; the ESPF grid settings; the contents of optional DFTB parameter and backend files;"
+      ]
+    ],
+    "keywords/scf.md": [
+      [
+        "### `stability`",
+        "### `orbital_hessian_check`\n\nThe SOSCF orbital Hessian check defaults to `false` in its separate development candidate. It is unavailable on the current 1.4 branch. See [its activation conditions and restrictions](../scf-options.md#orbital_hessian_check).\n\n### `eri_hgp`\n\nThe 1.4 default `auto` selects HGP for eligible SCF Fock integrals. See [the shell-quartet rules](../scf-integrals.md) and the `off` setting.\n\n### `stability`"
+      ]
+    ],
+    "api/results.md": [
+      [
+        "The JSON result remains the source for programmatic use.",
+        "Use the saved NPZ or JSON result for programmatic use. See [1.4 workflow status](../result-files.md#workflow-status)."
+      ],
+      [
+        "The default\n`<name>.npz` contains settings, provenance, units, atomic numbers,\ncoordinates, symmetry, convergence, and available calculation results.\nThe log provides the human-readable calculation record. To select a\nself-contained `<name>.json` instead, add `input(result_format=json)` to\nan `.oqp` input or set `result_format=json` in the `[input]` section.",
+        "The default\n`<name>.json` records settings, provenance, units, atomic numbers,\ncoordinates, symmetry, convergence, and available calculation results.\nThe log provides the human-readable calculation record. To select a\nstandalone `<name>.npz`, add `input(result_format=npz)` to an `.oqp` input\nor set `result_format=npz` in the `[input]` section."
+      ]
+    ],
+    "keywords/nac.md": [
+      [
+        "# `[nac]`\n",
+        "# `[nac]`\n\nSee [1.4 analytical NAC and two-state MECI](../analytic-meci.md) for the explicit convergence requirements and a runnable input.\n"
+      ]
+    ],
+    "worked-examples/ethylene-meci.md": [
+      [
+        "# Ethylene: Conical Intersection (MECI)\n",
+        "# Ethylene: Conical Intersection (MECI)\n\nFor the 1.4 analytical algorithm, see [Analytical NAC and two-state MECI](../analytic-meci.md).\n"
+      ]
+    ],
+    "troubleshooting.md": [
+      [
+        "# Troubleshooting\n",
+        "# Troubleshooting\n\nSee [1.4 calculation log messages](calculation-logs.md) for termination status and response failures.\n"
+      ]
+    ],
+    "studio/engine-compatibility.md": [
+      [
+        "# Studio and engine compatibility\n",
+        "# Studio and engine compatibility\n\nFor the 1.4 test bundle scope, see [Release candidate installation](../installation.md#release-candidate-installation).\n"
+      ]
+    ],
+    "keywords/guess.md": [
+      [
+        "same-stem `.npz` by default, or the `.json` if the input selected JSON.",
+        "same-stem `.json` by default, or `.npz` if the input selects `result_format=npz`."
+      ]
+    ],
+    "workflows/orbital-vibrational-output.md": [
+      [
+        "The calculation result is `<project>.npz` by default. Select standalone JSON\nwith `input(result_format=json)` for a viewer that imports JSON.",
+        "The calculation result is `<project>.json` by default. To request a standalone\nNPZ result, use `input(result_format=npz)`."
+      ]
+    ],
+    "worked-examples/index.md": [
+      [
+        "| `<name>.npz` | Default result containing settings, convergence, available numerical results, and any saved restart arrays. `input(result_format=json)` writes only `<name>.json` instead. |",
+        "| `<name>.json` | Default result containing settings, convergence, available numerical results, and any saved restart arrays. `input(result_format=npz)` selects standalone NPZ. |"
+      ]
+    ],
+    "keywords/tdhf.md": [
+      [
+        "| Default | `1.0e-10` |\n| Used by | Z-vector convergence |",
+        "| Default | `1.0e-6` |\n| Used by | Z-vector convergence |"
+      ],
+      [
+        "`sqrt(zvconv)`, so the default `1.0e-10` bounds the residual by `1.0e-5`.\n\nThe default was `1.0e-8` before OpenQP internal MR !154. For thymine",
+        "`sqrt(zvconv)`, so the 1.4 input default `1.0e-6` bounds the residual by `1.0e-3`.\n\nFor thymine"
+      ],
+      [
+        "| `1.0e-10` (default) | 15 | 2.5e-7 |",
+        "| `1.0e-10` | 15 | 2.5e-7 |"
+      ],
+      [
+        "To keep the previous behaviour, for example to reproduce older results or to save\nZ-vector iterations in long dynamics, set the value explicitly:",
+        "Set the convergence threshold explicitly when reproducing a calculation:"
+      ]
+    ]
+  },
+  "append": [
+    "installation.md"
+  ],
+  "nav": [
+    {
+      "Overview": "changes.md"
+    },
+    {
+      "Result files and restart": "result-files.md"
+    },
+    {
+      "Calculation logs": "calculation-logs.md"
+    },
+    {
+      "SCF options": "scf-options.md"
+    },
+    {
+      "Two-electron integrals in SCF": "scf-integrals.md"
+    },
+    {
+      "Analytical NAC and two-state MECI": "analytic-meci.md"
+    }
+  ]
+}

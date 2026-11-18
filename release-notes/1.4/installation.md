@@ -1,4 +1,6 @@
-# Installation and OQP Studio
+# 1.4 installation and OQP Studio
+
+## Release candidate installation
 
 The planned OpenQP 1.4 distribution uses platform-specific engine binaries.
 Select the binary for your operating system and architecture from the 1.4
@@ -56,7 +58,7 @@ Linux, Studio API tests completed initial energy calculations and NPZ
 restarts with identical energies on each platform. The macOS Studio UI
 also showed the completed restart. Production distribution and the
 supported artifact list are pending qualification. See the
-[OQP Studio manual](https://www.openqp.org/manual/studio/) for general Studio
+[OQP Studio manual](studio/index.md) for general Studio
 usage.
 
 ## Beta diagnostics

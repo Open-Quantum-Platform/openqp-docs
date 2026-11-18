@@ -2,6 +2,9 @@
 
 ## `orbital_hessian_check`
 
+**Separate development candidate.** This option is under validation and is
+unavailable on the current 1.4 release branch.
+
 | Field | Value |
 | --- | --- |
 | Type | Boolean |
@@ -32,5 +35,5 @@ For legacy input, use `orbital_hessian_check=true` in the `[scf]` section. In th
 Python SDK, set `job.scf.orbital_hessian_check = True`.
 
 The `orbital_hessian_check` option applies to the SOSCF escalation stage.
-[`stability`](https://www.openqp.org/manual/keywords/scf/#stability)
+[`stability`](keywords/scf.md#stability)
 requests a separate stability analysis of the converged SCF reference.
