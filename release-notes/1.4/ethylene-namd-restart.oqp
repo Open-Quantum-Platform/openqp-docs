@@ -1,0 +1,5 @@
+mrsf(nstate=3)/bhhlyp/6-31g geom="ethylene-namd-restart.xyz"
+guess(type=huckel)
+scf(conv=1e-10,maxit=200,fock_reproducible=true)
+tdhf(conv=1e-10,maxit=100)
+namd(S2,nstep=800,dt=0.125,init_temp=300,seed=663617,tdc=fd,ensemble=nve,decoherence=edc,trivial=false,first_hop_step=1,nve_gate=error,nve_gate_abs_tol=0.005,nve_gate_step_tol=0.001,nve_gate_transition_tol=1e-6,nve_gate_consecutive=3,trajectory_interval=1,restart_interval=1,trajectory_file="ethylene-namd-restart.trj",restart_file="ethylene-namd-restart.namd.restart.npz",restart=false)

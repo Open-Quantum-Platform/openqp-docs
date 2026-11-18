@@ -29,9 +29,14 @@ async function check(site, sharedSite) {
     "keywords/input/#result_format": "Default <code>json</code>",
     "keywords/tdhf/#zvconv": "Default <code>1.0e-6</code>",
     "capabilities/#upcoming-or-limited-areas": "OpenQP 1.4 excludes xTB",
+    "keywords/scf/#fock_reproducible": "the verified ethylene restart procedure",
+    "result-files/#ethylene-restart-example": "28.375 fs",
   })) {
     assert(entries.get(location)?.includes(expectedText), "missing version-specific text: " + location);
   }
+  assert(!sharedRoutes.has("result-files/"), "1.4 result-files page leaked into the shared manual");
+  assert(!shared.docs.some(({text}) => text.includes("the verified ethylene restart procedure")),
+    "1.4 restart guidance leaked into the shared search index");
 
   let receive;
   let response;
