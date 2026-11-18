@@ -52,10 +52,39 @@ If the electronic-state overlap used for norm-preserving interpolation (NPI)
 loses rank, propagation stops before advancing that step or replacing the
 last accepted checkpoint.
 
-**Development preview.** The analytic NAMD candidate uses checkpoint schema 9
-and trajectory schema 8 to retain the electronic continuation state,
-including analytic coupling history and warm-start data. An explicit restart
-from an older checkpoint schema stops with an incompatibility error and
-preserves the old checkpoint and trajectory files. Use a separate output
-name for a fresh trajectory so the original files remain available.
-Native continuation checks and the final release format are pending.
+The checkpoint candidate stores the MRSF Z-vector warm-start state in
+restart schema 10. Trajectory files use schema 7. An incompatible checkpoint
+schema is rejected before restoration. Keep the original checkpoint and its
+matching trajectory together. Use new output filenames for a fresh trajectory.
+
+A separate fixed-order candidate accepts `scf(fock_reproducible=true)`
+(default `false`). It uses fixed OpenMP work assignments and accumulation
+order in the native Fock and selected XC and gradient builders. Use the same
+binary, OpenMP and BLAS thread counts, and calculation inputs throughout a
+restart comparison. The tested NAMD path uses the native CPU engine with
+finite-difference time-derivative couplings and isotropic velocity rescaling.
+GPU-linked builds, external providers, and multiple MPI ranks are outside
+the supported fixed-order path. The option does not promise identical results
+across thread counts, builds, or platforms.
+
+#### Ethylene restart example
+
+Download the [ethylene input](ethylene-namd-restart.oqp) and
+[geometry](ethylene-namd-restart.xyz) to the same directory. The input
+starts on S2 with MRSF/BHHLYP/6-31G, explicitly selects Hückel and fixed-order
+accumulation, and requests 800 steps of 0.125 fs. It writes a checkpoint
+at each step.
+
+To continue, keep an accepted checkpoint and the trajectory prefix through
+that same step. Run the generated restart input with `restart=true` and the
+matching checkpoint and trajectory paths. Keep `nstep=800` to finish at
+100 fs. The 50 fs continuation starts from the checkpoint at step 400.
+
+On the fixed-order candidate, an uninterrupted 100 fs run and continuation
+from 50 fs agreed within the absolute restart tolerance of 10⁻¹¹ on macOS
+with two OpenMP threads and one BLAS thread. A separate restart at 28.25 fs
+reproduced the hop at 28.375 fs. Both comparisons used a 0.125 fs step.
+At 0.25 fs, the restart agreed within tolerance, but the adjacent-step energy
+change at 28.5 fs exceeded the 0.001 hartree acceptance limit. The same
+energy event was reproduced before the checkpoint change. Final Linux
+trajectory qualification is pending.

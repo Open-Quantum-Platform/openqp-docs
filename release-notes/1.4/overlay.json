@@ -100,6 +100,10 @@
       [
         "### `stability`",
         "### `orbital_hessian_check`\n\nThe SOSCF orbital Hessian check defaults to `false` in its separate development candidate. It is unavailable on the current 1.4 branch. See [its activation conditions and restrictions](../scf-options.md#orbital_hessian_check).\n\n### `eri_hgp`\n\nThe 1.4 default `auto` selects HGP for eligible SCF Fock integrals. See [the shell-quartet rules](../scf-integrals.md) and the `off` setting.\n\n### `stability`"
+      ],
+      [
+        "### `fock_reproducible`\n",
+        "### `fock_reproducible`\n\nFor the fixed-order 1.4 candidate's tested NAMD conditions, see [NAMD restart continuity](../result-files.md#namd-restart-continuity).\n"
       ]
     ],
     "api/results.md": [
@@ -170,6 +174,18 @@
       [
         "To keep the previous behaviour, for example to reproduce older results or to save\nZ-vector iterations in long dynamics, set the value explicitly:",
         "Set the convergence threshold explicitly when reproducing a calculation:"
+      ]
+    ],
+    "keywords/md-initial-restart.md": [
+      [
+        "### NAMD restart\n",
+        "### NAMD restart\n\nSee [the 1.4 NAMD checkpoint format and example](../result-files.md#namd-restart-continuity) for the format boundary and settings used in the continuity test.\n"
+      ]
+    ],
+    "worked-examples/ethylene-namd.md": [
+      [
+        "## Copy and run\n",
+        "## Copy and run\n\n!!! note \"OpenQP 1.4 restart example\"\n    Use the [finite-difference ethylene restart input](../result-files.md#ethylene-restart-example) for the 1.4 checkpoint test. The 150 fs Baeck–An run below is a historical trajectory. The 1.4 engine accepts FD or NPI as the propagation coupling provider, with Baeck–An available as a diagnostic.\n"
       ]
     ]
   },
