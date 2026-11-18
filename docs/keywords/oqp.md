@@ -135,12 +135,11 @@ Initial Hessian policy for native minimum and P-RFO transition-state searches.
 method and state before the first step. `read` loads a Cartesian Hessian from
 `hessian_file`; `cheap` calculates an analytical HF Hessian with
 `hessian_basis` in a separate serial OpenQP process. Both `read` and `cheap`
-are accepted for native `optimize` and `ts`, including an MPI run: only world
-rank zero starts the cheap calculation and broadcasts its results. A failed
-explicit Hessian request stops the job instead of using a model Hessian.
+apply to native `optimize` and `ts`. The examples were tested with one OpenQP
+process and OpenMP threads. A failed explicit Hessian request stops the job.
 
-For a `.hess.json` file, `read` checks the atom sequence and uses its stored
-gradient only when its coordinates match the starting geometry. Plain-text
+For an OpenQP result file, `read` checks the stored atom sequence and uses a
+stored gradient only when its coordinates match the starting geometry. Plain-text
 Hessians are 3N-by-3N matrices in hartree/bohr² and contain no gradient.
 `cheap` also calculates the HF gradient at the starting geometry with the same
 basis; this gradient is needed for the curvature term in the internal-coordinate
@@ -159,9 +158,10 @@ In concise input, use `opt(S0,hessian=cheap,hessian_basis=3-21g)` or
 | Default | empty |
 | Used by | `init_hessian=read` |
 
-Path to a `.hess.json` sidecar from a Hessian calculation or a plain-text
-Cartesian Hessian matrix. It is required when `init_hessian=read`. A relative
-path is resolved from the input file's directory when that file exists there.
+Path to an OpenQP result containing a Hessian (`.npz` or `.json`), a legacy
+`.hess.json` file, or a plain-text Cartesian Hessian matrix. It is required
+when `init_hessian=read`. A relative path is resolved from the input file's
+directory when that file exists there.
 
 ### `hessian_basis`
 
