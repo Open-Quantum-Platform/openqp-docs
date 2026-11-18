@@ -210,6 +210,18 @@ mrsf(nstate=5)/bhhlyp/6-31g* mecp(S0,T0,algorithm=auglag)
 geom="guess.xyz"
 ```
 
+For MECP, each spin multiplicity starts with the requested `nstate`. A small
+response space may solve fewer roots; this limit can differ between the two
+multiplicities. OpenQP joins only the roots actually solved and selects each
+state from its own block. If a requested state is absent, the calculation stops
+with the state index, multiplicity, and available root count. It does not select
+a different state. Reduce the requested state or enlarge the basis after
+checking the intended electronic states.
+
+The small `H2O_MRSFTDHF_MECP_CLIPPED.oqp` regression uses `nstate=30` with
+STO-3G to exercise these different response-space limits. It performs one
+iteration to test state selection; it is not a converged MECP structure.
+
 `algorithm=baeka` selects the Baek adaptive penalty-function method within the
 ordinary MECI driver. It accepts two or more states from one spin manifold,
 uses the independent adjacent energy gaps, and updates the penalty strength
