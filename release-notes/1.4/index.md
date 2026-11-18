@@ -12,4 +12,5 @@ here covers only the 1.4 changes. For established controls, use the
 - [Result files and restart](result-files.md)
 - [Calculation logs](calculation-logs.md)
 - [Two-electron integrals in SCF](scf-integrals.md)
+- [Analytical NAC and two-state MECI](analytic-meci.md)
 - [Installation and OQP Studio](installation.md)
