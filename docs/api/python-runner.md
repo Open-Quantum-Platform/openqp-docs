@@ -382,6 +382,25 @@ print(mol.get_results()["td_energies"])
 | `back_door(data)` | `None` | Supplies previous-state data for advanced internal workflows. |
 | `test()` | `(message, diff)` | Compares against reference data in OpenQP test mode. |
 
+### Multireference Results
+
+Read computed root energies and spin expectations with
+`runner.mol.get_results()` after `runner.run()`. FCI and CASCI expose
+`fci_energies` and `fci_s2`, or `casci_energies` and `casci_s2`, respectively.
+CASSCF exposes `casscf_energies`. Energies are in hartree and the spin
+expectations are dimensionless.
+
+CASPT2-family results can include `caspt2_energies`,
+`caspt2_reference_energies`, and `caspt2_state_specific_corrections`.
+When the calculation also produces single-state energies and a multistate
+effective Hamiltonian, the result includes `caspt2_ss_energies` and
+`caspt2_effective_hamiltonian`. The matrix is a square list of rows in the
+selected root basis. Its off-diagonal entries retain their signs.
+
+These fields appear only when the calculation produces them. They are also
+retained in lean result files and compared when present in an example
+reference.
+
 ## Legacy Dotted-Keyword Wrapper
 
 `oqp.openqp.OPENQP` accepts dotted keyword names such as `input.system` and
