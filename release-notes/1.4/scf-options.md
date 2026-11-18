@@ -2,8 +2,7 @@
 
 ## `orbital_hessian_check`
 
-**Separate development candidate.** This option is under validation and is
-unavailable on the current 1.4 release branch.
+OpenQP 1.4 provides this optional check through the `scf(...)` clause.
 
 | Field | Value |
 | --- | --- |
