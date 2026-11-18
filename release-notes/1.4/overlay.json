@@ -10,6 +10,10 @@
       [
         "The `.oqp` parser is included in OpenQP 1.3.0 and is the recommended input",
         "Concise `.oqp` is the recommended input"
+      ],
+      [
+        "Existing sectioned inputs remain supported. The legacy spelling of the same\ncalculation is:",
+        "Existing sectioned inputs remain supported. This legacy example explicitly requests Hückel to reproduce the original initial guess. Use `guess(type=huckel)` in the concise input for the same initialization. See [initial-guess selection](keywords/guess.md#type) for the default."
       ]
     ],
     "installation.md": [
@@ -144,6 +148,30 @@
       [
         "same-stem `.npz` by default, or the `.json` if the input selected JSON.",
         "same-stem `.json` by default, or `.npz` if the input selects `result_format=npz`."
+      ],
+      [
+        "`json`, `previous`, `sap`, `minao`, `sad`",
+        "`json`, `sap`, `minao`"
+      ],
+      [
+        "| `auto` | Reuse compatible restart orbitals when available. For a fresh guess, use SAD for open-shell lanthanide systems, MINAO for elements covered by its table, and SAP otherwise. |\n| `sap` | Superposition-of-atomic-potentials guess. |\n| `minao` | Projected minimal-basis density guess. |\n| `sad` | Superposition of atomic densities. |\n| `previous` | Reuse the previous orbitals when available. |",
+        "| `auto` | Reuse orbitals from a compatible result specified by `guess.file` when the file exists. Otherwise use MINAO if every atom is H–Cm and SAP if any atom is Bk–Og. |\n| `sap` | Superposition of atomic potentials using the H–Og table. |\n| `minao` | Superpose atomic densities from the minimal ANO-RCC basis for H–Cm and project them into the requested AO basis. |"
+      ],
+      [
+        "Use `json` for exact restarts and `auto` for workflows that may or may not have\na previous restart file.",
+        "Use `guess(type=huckel)` to reproduce a run started from extended Hückel. An explicit fresh guess such as `huckel`, `minao`, or `sap` does not read saved orbitals. Explicit `minao` rejects atoms beyond Cm. For an effective core potential, MINAO removes the replaced core density before projection. SAP caps the tabulated effective charge at the valence nuclear charge and includes the ECP operator.\n\nUse `guess(type=json,file=\"previous.npz\")` when an orbital restart is required. Save converged orbitals with `guess(save_mol=true)`, keep the original result, and reconverge the target calculation."
+      ],
+      [
+        "When no file is specified, the default `auto` guess looks for the result\nbeside the input, such as `water.npz` or `water.json` for `water.oqp`. If both exist, automatic\ndiscovery selects a standalone NPZ and records that choice in the log.\nOpenQP checks SCF convergence and compatibility before restoring orbitals.\nThe input geometry remains authoritative by default. An explicit fresh\nguess such as `guess(type=minao)` bypasses restart discovery.",
+        "Specify the full result filename, as in `guess(file=\"previous.npz\")`. With no path, `auto` computes the fresh guess described above. An existing invalid result raises an error during loading. The input geometry remains authoritative unless a supported explicit restart requests the saved geometry."
+      ],
+      [
+        "\n| Field | Value |\n| --- | --- |\n| Type | boolean |\n| Default | `False` |\n\nUse `guess(occupation_trials=true)` to compare candidate occupations when an\ninitial guess has a degenerate orbital level at an occupation boundary that\nsplits into different symmetry components. Each candidate gets up to five SCF\niterations. The main SCF starts from the orbitals and density of the candidate\nwith the lowest trial energy. This short comparison does not establish the\nlowest fully converged SCF state.\n\nOpenQP skips the trials when the occupation is selected by MO swaps, MOM, or\nrestricted orbital rotation, when the candidate count exceeds the internal\nlimit, or when the calculation uses QM/MM embedding. By default the orbital\nsymmetry adaptation uses the symmetry table order without running trials.\n\n",
+        "\nThe `occupation_trials` control is unavailable in this 1.4 engine.\n\n"
+      ],
+      [
+        "- Supplied guesses (`json`, `auto` with an existing file, `previous`):",
+        "- Supplied guesses (`json`, `auto` with an existing file):"
       ]
     ],
     "workflows/orbital-vibrational-output.md": [
@@ -186,6 +214,12 @@
       [
         "## Copy and run\n",
         "## Copy and run\n\n!!! note \"OpenQP 1.4 restart example\"\n    Use the [finite-difference ethylene restart input](../result-files.md#ethylene-restart-example) for the 1.4 checkpoint test. The 150 fs Baeck–An run below is a historical trajectory. The 1.4 engine accepts FD or NPI as the propagation coupling provider, with Baeck–An available as a diagnostic.\n"
+      ]
+    ],
+    "workflows/sf-tddft.md": [
+      [
+        "analysis. For the water example, the Huckel, modified\n  Huckel and `auto` guesses converge to higher triplets in 6-31G* and cc-pVDZ.",
+        "analysis. In the historical water comparison, explicit Hückel and modified\n  Hückel guesses converged to higher triplets in 6-31G* and cc-pVDZ. Use the [initial-guess reference](../keywords/guess.md#type) for the 1.4 `auto` selection."
       ]
     ]
   },
