@@ -397,6 +397,12 @@ effective Hamiltonian, the result includes `caspt2_ss_energies` and
 `caspt2_effective_hamiltonian`. The matrix is a square list of rows in the
 selected root basis. Its off-diagonal entries retain their signs.
 
+OpenQP sets the sign of each CI vector so that its determinant coefficient
+of largest magnitude is positive. When several coefficients have nearly
+equal largest magnitudes, the lowest determinant index determines the sign.
+The multistate effective Hamiltonian uses this phase convention so its
+signed entries can be compared across supported builds.
+
 These fields appear only when the calculation produces them. They are also
 retained in lean result files and compared when present in an example
 reference.
