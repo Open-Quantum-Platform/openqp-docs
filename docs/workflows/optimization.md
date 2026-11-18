@@ -103,7 +103,7 @@ For example, the runnable [short H2 input](../worked-examples/inputs/h2-initial-
 uses `hessian=cheap` with HF/3-21g curvature while optimizing at HF/6-31G*.
 These Hessians only initialize the search; subsequent steps use the requested
 method. If an explicit `read` or `cheap` Hessian cannot be obtained, OpenQP
-reports an error. `cheap` is unavailable with QM/MM, and QST2/QST3 require
+reports an error. `read` and `cheap` are unavailable with QM/MM, and QST2/QST3 require
 `model`. Availability of an analytical Hessian still depends on the electronic
 method and basis. For an isolated molecule in full-rank TRIC or Cartesian
 coordinates, OpenQP removes whole-molecule translation/rotation zero-mode noise

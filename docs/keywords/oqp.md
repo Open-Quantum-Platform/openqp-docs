@@ -144,7 +144,7 @@ Hessians are 3N-by-3N matrices in hartree/bohr² and contain no gradient.
 `cheap` also calculates the HF gradient at the starting geometry with the same
 basis; this gradient is needed for the curvature term in the internal-coordinate
 transformation. Optimization steps continue to use energies and gradients from
-the requested method. `cheap` is unavailable with QM/MM. QST2/QST3 require
+the requested method. `read` and `cheap` are unavailable with QM/MM. QST2/QST3 require
 `model`.
 
 In concise input, use `opt(S0,hessian=cheap,hessian_basis=3-21g)` or
