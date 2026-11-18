@@ -7,6 +7,9 @@ against the signed release manifest before installing. Verify the signature
 and file checksum, then check the minimum OS version listed for that artifact,
 including its bundled dependencies.
 
+OpenQP 1.4 excludes xTB and rejects inputs that request it. DFTB remains
+available through the optional OpenQP-DFTB backend.
+
 The 1.4 beta bundle provides OpenMP parallel execution without an MPI
 runtime. The relocated Linux beta executable used eight OpenMP threads
 and one BLAS thread. It rejected an MPI request and a 33-thread request.
