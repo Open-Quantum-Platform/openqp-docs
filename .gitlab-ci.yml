@@ -1,3 +1,9 @@
+spec:
+  inputs:
+    release_ref:
+      description: Internal engine release branch whose manual must be present
+      default: ""
+---
 workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -50,17 +56,40 @@ docs-14-search:
   script:
     - node tools/check_preview_search.cjs site-1.4
 
-private-docs-pages:
-  stage: deploy
-  image: alpine:3.20
+private-manual-assembly:
+  stage: test
+  variables:
+    OQP_MANUAL_RELEASE_REF: $[[ inputs.release_ref ]]
+  image: python:3.11-bookworm
   tags:
     - small-linux
   needs:
     - job: docs-build
       artifacts: true
+    - job: docs-14-search
+      artifacts: false
+  script:
+    - python -m pip install -r docs/requirements.txt
+    - python tools/build_private_manual.py
+  artifacts:
+    paths:
+      - site/
+    expire_in: 1 week
+
+private-docs-pages:
+  stage: deploy
+  image: alpine:3.20
+  tags:
+    - small-linux
+  resource_group: private-manual-pages
+  needs:
+    - job: private-manual-assembly
+      artifacts: true
   script:
     - test -f site/index.html
+    - test -f site/manual/index.html
+    - printf 'Private manual index %s/manual/\n' "${CI_PAGES_URL%/}"
   pages:
     publish: site
   rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_PROJECT_ID == "34" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
