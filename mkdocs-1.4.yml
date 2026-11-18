@@ -20,6 +20,7 @@ nav:
   - 1.3 manual: https://www.openqp.org/manual/
   - Result files and restart: result-files.md
   - Calculation logs: calculation-logs.md
+  - SCF options: scf-options.md
   - Two-electron integrals in SCF: scf-integrals.md
   - Analytical NAC and two-state MECI: analytic-meci.md
   - Installation and OQP Studio: installation.md
