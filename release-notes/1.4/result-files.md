@@ -52,12 +52,12 @@ If the electronic-state overlap used for norm-preserving interpolation (NPI)
 loses rank, propagation stops before advancing that step or replacing the
 last accepted checkpoint.
 
-The checkpoint candidate stores the MRSF Z-vector warm-start state in
+The 1.4 checkpoint stores the MRSF Z-vector warm-start state in
 restart schema 10. Trajectory files use schema 7. An incompatible checkpoint
 schema is rejected before restoration. Keep the original checkpoint and its
 matching trajectory together. Use new output filenames for a fresh trajectory.
 
-A separate fixed-order candidate accepts `scf(fock_reproducible=true)`
+The fixed-order option is `scf(fock_reproducible=true)`
 (default `false`). It uses fixed OpenMP work assignments and accumulation
 order in the native Fock and selected XC and gradient builders. Use the same
 binary, OpenMP and BLAS thread counts, and calculation inputs throughout a
@@ -80,11 +80,15 @@ that same step. Run the generated restart input with `restart=true` and the
 matching checkpoint and trajectory paths. Keep `nstep=800` to finish at
 100 fs. The 50 fs continuation starts from the checkpoint at step 400.
 
-On the fixed-order candidate, an uninterrupted 100 fs run and continuation
-from 50 fs agreed within the absolute restart tolerance of 10⁻¹¹ on macOS
-with two OpenMP threads and one BLAS thread. A separate restart at 28.25 fs
-reproduced the hop at 28.375 fs. Both comparisons used a 0.125 fs step.
-At 0.25 fs, the restart agreed within tolerance, but the adjacent-step energy
-change at 28.5 fs exceeded the 0.001 hartree acceptance limit. The same
-energy event was reproduced before the checkpoint change. Final Linux
-trajectory qualification is pending.
+On Linux x86-64, the 1.4 candidate's uninterrupted 100 fs run and
+continuation from 50 fs met the absolute restart tolerance of 10⁻¹¹
+and the NVE energy criteria with two OpenMP threads and one BLAS thread.
+In a separate check, a restart from 28.25 fs reproduced the hop at
+28.375 fs. Both used a 0.125 fs step and reproduced earlier macOS
+checks made with the same scientific input. These comparisons apply
+to the stated input and settings on each platform.
+
+In the separate macOS test at 0.25 fs, the restart met the continuity
+tolerance. The adjacent-step energy change at 28.5 fs exceeded the
+0.001 hartree acceptance limit, as it did with the engine predating
+the checkpoint change.
