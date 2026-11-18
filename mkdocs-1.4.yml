@@ -20,4 +20,5 @@ nav:
   - 1.3 manual: https://www.openqp.org/manual/
   - Result files and restart: result-files.md
   - Calculation logs: calculation-logs.md
+  - Two-electron integrals in SCF: scf-integrals.md
   - Installation and OQP Studio: installation.md
