@@ -126,14 +126,53 @@ Mode-following selector for transition-state style steps.
 | --- | --- |
 | Type | string |
 | Default | `model` |
-| Values | `model`, `numerical`, `analytical` |
-| Used by | native transition-state optimization |
+| Values | `model`, `numerical`, `analytical`, `read`, `cheap` |
+| Used by | native minimum and transition-state optimization (`read` and `cheap`); native transition-state optimization (`numerical` and `analytical`) |
 
-Initial Hessian policy for native P-RFO transition-state searches. `model`
-uses the inexpensive approximate Hessian selected by `model_hessian`. `numerical` and
-`analytical` calculate a real Cartesian Hessian for the selected state before
-the first TS step. In concise input, use
-`ts(S0,hessian=model|numerical|analytical)`.
+Initial Hessian policy for native minimum and P-RFO transition-state searches.
+`model` uses the approximate Hessian selected by `model_hessian`. For TS searches,
+`numerical` and `analytical` calculate a Cartesian Hessian for the requested
+method and state before the first step. `read` loads a Cartesian Hessian from
+`hessian_file`; `cheap` calculates an analytical HF Hessian with
+`hessian_basis` in a separate serial OpenQP process. Both `read` and `cheap`
+apply to native `optimize` and `ts`. The examples were tested with one OpenQP
+process and OpenMP threads. A failed explicit Hessian request stops the job.
+
+For an OpenQP result file, `read` checks the stored atom sequence and uses a
+stored gradient only when its coordinates match the starting geometry. Plain-text
+Hessians are 3N-by-3N matrices in hartree/bohr² and contain no gradient.
+`cheap` also calculates the HF gradient at the starting geometry with the same
+basis; this gradient is needed for the curvature term in the internal-coordinate
+transformation. Optimization steps continue to use energies and gradients from
+the requested method. `read` and `cheap` are unavailable with QM/MM. QST2/QST3 require
+`model`.
+
+In concise input, use `opt(S0,hessian=cheap,hessian_basis=3-21g)` or
+`ts(S0,hessian=read,hessian_file="starting.hess.json")`.
+
+### `hessian_file`
+
+| Field | Value |
+| --- | --- |
+| Type | path |
+| Default | empty |
+| Used by | `init_hessian=read` |
+
+Path to an OpenQP result containing a Hessian (`.npz` or `.json`), a legacy
+`.hess.json` file, or a plain-text Cartesian Hessian matrix. It is required
+when `init_hessian=read`. A relative path is resolved from the input file's
+directory when that file exists there.
+
+### `hessian_basis`
+
+| Field | Value |
+| --- | --- |
+| Type | basis-set name |
+| Default | `3-21g` |
+| Used by | `init_hessian=cheap` |
+
+Basis used for the separate HF Hessian and matching HF gradient calculations.
+The final optimization still uses the method and basis in `[input]`.
 
 ### `model_hessian`
 

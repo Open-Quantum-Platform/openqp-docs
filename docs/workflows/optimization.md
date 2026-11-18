@@ -96,7 +96,15 @@ geom="ts_guess.xyz"
 
 `hessian=model` is the inexpensive default. `numerical` or `analytical`
 calculates a real Cartesian Hessian for the selected state before the first TS
-step. Availability of an analytical Hessian still depends on the electronic
+step. `hessian=read` loads a supplied Cartesian Hessian, while `hessian=cheap`
+calculates an analytical HF Hessian and matching gradient at the starting
+geometry using a smaller basis. Both also work for native minimum searches.
+For example, the runnable [short H2 input](../worked-examples/inputs/h2-initial-hessian-cheap.oqp)
+uses `hessian=cheap` with HF/3-21g curvature while optimizing at HF/6-31G*.
+These Hessians only initialize the search; subsequent steps use the requested
+method. If an explicit `read` or `cheap` Hessian cannot be obtained, OpenQP
+reports an error. `read` and `cheap` are unavailable with QM/MM, and QST2/QST3 require
+`model`. Availability of an analytical Hessian still depends on the electronic
 method and basis. For an isolated molecule in full-rank TRIC or Cartesian
 coordinates, OpenQP removes whole-molecule translation/rotation zero-mode noise
 from a real Hessian and restores positive model curvature in those rigid
