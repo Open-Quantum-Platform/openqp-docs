@@ -7,6 +7,7 @@
 - [Result files and restart](result-files.md)
 - [Calculation logs](calculation-logs.md)
 - [SCF options](scf-options.md)
+- [DFT quadrature screening](keywords/dftgrid.md#quadrature-screening)
 - [Two-electron integrals in SCF](scf-integrals.md)
 - [Analytical NAC and two-state MECI](analytic-meci.md)
 - [Installation and OQP Studio](installation.md)

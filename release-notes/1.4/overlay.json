@@ -224,7 +224,8 @@
     ]
   },
   "append": [
-    "installation.md"
+    "installation.md",
+    "keywords/dftgrid.md"
   ],
   "nav": [
     {
