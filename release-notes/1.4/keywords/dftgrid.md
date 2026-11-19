@@ -16,3 +16,18 @@ machine-tiny weights by the atomic partition are omitted.
 Energies and gradients can therefore differ from references generated with
 earlier weight-screening rules. The correction applies to ordinary DFT
 calculations and the XC integrals used for response and derivatives.
+
+## Nuclear derivatives
+
+Ground-state RKS, UKS and ROKS gradients include the derivatives of the
+normalized atomic partition weights and the motion of atom-centred grid
+points. These terms differentiate the finite quadrature used for the XC
+energy. The resulting gradients can differ from earlier values, especially
+on coarse grids.
+
+## Atomic partition functions
+
+`dftgrid(partfun=becke)` selects the fourfold iterated Becke polynomial.
+`dftgrid(partfun=erf)` selects the error-function partition. Earlier versions
+interchanged these two input names. The remaining supported names are
+`ssf`, `sstep2`, `sstep3`, `sstep4` and `sstep5`.
